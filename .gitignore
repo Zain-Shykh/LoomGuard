@@ -1,0 +1,27 @@
+# Datasets and model bundles never go into git (see docs/ARCHITECTURE.md, section 10)
+/data/
+/artifacts/
+*.pt
+*.pth
+*.ckpt
+*.7z
+*.zip
+*.tar.xz
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# Tools
+.ipynb_checkpoints/
+.streamlit/secrets.toml
+.env
+.vscode/
+.idea/
+.DS_Store

@@ -16,7 +16,7 @@ Terminology used in this project: anomaly detection plus localization is the mod
 
 ## Constraints
 
-- One GPU with 16 GB of VRAM for training.
+- One GPU with 12 GB of VRAM for training.
 - Public datasets only, freely accessible.
 - Training uses defect-free images only.
 - No physical scale exists in the public datasets, so defect sizes are measured in pixels. For grading we will state an assumed pixels-per-centimeter value openly.

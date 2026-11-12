@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loomguard"
+version = "0.0.1"
+description = "Fabric anomaly detection, localization and quality grading"
+requires-python = ">=3.11"
+# torch and torchvision are NOT listed on purpose: install them first from the
+# right index (CUDA 12.8 on the training PC, CPU on the laptop). See README.md.
+# Add further dependencies in the phase that first needs them.
+dependencies = [
+    "numpy",
+    "pillow",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["loomguard*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
