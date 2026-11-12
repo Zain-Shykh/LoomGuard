@@ -4,7 +4,7 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete, repository skeleton in place, no model code yet. See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete, repository skeleton and workflow in place, no model code yet. Next: the Phase 1 spec. See the [progress log](docs/PROGRESS_LOG.md).
 
 ## Documents
 
@@ -15,6 +15,9 @@ Two methods are implemented from their papers in PyTorch and compared on the sam
 | [docs/EVALUATION.md](docs/EVALUATION.md) | Metrics, splits, training regimes, ablations, published reference numbers, pass criteria |
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Phases with objective, tasks and acceptance criteria |
 | [docs/PROGRESS_LOG.md](docs/PROGRESS_LOG.md) | Dated log of work, measurements and decisions |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Every agreed decision, the open ones, and what was dropped |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md) | How each phase is built: spec, headless developer session, review loop, commits |
+| [docs/specs/](docs/specs/) | One spec per phase, written from `TEMPLATE.md` before the phase starts |
 | [LoomGuard Project Starter.md](LoomGuard%20Project%20Starter.md) | The original idea. Where it disagrees with `docs/`, `docs/` wins. |
 
 Diagrams are Mermaid. In VS Code press `Ctrl+Shift+V` (needs the `bierner.markdown-mermaid` extension). GitHub renders them directly.
@@ -41,7 +44,7 @@ Diagrams are Mermaid. In VS Code press `Ctrl+Shift+V` (needs the `bierner.markdo
 |---|---|---|
 | RAW-FABRID only to get the pipeline running | Primary dataset | Only core set with a permissive licence, verified masks, roll streams and a real physical scale |
 | "No physical scale in public datasets" | Real millimetres on RAW-FABRID and TSFabrics | RAW-FABRID states 4 px/mm; TSFabrics states 127 PPI |
-| Lusitano for realism and the demo | Optional, image-level only | No masks documented, 19 GB, expired certificate on the host |
+| Lusitano for realism and the demo | Dropped | No masks documented, 19 GB, expired certificate on the host |
 | Tile size left open | 256 native tiles everywhere, tiler with even spacing | Thin defects vanish when images are shrunk |
 | PatchCore memory grows with data | Capped at 600 tiles before coreset, float16 bank | Bounded memory and search time |
 | RD4AD trained "by the paper" | Fixed iteration budget, last checkpoint | The official code picks the best epoch on the test set |
@@ -52,17 +55,20 @@ Diagrams are Mermaid. In VS Code press `Ctrl+Shift+V` (needs the `bierner.markdo
 
 ## Team decisions (2026-11-12)
 
+The full list is in [docs/DECISIONS.md](docs/DECISIONS.md). The ones that answer the questions raised by the design phase:
+
 | Topic | Decision |
 |---|---|
 | Front end | Streamlit (course requirement) |
 | Deployment | Hugging Face Spaces, free CPU tier |
 | Model bundles | Hugging Face Hub model repository. GitHub rejects files over 100 MB and a Reverse Distillation student is 168 MB. |
 | Grade cut-offs | A up to 20, B up to 40, C up to 60 points per 100 square yards, Reject above |
+| Lusitano dataset | Dropped |
 
-## Open questions
+## Open decisions
 
-1. **Third method.** Add Dinomaly (ViT-Small), or stop at two methods? Decided at the Phase 7 gate at the latest.
-2. **Lusitano.** Keep as an optional image-level benchmark, or drop it? Its host has an expired TLS certificate and it ships no documented masks.
+- **Third method (O-01).** None, Dinomaly with ViT-Small, or EfficientAD. Decided at the Phase 7 gate, after the two-method study.
+- **Other stretch goals (O-02).** Decided at the same gate.
 
 ## Setup
 

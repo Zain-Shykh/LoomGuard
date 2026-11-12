@@ -13,9 +13,9 @@ Every row below says what was actually checked. Anything marked **unverified** m
 | **ZJU-Leaper** | **Core cross-fabric benchmark** | 5.8 GB 7z | Yes | none stated (cite paper) | none | Link alive, layout known from official loader. Counts unverified. |
 | AITEX | Small-data stress test | 176 MB | Yes | none stated (cite paper) | none | Links alive, sizes verified |
 | TSFabrics | Optional: time-series stream demo | 9.19 GB zip | Yes (defects and cutlines) | CC BY 4.0 | 5 px/mm (127 PPI) | Verified via Figshare API and paper |
-| Lusitano | Optional: image-level only | 5.96 GB + 13.3 GB | **No evidence of masks** | none stated | none | Files exist; host TLS certificate expired |
+| Lusitano | **Dropped** (decision D-14) | 5.96 GB + 13.3 GB | **No evidence of masks** | none stated | none | Files exist; host TLS certificate expired |
 
-Core storage needed on the training PC: about 15 GB compressed, roughly 30 GB with extraction. Optional sets add 28 GB compressed.
+Core storage needed on the training PC: about 15 GB compressed, roughly 30 GB with extraction. The optional TSFabrics set adds 9 GB compressed.
 
 **Nothing is downloaded on the laptop.** All downloads happen on the training PC.
 
@@ -25,7 +25,7 @@ Core storage needed on the training PC: about 15 GB compressed, roughly 30 GB wi
 |---|---|---|
 | RAW-FABRID is only for "getting the pipeline running first" | It is the only core dataset with a permissive license, verified masks, roll IDs, sequential line-scan frames and a known physical scale | Promoted to the primary dataset for localization, grading and the demo |
 | "No physical scale exists in the public datasets" | RAW-FABRID states 4 px/mm. TSFabrics states 127 PPI (5 px/mm). | Grading uses real millimetres on these two. Other datasets use an assumed scale, flagged in the UI. |
-| Lusitano for "realism, tiling and the demo"; masks to be verified | The paper reports only image-level AUC and mAP. No mask folder is documented. 19 GB. Host certificate expired. | Demoted to optional, image-level evaluation only |
+| Lusitano for "realism, tiling and the demo"; masks to be verified | The paper reports only image-level AUC and mAP. No mask folder is documented. 19 GB. Host certificate expired. | Dropped by the team on 2026-11-12 (decision D-14) |
 | RAW-FABRID has 204 masks | 204 mask files, but the metadata CSV lists 202 defective images | Count masks at ingest; treat the CSV as the source of truth for labels |
 | TSFabrics: "check resolution and mask format" | 800x640 grayscale JPEG, pixel masks for defects and for cutlines, 30 fps sequences | Optional. RAW-FABRID rolls already give a stream for the demo. |
 | AITEX for "comparison with published numbers" | No official train/test split exists, so published numbers use different protocols | Used as a small-data stress test, not for head-to-head comparison |
@@ -144,7 +144,9 @@ Unverified, check at ingest: mask-to-image pairing (some images are reported to 
 - Interesting twist: cutlines are normal production marks that look like defects. A model trained on frames that include cutlines should not flag them.
 - Adjacent frames overlap, so it is a video stream, not a stitched roll.
 
-## 6. Lusitano (optional, image-level only)
+## 6. Lusitano (dropped)
+
+Dropped on 2026-11-12, decision D-14 in `DECISIONS.md`. The verification facts are kept here in case the dataset is reconsidered at the Phase 7 gate.
 
 - **Source:** <https://kailashhambarde.github.io/Lusitano>. Files hosted at `www.it.ubi.pt`:
   - `nondefects.7z` 5.96 GB (the page labels it "Train Dataset V2, 6000 non-defect images")
@@ -153,7 +155,7 @@ Unverified, check at ingest: mask-to-image pairing (some images are reported to 
 - **License:** none stated for the data. The paper is CC BY.
 - **Masks:** the paper (Carrilho, Hambarde, Proença, Applied Sciences 14:5298, 2024) reports only image-level AUC and mAP and documents no ground-truth mask folder. Assume there are none.
 - **Published baseline:** Reverse Distillation at 256x256 on a 2000x1000 centre crop reaches image AUC 0.886 with the full training set. Squeezing a 2000x1000 image into 256x256 destroys thin defects, so a tiled pipeline has room to beat it.
-- **Access problem:** the host's TLS certificate was expired on 2026-11-12. The contents of `test.zip` were not inspected because that would need certificate checks switched off. Decide as a team whether to accept that before downloading.
+- **Access problem:** the host's TLS certificate was expired on 2026-11-12. The contents of `test.zip` were not inspected because that would need certificate checks switched off.
 - The page and the paper disagree on counts (32k vs 6,000 training images; 1,300/1,100 vs 1,646/1,038 test images).
 
 ## Skipped

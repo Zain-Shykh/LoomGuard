@@ -109,7 +109,6 @@ For each image side of length `L` with tile size `T = 256`:
 | ZJU-Leaper | 512 x 512 | 2 x 2 = 4 | none |
 | AITEX | 4096 x 256 | 16 x 1 = 16 | none |
 | TSFabrics (optional) | 800 x 640 | 4 x 3 = 12 | 75 px horizontal, 64 px vertical |
-| Lusitano (optional) | 4096 x 1024 | 16 x 4 = 64 | none |
 | MVTec AD textures | 1024 x 1024 | 1 (whole image resized to 256) | exception, see below |
 
 MVTec AD is the one exception: images are resized to 256x256 as a whole, because that is the protocol behind the published numbers we must reproduce.

@@ -16,6 +16,23 @@ Entry template:
 
 ---
 
+## 2026-11-12: Workflow, decisions record and spec template
+
+- **Phase:** 0 (closed)
+- **Who / where:** Zain, laptop
+- **Done:**
+  - `docs/DECISIONS.md`: every decision agreed so far, the open ones, and what was dropped.
+  - `docs/WORKFLOW.md`: spec-first process, one fresh headless developer session per phase (Sonnet 5.5, medium effort), review loop, orchestrator verification, commit points.
+  - `docs/specs/TEMPLATE.md`: the template every phase spec follows.
+  - `.claude/agents/phase-reviewer.md`: the reviewer agent used at the end of every phase.
+- **Evidence:** all Mermaid diagrams render in headless Chrome. CLI flags used in the launch command (`-p`, `--model`, `--effort`, `--permission-mode`, `--allowedTools`, `--name`) checked against `claude --help`, version 2.1.322.
+- **Decisions:** Lusitano dropped (D-14). Third method stays open (O-01). Workflow decisions D-55 to D-57.
+- **Problems / next:**
+  - The workflow has not been run yet. Phase 1 is its first use; adjust `WORKFLOW.md` after it if something does not work in practice.
+  - Not verified: that the `phase-reviewer` agent file loads as written (in particular the `effort` key in its front matter). The first developer session will show it.
+  - `pytest` and CPU PyTorch are not installed on the laptop. Needed in the Phase 1 preflight.
+  - Next: write the Phase 1 spec.
+
 ## 2026-11-12: Repository skeleton and team decisions
 
 - **Phase:** 0 (review) and 1 (task 1)

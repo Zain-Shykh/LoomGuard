@@ -21,6 +21,7 @@ dist/
 # Tools
 .ipynb_checkpoints/
 .streamlit/secrets.toml
+.claude/settings.local.json
 .env
 .vscode/
 .idea/

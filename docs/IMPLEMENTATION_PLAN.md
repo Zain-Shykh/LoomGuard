@@ -5,6 +5,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 ## How to use this plan
 
 - Work through the phases in order. A phase is done only when every acceptance criterion is ticked and the evidence is recorded in `PROGRESS_LOG.md`.
+- This plan is the roadmap. Before a phase starts it gets a detailed spec in `docs/specs/`, and it is built by the process in [WORKFLOW.md](WORKFLOW.md). Status values: `Not started`, `Spec approved`, `Code complete`, `Runs complete`, `Done`.
 - "Laptop" means CPU-only work with no dataset: code, unit tests on synthetic data, documentation. "Training PC" means anything that needs a GPU or a dataset.
 - Update the status table below when a phase changes state.
 
@@ -12,7 +13,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 
 | Phase | Title | Where | Rough effort | Status |
 |---|---|---|---|---|
-| 0 | Design and dataset verification | Laptop | 1 session | **Done** (awaiting review) |
+| 0 | Design and dataset verification | Laptop | 1 session | **Done** |
 | 1 | Repository skeleton and data layer | Both | 1 week | Not started |
 | 2 | Metrics and PatchCore | Both | 1.5 weeks | Not started |
 | 3 | Reverse Distillation | Both | 1.5 weeks | Not started |
@@ -54,7 +55,7 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 - [x] Every dataset in the starter file has a verified status, size, licence and role, or an explicit "unverified" note.
 - [x] Both model architectures are specified with tensor shapes, parameter counts, and which parts are frozen or trained.
 - [x] Metrics, splits and pass criteria are written down before any code exists.
-- [ ] Team review complete, open questions in the README answered. (Deployment, weights host and grade cut-offs answered on 2026-11-12. Third method and Lusitano still open.)
+- [x] Team review complete, open questions in the README answered. (Answered on 2026-11-12 and recorded in `DECISIONS.md`. The third method stays an open decision, O-01.)
 
 ---
 
@@ -217,11 +218,12 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Objective.** Decide, with Phase 5 results in hand, which optional extension is worth the time. Do at most one or two.
 
+Open decisions O-01 and O-02 in `DECISIONS.md` are settled here.
+
 | Option | Do it if | Cost |
 |---|---|---|
 | Dinomaly (ViT-Small) as a third method | Reverse Distillation clearly degrades in the unified regime, so a model built for that regime is informative | High: transformer decoder, new backbone |
 | TSFabrics stream with the cutline-as-normal test | The demo needs a more realistic stream than RAW-FABRID rolls | Medium: 9.2 GB, new adapter |
-| Lusitano image-level benchmark | The team wants a comparison with the published 0.886 AUC | Medium: 19 GB, expired certificate on the host |
 | Defect-type classification from a few labelled examples | The grading needs the hole rule of the four-point system | Medium: needs type labels, AITEX has 12 defect codes |
 | Automatic fabric-profile selection in the app | Users find the manual selector confusing | Low: nearest mean feature per profile |
 
@@ -243,7 +245,7 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 - [ ] Every number in the report traces to a file in `results/`.
 - [ ] A teammate who did not write the code reproduces one MVTec row and one RAW-FABRID row from the README alone.
-- [ ] Limits are stated: assumed scales, no hole rule, unknown-fabric behaviour, low-confidence calibrations, licences (MVTec non-commercial; ZJU-Leaper, AITEX and Lusitano without a stated licence).
+- [ ] Limits are stated: assumed scales, no hole rule, unknown-fabric behaviour, low-confidence calibrations, licences (MVTec non-commercial; ZJU-Leaper and AITEX without a stated licence).
 - [ ] Datasets are cited as their authors request.
 
 ---
