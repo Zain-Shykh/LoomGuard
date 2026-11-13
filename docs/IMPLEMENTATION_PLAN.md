@@ -16,7 +16,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 | 0 | Design and dataset verification | Laptop | 1 session | **Done** |
 | 1 | Repository skeleton and data layer | Both | 1 week | Code complete |
 | 2 | Metrics and PatchCore | Both | 1.5 weeks | Code complete |
-| 3 | Reverse Distillation | Both | 1.5 weeks | Not started |
+| 3 | Reverse Distillation | Both | 1.5 weeks | Code complete |
 | 4 | Calibration, inspection and grading | Both | 1 week | Not started |
 | 5 | Cross-fabric study | Training PC | 2 weeks | Not started |
 | 6 | Streamlit application | Laptop | 1.5 weeks | Not started |
@@ -125,12 +125,12 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Acceptance criteria.**
 
-- [ ] Shape unit test: embedding is 2048x8x8; decoder outputs are 256x64x64, 512x32x32, 1024x16x16.
-- [ ] Trainable parameter count is 83.8 M (within 1 percent). The teacher has zero trainable parameters and stays in `eval()` mode during training (unit test).
-- [ ] Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations.
+- [x] Shape unit test: embedding is 2048x8x8; decoder outputs are 256x64x64, 512x32x32, 1024x16x16.
+- [x] Trainable parameter count is 83.8 M (within 1 percent). The teacher has zero trainable parameters and stays in `eval()` mode during training (unit test).
+- [x] Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations.
 - [ ] RD4AD on MVTec textures, mean over five categories: image AUROC 98.5 or more, pixel AUROC 96.7 or more, AUPRO 92.0 or more.
 - [ ] Peak VRAM at batch 16 is under 11 GB. Measured iterations per second recorded, and the compute table in EVALUATION.md updated.
-- [ ] No code path reads test data during training (code review item).
+- [x] No code path reads test data during training (code review item).
 - [ ] RAW-FABRID unified results for 3 seeds are in `results/`, with mean and spread in `PROGRESS_LOG.md`.
 
 ---

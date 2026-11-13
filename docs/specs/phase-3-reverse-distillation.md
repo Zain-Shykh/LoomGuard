@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 3 |
-| Status | Written |
+| Status | Code complete (training-PC runbook outstanding) |
 | Spec written | 2026-11-13 |
 | Written by | developer session, phase 3 |
 | Depends on | Phases 1 and 2 (Code complete; their training-PC runbooks are queued and do not block this phase, decision D-58) |
@@ -196,20 +196,20 @@ A1 to A7 are the plan's criteria with unchanged meaning (A2 is made precise: the
 
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
-| A1 | Shape unit test: embedding is 2048x8x8; decoder outputs are 256x64x64, 512x32x32, 1024x16x16 (for a 256x256 input through the real backbone architecture) | Laptop | `pytest tests/test_rd4ad.py::test_shapes` | [ ] |
-| A2 | Trainable parameter count is 83.8 M (within 1 percent). The teacher has zero trainable parameters and stays in `eval()` mode during training (unit test) | Laptop | `pytest tests/test_rd4ad.py::test_parameter_count tests/test_rd4ad.py::test_teacher_frozen_through_training` | [ ] |
-| A3 | Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations | Laptop (256 x 256 tiles on CPU, `slow`, about 40 minutes); Training PC (same test on the GPU) | `pytest -m slow tests/test_rd4ad.py::test_overfit_eight_tiles` | [ ] |
+| A1 | Shape unit test: embedding is 2048x8x8; decoder outputs are 256x64x64, 512x32x32, 1024x16x16 (for a 256x256 input through the real backbone architecture) | Laptop | `pytest tests/test_rd4ad.py::test_shapes` | [x] |
+| A2 | Trainable parameter count is 83.8 M (within 1 percent). The teacher has zero trainable parameters and stays in `eval()` mode during training (unit test) | Laptop | `pytest tests/test_rd4ad.py::test_parameter_count tests/test_rd4ad.py::test_teacher_frozen_through_training` | [x] |
+| A3 | Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations (laptop: 8 fabric-like weave tiles, 256 x 256, CPU: window means 0.048 at iteration 250 and 0.037 at 300, 2,498 s; the GPU run is runbook step 0) | Laptop (256 x 256 tiles on CPU, `slow`, about 40 minutes); Training PC (same test on the GPU) | `pytest -m slow tests/test_rd4ad.py::test_overfit_eight_tiles` | [x] |
 | A4 | RD4AD on MVTec textures, mean over five categories: image AUROC 98.5 or more, pixel AUROC 96.7 or more, AUPRO 92.0 or more | Training PC (code, config and targets check tested on the laptop) | Laptop: `pytest tests/test_fit_evaluate.py tests/test_runs.py::test_shipped_configs_load`. Training PC: runbook step 3, the mean table printed by `evaluate.py` shows PASS for all three | [ ] |
 | A5 | Peak VRAM at batch 16 is under 11 GB. Measured iterations per second recorded, and the compute table in EVALUATION.md updated | Training PC | runbook step 4: `peak_vram_gb`, `iters_per_second` in the bundles' `metrics.json` | [ ] |
-| A6 | No code path reads test data during training (code review item) | Laptop | `pytest tests/test_fit_evaluate.py::test_rd4ad_fit_reads_no_test_rows`; reviewer reads `fit_rd4ad` and `RD4AD.fit` | [ ] |
+| A6 | No code path reads test data during training (code review item) | Laptop | `pytest tests/test_fit_evaluate.py::test_rd4ad_fit_reads_no_test_rows`; reviewer reads `fit_rd4ad` and `RD4AD.fit` | [x] |
 | A7 | RAW-FABRID unified results for 3 seeds are in `results/`, with mean and spread in `PROGRESS_LOG.md` | Training PC | runbook steps 5 to 6: `results/raw_fabrid/unified/rd4ad_s{0,1,2}/unified.json` | [ ] |
-| A8 | The cosine loss equals hand values (identical maps 0, opposite maps 6, orthogonal maps 3, flattened per image, mean over the batch) and the anomaly map is B x 1 x 256 x 256, peaks where the student disagrees and its max is the tile score | Laptop | `pytest tests/test_rd4ad.py::test_cosine_loss_hand_values tests/test_rd4ad.py::test_anomaly_map_and_score` | [ ] |
-| A9 | The training loop does exactly `iterations` steps, keeps the last state, uses autocast only on CUDA, logs validation loss, and the loss falls on a learnable case within the default suite | Laptop | `pytest tests/test_rd4ad.py::test_fit_budget_and_logging tests/test_rd4ad.py::test_loss_falls_quickly` | [ ] |
-| A10 | A saved checkpoint has float16 floating tensors, loads with `weights_only=True` and reproduces the scores of the float16-rounded student | Laptop | `pytest tests/test_rd4ad.py::test_save_load_float16` | [ ] |
-| A11 | Training crops are 256 x 256 windows of the train parents' pixels (no flip, no rotation), deterministic per seed, drawn only from the given rows; an MVTec row is returned whole | Laptop | `pytest tests/test_dataset.py::test_random_crops` | [ ] |
-| A12 | `fit.py` then `evaluate.py` run end to end for `method: rd4ad` on tiny synthetic MVTec-like and RAW-FABRID-like datasets on CPU, produce the bundle files and a result JSON with all keys, and the tile and pixel metrics equal an independent recomputation (tile, score, stitch, exact metrics) | Laptop | `pytest tests/test_fit_evaluate.py` | [ ] |
-| A13 | The config schema: `rd4ad` defaults, seed fallback, `tag` in bundle and result paths, shipped configs load with the D-24 and D-33 values | Laptop | `pytest tests/test_runs.py` | [ ] |
-| A14 | The Phase 1 and 2 tests still pass; the whole default suite passes on the laptop with no dataset present | Laptop | `pytest` in the project venv | [ ] |
+| A8 | The cosine loss equals hand values (identical maps 0, opposite maps 6, orthogonal maps 3, flattened per image, mean over the batch) and the anomaly map is B x 1 x 256 x 256, peaks where the student disagrees and its max is the tile score | Laptop | `pytest tests/test_rd4ad.py::test_cosine_loss_hand_values tests/test_rd4ad.py::test_anomaly_map_and_score` | [x] |
+| A9 | The training loop does exactly `iterations` steps, keeps the last state, uses autocast only on CUDA, logs validation loss, and the loss falls on a learnable case within the default suite | Laptop | `pytest tests/test_rd4ad.py::test_fit_budget_and_logging tests/test_rd4ad.py::test_loss_falls_quickly` | [x] |
+| A10 | A saved checkpoint has float16 floating tensors, loads with `weights_only=True` and reproduces the scores of the float16-rounded student | Laptop | `pytest tests/test_rd4ad.py::test_save_load_float16` | [x] |
+| A11 | Training crops are 256 x 256 windows of the train parents' pixels (no flip, no rotation), deterministic per seed, drawn only from the given rows; an MVTec row is returned whole | Laptop | `pytest tests/test_dataset.py::test_random_crops` | [x] |
+| A12 | `fit.py` then `evaluate.py` run end to end for `method: rd4ad` on tiny synthetic MVTec-like and RAW-FABRID-like datasets on CPU, produce the bundle files and a result JSON with all keys, and the tile and pixel metrics equal an independent recomputation (tile, score, stitch, exact metrics) | Laptop | `pytest tests/test_fit_evaluate.py` | [x] |
+| A13 | The config schema: `rd4ad` defaults, seed fallback, `tag` in bundle and result paths, shipped configs load with the D-24 and D-33 values | Laptop | `pytest tests/test_runs.py` | [x] |
+| A14 | The Phase 1 and 2 tests still pass; the whole default suite passes on the laptop with no dataset present | Laptop | `pytest` in the project venv | [x] |
 
 ## 7. Test plan
 
@@ -299,7 +299,7 @@ EOF
 | A-10: mixed precision is bfloat16 autocast on CUDA only, no GradScaler; the loss is computed in float32 | D-24 says "mixed precision" without a dtype. bfloat16 needs no scaler and the RTX 5070 supports it. Easy to switch |
 | A-11: crops are drawn from the train rows' parent images (uniform over parents, uniform origin over the parent extent), not from the fixed tile grid | D-22 says random crops; the manifest only holds grid tiles. Crops come only from train parents, so rule 1 and rule 2 are not touched |
 | A-12: `rd4ad.seed` and the `tag` config key; the 3 RAW-FABRID seeds share the split (config seed 0) and differ in initialisation and crops; `tag` is appended to the method directory | EVALUATION says "3 seeds for RD4AD" without defining what varies. A fixed split keeps the seeds comparable with PatchCore and measures training variance. Easy to reverse |
-| A-13/A-14: validation loss uses up to 64 `val` tiles (config `val_tiles`), with the student in `eval()`; the overfit test is `slow` and deselected by default | D-25 only says "validation loss on held-out normal tiles, logged only to spot divergence". The CPU cost of an 84 M-parameter Adam step makes a 300-iteration test too slow for the default suite |
+| A-13: validation loss uses up to 64 `val` tiles (config `val_tiles`), with the student in `eval()`; the overfit test is `slow` and deselected by default | D-25 only says "validation loss on held-out normal tiles, logged only to spot divergence". The CPU cost of an 84 M-parameter Adam step makes a 300-iteration test too slow for the default suite |
 | The 5,000-iteration budget (D-24) is not the paper's 200 epochs on MVTec categories with 280 to 320 images (about 3,500 iterations at batch 16, so close), but the targets may still be missed | Report and analyse; no tuning on test results (D-35) |
 | The real backbone and real data are not available on the laptop, so numbers, VRAM and speed cannot be seen here. The overfit test uses random-weight teachers | Runbook with exact commands; integration tests with the real network architecture at random weights |
 | Random-crop loading of 1792 x 1024 PNGs may bound the iterations per second | `num_workers` in the configs; the runbook says to record and raise it if it/s is far below the GPU's speed |
@@ -311,12 +311,12 @@ Nothing in this spec depends on an item under "Open" in `DECISIONS.md` (O-01, O-
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
-| Review commit | |
-| Review rounds and verdict | |
-| Tests | |
-| Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Spec commit | a135b2f `phase 3: spec` |
+| Implementation commit | da985c6 `phase 3: implementation` |
+| Review commit | `phase 3: review fixes and doc sync` (the last commit of the phase) |
+| Review rounds and verdict | see PROGRESS_LOG.md |
+| Tests | `pytest -q`: 79 passed, 0 failed, 1 deselected (`slow` overfit test), no dataset present |
+| Results commit (training PC) | pending: runbook, then `phase 3: results` |
+| Decisions made | A-10 to A-14 (Awaiting confirmation) |
+| Deviations from this spec | The overfit test runs only at 256 x 256 on fabric-like weave tiles (the spec first planned 32 x 32 as well and white-noise tiles): white noise at 32 x 32 reached only 0.106 in 300 iterations, 0.124 to 0.133 with lr 0.005 in the diagnostics, so that size cannot show the criterion. The 256 x 256 weave run met it. A-14 added for the RD4AD tile score and result keys. A4, A5 and A7 stay unticked until the training-PC run |
 | Closed by owner | |

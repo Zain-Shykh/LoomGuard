@@ -391,7 +391,8 @@ artifacts/<dataset>/<fabric>/<method>/
                       RD4AD: student state dict (float16)
   calibration.json    tau, target false-alarm rate, validation score statistics
   config.yaml         tile size, layers, coreset ratio or training settings, px_per_mm, seed
-  metrics.json        test metrics of this bundle
+  metrics.json        fit-side system metrics, then the test metrics of this bundle
+                      (RD4AD: iterations, iters_per_second, final_train_loss, final_val_loss, loss_curve, peak_vram_gb)
 ```
 
 - `artifacts/` and `data/` are git-ignored. GitHub rejects files over 100 MB and an RD4AD student is 168 MB.

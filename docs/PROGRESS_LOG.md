@@ -16,6 +16,21 @@ Entry template:
 
 ---
 
+## 2026-11-13: Phase 3 laptop work, Reverse Distillation
+
+- **Phase:** 3 (Code complete; training-PC tasks outstanding)
+- **Who / where:** developer session, laptop
+- **Done:**
+  - `loomguard/models/rd4ad.py`: bottleneck (OCBE), mirrored decoder, `Student`, `cosine_loss`, `anomaly_map`, `RD4AD` (fixed-budget Adam loop with bfloat16 autocast on CUDA only, validation loss logging, float16 checkpoint, `score`, `save`, `load`).
+  - `RandomCropDataset` (D-22), `method: rd4ad` in `runs.py`, `scripts/fit.py` and `scripts/evaluate.py` (no parallel scripts), `tag` for separate seed runs, configs `mvtec_rd4ad.yaml` and `raw_fabrid_rd4ad_s{0,1,2}.yaml`, `slow` pytest marker.
+  - Spec `docs/specs/phase-3-reverse-distillation.md` with the training-PC runbook.
+- **Evidence:** `pytest -q`: 79 passed, 0 failed, 1 deselected (new: rd4ad 8, dataset 1, runs and fit/evaluate extended with rd4ad cases). Student has 83.80 M trainable parameters (fusion 10.62 + embedding 48.26 + decoder 24.92), the teacher none and bit-identical after training steps; embedding 2048x8x8, decoder outputs 256x64x64, 512x32x32, 1024x16x16. `fit.py` then `evaluate.py` run end to end for RD4AD on synthetic MVTec-like and RAW-FABRID-like trees; metrics equal an independent recomputation. Slow overfit test logic (run as a script with the identical data and settings, random-weight teacher, CPU): 8 weave tiles of 256x256, 300 iterations, mean loss per 25 iterations 0.599, 0.266, 0.221, 0.19, 0.154, 0.13, 0.093, 0.069, 0.057, 0.048, 0.043, 0.037 (2,498 s). White-noise tiles at 32x32 only reached 0.106 to 0.133 in 300 iterations.
+- **Decisions:** A-10 to A-14 in `DECISIONS.md` (bfloat16 autocast; random crops from train parents; `rd4ad.seed` and `tag`; validation loss and the slow test; RD4AD tile score and result keys).
+- **Review:** round 1 CHANGES REQUIRED (progress log entry, README, spec and plan ticks missing; minor: CLAUDE.md, a warning, the bundle section), all fixed here.
+- **Problems / next:**
+  - Not seen on real data: the MVTec numbers (targets 98.5 / 96.7 / 92.0), VRAM at batch 16 (limit 11 GB), iterations per second, whether random-crop decoding bounds the speed, the RAW-FABRID results over 3 seeds. The EVALUATION compute table is still an estimate.
+  - Next: the operator runs the Phase 3 runbook and commits `phase 3: results`.
+
 ## 2026-11-13: Phase 2 laptop work, metrics and PatchCore
 
 - **Phase:** 2 (Code complete; training-PC tasks outstanding)

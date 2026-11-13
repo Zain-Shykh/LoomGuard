@@ -131,7 +131,7 @@ class RD4AD:
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
-            window.append(float(loss))  # float() syncs the device, so the timing below is honest
+            window.append(float(loss.detach()))  # float() syncs the device, so the timing below is honest
             spent += time.perf_counter() - t0
             n += 1
             if n % log_every == 0 or n == iterations:

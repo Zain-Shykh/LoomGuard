@@ -4,7 +4,7 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`, 67 CPU tests). Waiting for the training-PC runbooks of Phases 1 and 2 (`docs/specs/`). No Reverse Distillation yet. See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts; 79 CPU tests). Waiting for the training-PC runbooks of Phases 1 to 3 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
 
 ## Documents
 
