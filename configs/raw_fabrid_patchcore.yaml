@@ -1,0 +1,16 @@
+# PatchCore on RAW-FABRID, one unified bundle over all seven rolls (the dataset's own protocol).
+dataset: raw_fabrid
+root: data/RAW_FABRID
+regime: unified
+method: patchcore
+seed: 0
+backbone_weights: IMAGENET1K_V1
+patchcore:
+  max_tiles: 600
+  coreset_ratio: 0.10
+  proj_dim: 128
+  batch_size: 16
+device: auto
+hist_bins: 10000
+artifacts: artifacts
+results: results

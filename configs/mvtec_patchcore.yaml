@@ -1,0 +1,19 @@
+# PatchCore on the five MVTec AD textures: the implementation check of EVALUATION.md section 3 (decision D-33).
+# MVTec images are resized to 256 as a whole (the one documented exception, D-21).
+dataset: mvtec
+root: data/mvtec_ad
+regime: per_fabric
+fabrics: [carpet, grid, leather, tile, wood]
+method: patchcore
+seed: 0
+backbone_weights: IMAGENET1K_V1
+patchcore:
+  max_tiles: 600
+  coreset_ratio: 0.10
+  proj_dim: 128
+  batch_size: 16
+device: auto
+hist_bins: 10000
+artifacts: artifacts
+results: results
+targets: {tile_auroc: 97.9, pixel_auroc: 96.6, aupro_30: 90.7}   # percent, mean over the five categories; report only
