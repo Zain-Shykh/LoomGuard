@@ -84,7 +84,10 @@ def _split_normals(items: dict[str, list[str]], tiles_of: dict[str, int], **rule
     """items: fabric -> normal parents. Returns parent -> 'train' | 'val', decided per fabric."""
     out = {}
     for fabric, parents in items.items():
-        val = assign_val(parents, tiles_of[parents[0]], stratum=fabric, **rule)
+        per_parent = {tiles_of[p] for p in parents}
+        if len(per_parent) != 1:
+            raise ValueError(f"{fabric}: images give different tile counts {sorted(per_parent)}")
+        val = assign_val(parents, per_parent.pop(), stratum=fabric, **rule)
         out.update({p: "val" if p in val else "train" for p in parents})
     return out
 

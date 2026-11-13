@@ -16,6 +16,23 @@ Entry template:
 
 ---
 
+## 2026-11-13: Phase 1 laptop work, data layer
+
+- **Phase:** 1 (Code complete; training-PC tasks outstanding)
+- **Who / where:** developer session, laptop
+- **Done:**
+  - `loomguard/data/tiling.py`: `tile_origins`, `grid`, `tile`, `stitch` (float64 overlap averaging, reflect pad for short axes).
+  - `loomguard/data/manifest.py`: `TileRow`, CSV I/O, `assign_val`, `select`, `build_mvtec`, `build_raw_fabrid`, `compare_with_patch_metadata`.
+  - `loomguard/data/dataset.py`: `preprocess`, `TileDataset`.
+  - `scripts/verify_datasets.py` for RAW-FABRID, ZJU-Leaper, MVTec AD and AITEX (untested on real data).
+  - Spec `docs/specs/phase-1-data-layer.md` with the training-PC runbook.
+- **Evidence:** `pytest -q`: 41 passed, 0 failed, no dataset present (tiling 13, manifest 16, dataset 6, verify script 5, smoke 1). `stitch(tile(x)) == x` bit-exact for 1792x1024, 512x512, 4096x256, 800x640, with and without `min_overlap=32`. Applying D-30 to the documented per-roll counts gives 83 val images (2,324 tiles) and 424 train images (11,872 tiles) for RAW-FABRID.
+- **Decisions:** A-01 to A-05 in `DECISIONS.md` (Awaiting confirmation). EVALUATION 4.2 corrected to the A-01 numbers.
+- **Review:** 2 rounds. Round 1 CHANGES REQUIRED (docs not yet synced, decision rows missing, three minor code points); round 2 PASS with five minor findings, all fixed. Final suite: 41 passed.
+- **Problems / next:**
+  - Not verified on real data: column names and value formats of the two RAW-FABRID metadata CSVs, the layouts assumed for ZJU-Leaper and AITEX, the patch-name format.
+  - Next: the operator runs the runbook (environment with `sm_120`, downloads, `verify_datasets.py`, roll inspection) and commits `phase 1: results`. Phase 2 can start on the laptop in parallel.
+
 ## 2026-11-13: Laptop environment installed
 
 - **Phase:** between 0 and 1 (preflight)

@@ -146,3 +146,10 @@ def test_compare_with_patch_metadata(raw_root, tmp_path):
     assert any("unexpected patch types" in p for p in altered(lambda o: o[0].update(type="val_good")))
     assert any("test_defect" in p for p in altered(lambda o: next(
         p for p in o if p["type"] == "test_defect").update(type="test_good")))
+
+
+def test_mixed_image_sizes_in_one_roll_are_rejected(raw_root):
+    from PIL import Image
+    Image.new("L", (768, 256)).save(raw_root / "images" / "RolloB_n000.png")  # 3 tiles instead of 2
+    with pytest.raises(ValueError, match="different tile counts"):
+        build_raw_fabrid(raw_root)

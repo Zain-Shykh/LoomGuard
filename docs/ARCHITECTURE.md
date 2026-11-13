@@ -115,6 +115,8 @@ MVTec AD is the one exception: images are resized to 256x256 as a whole, because
 
 Calibration knob: `min_overlap` (default 0). Convolution padding makes features near tile borders slightly less reliable. If seams show up as false alarms, set an overlap of 32 px; the stitcher already averages.
 
+Code: `loomguard/data/tiling.py` (`tile_origins`, `grid`, `tile`, `stitch`). Stitching accumulates in float64, so tile then stitch returns the input bit for bit. Preprocessing (`preprocess`: gray to 3 channels, scale, ImageNet normalise) lives in `loomguard/data/dataset.py`. Manifest rows carry the crop box, fabric, split, parent, mask path, label and defect pixel count (`loomguard/data/manifest.py`).
+
 Training-time sampling differs from inference: Reverse Distillation trains on random 256x256 crops of the parent images (free translation augmentation). PatchCore and all evaluation use the fixed grid.
 
 No flips or rotations by default. Weave direction is part of what makes a fabric normal, and a mirrored twill is a real defect.

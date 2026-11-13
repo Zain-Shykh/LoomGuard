@@ -14,7 +14,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 | Phase | Title | Where | Rough effort | Status |
 |---|---|---|---|---|
 | 0 | Design and dataset verification | Laptop | 1 session | **Done** |
-| 1 | Repository skeleton and data layer | Both | 1 week | Not started |
+| 1 | Repository skeleton and data layer | Both | 1 week | Code complete |
 | 2 | Metrics and PatchCore | Both | 1.5 weeks | Not started |
 | 3 | Reverse Distillation | Both | 1.5 weeks | Not started |
 | 4 | Calibration, inspection and grading | Both | 1 week | Not started |
@@ -67,22 +67,22 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Tasks.**
 
-1. `pyproject.toml`, `.gitignore` (`data/`, `artifacts/`, checkpoints), package skeleton, `pytest` set up. (Laptop) **Done 2026-11-12**, except installing `pytest` on the laptop.
-2. `loomguard/data/tiling.py`: tile origins, tile, stitch with overlap averaging. (Laptop)
-3. `loomguard/data/manifest.py`: adapters for MVTec-style folders and RAW-FABRID; split assignment by parent image. (Laptop)
-4. `loomguard/data/dataset.py`: PyTorch `Dataset` that reads a manifest, crops, converts grayscale to three channels, normalises. (Laptop)
+1. `pyproject.toml`, `.gitignore` (`data/`, `artifacts/`, checkpoints), package skeleton, `pytest` set up. (Laptop) **Done 2026-11-12**; `pytest` installed 2026-11-13.
+2. `loomguard/data/tiling.py`: tile origins, tile, stitch with overlap averaging. (Laptop) **Done 2026-11-13**
+3. `loomguard/data/manifest.py`: adapters for MVTec-style folders and RAW-FABRID; split assignment by parent image. (Laptop) **Done 2026-11-13**
+4. `loomguard/data/dataset.py`: PyTorch `Dataset` that reads a manifest, crops, converts grayscale to three channels, normalises. (Laptop) **Done 2026-11-13**
 5. Environment on the training PC: PyTorch 2.7 or newer with CUDA 12.8 wheels. (Training PC)
-6. Download RAW-FABRID, ZJU-Leaper, MVTec AD, AITEX. `scripts/verify_datasets.py` prints counts, image sizes and mask pairing. (Training PC)
+6. Download RAW-FABRID, ZJU-Leaper, MVTec AD, AITEX. `scripts/verify_datasets.py` prints counts, image sizes and mask pairing. (Training PC) Script written and tested on synthetic trees 2026-11-13; the download and the run are the operator's (runbook in `docs/specs/phase-1-data-layer.md`).
 7. Look at the seven RAW-FABRID rolls and record whether they are visually different fabrics. (Training PC)
 
 **Acceptance criteria.**
 
-- [ ] `stitch(tile(x)) == x` exactly for sizes 1792x1024, 512x512, 4096x256 and 800x640 (unit test).
-- [ ] Unit test proves no parent image appears in more than one split, for every manifest builder.
-- [ ] RAW-FABRID manifest reproduces the official numbers: 14,196 train-pool tiles, 4,969 test-good, 687 test-defect, and every tile's label matches `RAW_FABRID_Patches_Metadata.csv`.
+- [x] `stitch(tile(x)) == x` exactly for sizes 1792x1024, 512x512, 4096x256 and 800x640 (unit test).
+- [x] Unit test proves no parent image appears in more than one split, for every manifest builder.
+- [ ] RAW-FABRID manifest reproduces the official numbers: 14,196 train-pool tiles, 4,969 test-good, 687 test-defect, and every tile's label matches `RAW_FABRID_Patches_Metadata.csv`. (Builder, comparison function and synthetic tests done; the real-data run is runbook step 5.)
 - [ ] `torch.cuda.get_arch_list()` on the training PC contains `sm_120`.
 - [ ] `verify_datasets.py` output is pasted into `PROGRESS_LOG.md`. Every "unverified" item in DATASETS.md is resolved or corrected.
-- [ ] `pytest` passes on the laptop with no dataset present.
+- [x] `pytest` passes on the laptop with no dataset present. (41 passed.)
 
 ---
 

@@ -81,11 +81,15 @@ How to use this file:
 
 ## Awaiting confirmation
 
-Decisions made by a developer session during a phase. Empty until Phase 1 runs.
+Decisions made by a developer session during a phase.
 
 | ID | Date | Phase | Decision | Reason | Status |
 |---|---|---|---|---|---|
-| | | | | | |
+| A-01 | 2026-11-13 | 1 | D-30's validation rule (15% of normal parents, at least 200 tiles, at most 40%) is applied per fabric profile (per roll, per AITEX fabric), the cap winning over the minimum. For RAW-FABRID this gives 83 val images (2,324 tiles) and 424 train images (11,872 tiles), not the "about 76 / 2,128 / 431 / 12,068" first written in EVALUATION 4.2, which was a plain 15% per roll. | Bundles and thresholds are per fabric, and the rule reproduces the AITEX 12/8 split in EVALUATION. EVALUATION corrected. Reverse by passing `min_val_tiles=0` to `build_raw_fabrid`'s call of `assign_val`. | Awaiting |
+| A-02 | 2026-11-13 | 1 | Manifest schema: one CSV row per tile with columns dataset, fabric, split, parent, image, mask, x0, y0, w, h, resize, label, defect_px; paths relative to the dataset root with `/`; MVTec is one whole-image row with `resize=256`; split assigned per parent, per fabric, shared by the per-fabric and unified regimes. | The documents fixed D-15 (crop boxes) but not the columns. All later phases read manifests through `read_manifest`, so a change stays in `loomguard/data/manifest.py`. | Awaiting |
+| A-03 | 2026-11-13 | 1 | Split seed 0 by default; the val parents are a shuffle of the sorted parent ids with `random.Random(f"{seed}/{fabric}")`. MVTec val is 10% of `train/good` with no tile minimum (EVALUATION 4.2). | Deterministic and independent of directory order. | Awaiting |
+| A-04 | 2026-11-13 | 1 | `tiling.grid()` is a public helper (the one definition of the tile grid, used by the tiler, the manifest builder and the verification script). Tiles are in row-major order. Origins use round-half-up in integer arithmetic. Stitching accumulates in float64. | One definition of the grid; exact round trip. | Awaiting |
+| A-05 | 2026-11-13 | 1 | `compare_with_patch_metadata` checks the RAW-FABRID manifest against the official patch CSV per parent image (tile count and sorted nonzero defect areas) and per `type` pool counts, because how patch names encode the grid position is not documented. | Avoids guessing the naming scheme; a position-exact check can be added on the training PC. | Awaiting |
 
 ## Open
 

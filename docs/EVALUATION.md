@@ -121,14 +121,15 @@ flowchart TD
 | Dataset | Train | Val | Test | Detection unit |
 |---|---|---|---|---|
 | MVTec AD textures | 90% of official `train/good` | 10% of official `train/good` | official `test` | image |
-| RAW-FABRID | tiles of 85% of the 507 defect-free images (about 431 images, 12,068 tiles) | tiles of the other 15% (about 76 images, 2,128 tiles), stratified by roll | official: 4,969 good and 687 defect tiles from the 202 defective images | tile |
+| RAW-FABRID | tiles of the rest of the 507 defect-free images (424 images, 11,872 tiles) | tiles of 83 images (2,324 tiles): 15% per roll, raised to the 200-tile minimum and capped at 40% per roll (roll 3 gets 5 images, 140 tiles) | official: 4,969 good and 687 defect tiles from the 202 defective images | tile |
 | ZJU-Leaper | 90% of official `normal/train` IDs | 10% of official `normal/train` IDs | official `normal/test` and `defect/test` | image (max over its 4 tiles) |
 | AITEX | 12 of the 20 normal images per fabric (192 tiles) | the other 8 (128 tiles) | all tiles of that fabric's defective images | tile |
 
 Notes:
 
 - RAW-FABRID has no defect-free image in the test pool, so detection is measured per tile. Its test-good tiles sit next to defects in the same image.
-- RAW-FABRID tiles are cut by our tiler from the high-resolution images. A Phase 1 check confirms they match the official patch metadata (same parent, same grid position, same label).
+- The 200-tile minimum and 40% cap of rule 5 are applied per fabric profile (decision A-01), so each roll or AITEX fabric gets its own validation set and one split serves both the per-fabric and the unified regime. Without the minimum the RAW-FABRID totals would be 76 images and 2,128 tiles.
+- RAW-FABRID tiles are cut by our tiler from the high-resolution images. A Phase 1 check confirms they match the official patch metadata per parent image (same number of tiles, same defect areas, same pool counts; see decision A-05).
 - ZJU-Leaper `defect/train` images are not used (official Setting 1).
 - AITEX and RAW-FABRID roll 3 fall under the "low-confidence calibration" flag. How badly calibration behaves with so little data is itself a result for Q5.
 - AITEX tiles that are more than half near-black border are dropped at manifest time.

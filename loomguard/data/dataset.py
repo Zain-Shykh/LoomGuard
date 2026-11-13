@@ -24,24 +24,23 @@ def preprocess(img: Image.Image) -> Tensor:
 class TileDataset(Dataset):
     def __init__(self, rows: Sequence[TileRow], root: Path | str):
         self.rows, self.root = list(rows), Path(root)
-        self._last: tuple[str, Image.Image] | None = None  # consecutive tiles share a parent: decode it once
+        self._last: dict[str, tuple[str, Image.Image]] = {}  # consecutive tiles share a parent: decode image and mask once
 
     def __len__(self) -> int:
         return len(self.rows)
 
-    def _open(self, rel: str) -> Image.Image:
-        if self._last is None or self._last[0] != rel:
+    def _open(self, rel: str, mode: str) -> Image.Image:
+        if self._last.get(mode, ("",))[0] != rel:
             with Image.open(self.root / rel) as im:
-                self._last = (rel, im.copy())
-        return self._last[1]
+                self._last[mode] = (rel, im.convert(mode))
+        return self._last[mode][1]
 
     def __getitem__(self, i: int) -> tuple[Tensor, Tensor, int]:
         r = self.rows[i]
         box = (r.x0, r.y0, r.x0 + r.w, r.y0 + r.h)
-        img = self._open(r.image).crop(box)
+        img = self._open(r.image, "RGB").crop(box)
         if r.mask:
-            with Image.open(self.root / r.mask) as mi:
-                mask = mi.convert("L").crop(box)
+            mask = self._open(r.mask, "L").crop(box)
         else:
             mask = Image.new("L", (r.w, r.h))
         if r.resize:

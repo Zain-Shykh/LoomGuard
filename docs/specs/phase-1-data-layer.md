@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 1 |
-| Status | Written |
+| Status | Code complete (training-PC runbook outstanding) |
 | Spec written | 2026-11-13 |
 | Written by | developer session, phase 1 |
 | Depends on | Phase 0 (Done) |
@@ -48,7 +48,7 @@ Read:
 
 | File | New or changed | Purpose |
 |---|---|---|
-| `loomguard/data/tiling.py` | new | `tile_origins`, `tile`, `stitch` |
+| `loomguard/data/tiling.py` | new | `tile_origins`, `grid`, `tile`, `stitch` |
 | `loomguard/data/manifest.py` | new | `TileRow`, CSV I/O, `assign_val`, `select`, `build_mvtec`, `build_raw_fabrid`, `compare_with_patch_metadata` |
 | `loomguard/data/dataset.py` | new | `preprocess`, `TileDataset` |
 | `scripts/verify_datasets.py` | new | dataset verification on the training PC |
@@ -57,7 +57,7 @@ Read:
 | `tests/test_dataset.py` | new | dataset class tests |
 | `tests/test_verify_datasets.py` | new | the verification script on synthetic trees |
 | `docs/specs/phase-1-data-layer.md` | new | this spec |
-| `docs/IMPLEMENTATION_PLAN.md`, `docs/PROGRESS_LOG.md`, `docs/DECISIONS.md`, `docs/EVALUATION.md`, `README.md`, `CLAUDE.md` | changed | status, evidence, decisions, corrected numbers |
+| `docs/IMPLEMENTATION_PLAN.md`, `docs/PROGRESS_LOG.md`, `docs/DECISIONS.md`, `docs/EVALUATION.md`, `docs/ARCHITECTURE.md`, `README.md` | changed | status, evidence, decisions, corrected numbers |
 
 No change to `pyproject.toml`.
 
@@ -73,6 +73,9 @@ def tile_origins(length: int, tile_size: int = TILE, min_overlap: int = 0) -> li
     """Start offsets along one axis. n = 1 if length <= tile_size else
     ceil((length - tile_size) / (tile_size - min_overlap)) + 1;
     origin_i = round_half_up(i * (length - tile_size) / (n - 1)); the last tile ends exactly at length."""
+
+def grid(h: int, w: int, tile_size: int = TILE, min_overlap: int = 0) -> list[tuple[int, int]]:
+    """(y0, x0) of every tile, row-major; the one definition of the grid, also used by the manifest builder."""
 
 def tile(x: Tensor, tile_size: int = TILE, min_overlap: int = 0) -> tuple[Tensor, list[tuple[int, int]]]:
     """x: C x H x W, floating point. Axes shorter than tile_size are reflect-padded at the
@@ -205,16 +208,16 @@ The first six rows are the plan's criteria; their meaning is unchanged, only mad
 
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
-| A1 | `stitch(tile(x)) == x` exactly for sizes 1792x1024, 512x512, 4096x256 and 800x640 (unit test) | Laptop | `pytest tests/test_tiling.py::test_roundtrip_exact` (float32, `torch.equal`, all four sizes, also with `min_overlap=32`) | [ ] |
-| A2 | Unit test proves no parent image appears in more than one split, for every manifest builder | Laptop | `pytest tests/test_manifest.py::test_no_parent_in_two_splits` (parametrised over `build_mvtec` and `build_raw_fabrid`, several seeds) | [ ] |
+| A1 | `stitch(tile(x)) == x` exactly for sizes 1792x1024, 512x512, 4096x256 and 800x640 (unit test) | Laptop | `pytest tests/test_tiling.py::test_roundtrip_exact` (float32, `torch.equal`, all four sizes, also with `min_overlap=32`) | [x] |
+| A2 | Unit test proves no parent image appears in more than one split, for every manifest builder | Laptop | `pytest tests/test_manifest.py::test_no_parent_in_two_splits` (parametrised over `build_mvtec` and `build_raw_fabrid`, several seeds) | [x] |
 | A3 | RAW-FABRID manifest reproduces the official numbers: 14,196 train-pool tiles, 4,969 test-good, 687 test-defect, and every tile's label matches `RAW_FABRID_Patches_Metadata.csv` | Training PC (logic tested on the laptop) | Laptop: `pytest tests/test_manifest.py -k "raw_fabrid or compare"` on a synthetic dataset with a synthetic patch CSV, including a deliberately wrong CSV that must be reported. Training PC: runbook step 5, counts and an empty problem list recorded | [ ] |
 | A4 | `torch.cuda.get_arch_list()` on the training PC contains `sm_120` | Training PC | runbook step 1 | [ ] |
 | A5 | `verify_datasets.py` output is pasted into `PROGRESS_LOG.md`. Every "unverified" item in DATASETS.md is resolved or corrected | Training PC (script tested on the laptop) | Laptop: `pytest tests/test_verify_datasets.py`. Training PC: runbook steps 4 to 7 | [ ] |
-| A6 | `pytest` passes on the laptop with no dataset present | Laptop | `pytest` in the project venv, full suite | [ ] |
-| A7 | Tile geometry matches ARCHITECTURE section 3: 28, 4, 16 and 12 tiles for the four sizes, origins as in 4.3, last tile ends at the edge, axis shorter than 256 is reflect-padded and stitched back to its original size | Laptop | `pytest tests/test_tiling.py` | [ ] |
-| A8 | Overlapping tiles are averaged: a canvas where two tiles disagree in their overlap stitches to their mean there | Laptop | `pytest tests/test_tiling.py::test_stitch_averages_overlap` | [ ] |
-| A9 | Val-size rule of D-30 holds per fabric (15%, at least 200 tiles, at most 40%, train never empty), the split is deterministic for a seed, train and val rows are label 0 with no mask, test rows come only from the dataset's test side | Laptop | `pytest tests/test_manifest.py` (`test_assign_val_*`, `test_train_val_are_normal_only`, `test_deterministic`) | [ ] |
-| A10 | `TileDataset` returns exactly the tile `tile()` would cut, gray to 3 channels, ImageNet-normalised, mask `1 x 256 x 256` in {0,1}, and resizes MVTec rows to 256 | Laptop | `pytest tests/test_dataset.py` | [ ] |
+| A6 | `pytest` passes on the laptop with no dataset present | Laptop | `pytest` in the project venv, full suite | [x] |
+| A7 | Tile geometry matches ARCHITECTURE section 3: 28, 4, 16 and 12 tiles for the four sizes, origins as in 4.3, last tile ends at the edge, axis shorter than 256 is reflect-padded and stitched back to its original size | Laptop | `pytest tests/test_tiling.py` | [x] |
+| A8 | Overlapping tiles are averaged: a canvas where two tiles disagree in their overlap stitches to their mean there | Laptop | `pytest tests/test_tiling.py::test_stitch_averages_overlap` | [x] |
+| A9 | Val-size rule of D-30 holds per fabric (15%, at least 200 tiles, at most 40%, train never empty), the split is deterministic for a seed, train and val rows are label 0 with no mask, test rows come only from the dataset's test side | Laptop | `pytest tests/test_manifest.py` (`test_assign_val_rule`, `test_raw_fabrid_totals_from_the_documented_roll_table`, `test_train_val_are_normal_only`, `test_deterministic_and_seed_dependent`) | [x] |
+| A10 | `TileDataset` returns exactly the tile `tile()` would cut, gray to 3 channels, ImageNet-normalised, mask `1 x 256 x 256` in {0,1}, and resizes MVTec rows to 256 | Laptop | `pytest tests/test_dataset.py` | [x] |
 
 ## 7. Test plan
 
@@ -229,7 +232,7 @@ All CPU, synthetic, no dataset. Image trees are written to `tmp_path` with Pillo
 | `test_tiling.py::test_stitch_averages_overlap` | A8; also a 1-channel stack (heatmap) |
 | `test_manifest.py::test_assign_val_rule` | D-30 arithmetic on the worked examples (13 parents of 28 tiles gives 5; 20 of 16 gives 8; 1 parent gives 0; 167 gives 25) |
 | `test_manifest.py::test_no_parent_in_two_splits` | A2, checked independently of the builders' own logic by grouping rows by parent |
-| `test_manifest.py::test_train_val_are_normal_only`, `test_deterministic`, `test_csv_roundtrip` | A9 and manifest I/O |
+| `test_manifest.py::test_train_val_are_normal_only`, `test_deterministic_and_seed_dependent`, `test_csv_roundtrip` | A9 and manifest I/O |
 | `test_manifest.py::test_raw_fabrid_labels_from_mask` | Tile labels and `defect_px` equal a hand count on a mask with defects in known tiles; defect-free images yield only train/val; defective yield only test |
 | `test_manifest.py::test_raw_fabrid_csv_is_truth` | A mask for a CSV-defect-free image is ignored; a defective image without mask raises |
 | `test_manifest.py::test_mvtec_builder` | Official test side stays test, `test/good` label 0, others label 1, mask paired, whole-image row with `resize=256` |
@@ -312,6 +315,7 @@ EOF
 | How official patch names encode grid position is not documented | `compare_with_patch_metadata` compares per parent (tile count and sorted defect-area list), which does not need the position. If the training PC finds the naming scheme, it may add an exact per-position check |
 | A-01: D-30's 200-tile minimum is applied per fabric profile, which changes RAW-FABRID counts from the "about" numbers in EVALUATION | Recorded in DECISIONS "Awaiting confirmation"; EVALUATION corrected. Easy to reverse (`min_val_tiles=0`) |
 | A-02: manifest schema (13 columns, relative POSIX paths, one row per tile, MVTec as a whole-image row with `resize=256`) | Documents did not fix the columns. Recorded in DECISIONS "Awaiting confirmation". Phases 2 and 3 read it through `read_manifest`, so a change stays in one file |
+| A-03 to A-05: seed and shuffle rule, `grid()` helper, per-parent patch comparison | Recorded in DECISIONS "Awaiting confirmation" |
 | Averaging overlaps at 3 or more copies is exact only because of float64 accumulation | Tested for 800x640 (2x2 overlap) and `min_overlap=32` |
 | ZJU-Leaper and AITEX layouts in the verification script are from the official loader and from DATASETS.md, not from files we have seen | Script reports what it cannot find instead of crashing; the operator corrects it |
 
@@ -321,12 +325,12 @@ Nothing in this spec depends on an item under "Open" in `DECISIONS.md` (O-01, O-
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
-| Review commit | |
-| Review rounds and verdict | |
-| Tests | |
-| Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Spec commit | edd1632 `phase 1: spec` |
+| Implementation commit | 927690a `phase 1: implementation` |
+| Review commit | `phase 1: review fixes and doc sync` (the commit after 927690a) |
+| Review rounds and verdict | 2 rounds. Round 1: CHANGES REQUIRED (stale docs, no decision rows; minor: uniform tile count, `grid()` undocumented, mask decoded per tile). Round 2: PASS, five minor findings, all fixed |
+| Tests | `pytest -q`: 41 passed, 0 failed, no dataset present |
+| Results commit (training PC) | pending: runbook steps 1 to 7, then `phase 1: results` |
+| Decisions made | A-01 to A-05 (Awaiting confirmation) |
+| Deviations from this spec | Added public `tiling.grid()` (now in section 4.2). Reflect padding uses numpy so a pad longer than the axis works (section 4.3 updated). `TileDataset` also caches the last mask. `_split_normals` raises `ValueError` if one fabric mixes tile counts. `CLAUDE.md` needed no change. `verify_datasets.py` reports an unpaired MVTec mask instead of failing. A3, A4 and A5 stay unticked until the training-PC run |
 | Closed by owner | |
