@@ -4,7 +4,7 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete, repository skeleton and workflow in place, no model code yet. Next: the Phase 1 spec. See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete, repository skeleton and workflow in place, no model code yet. Next: launch the Phase 1 developer session. See the [progress log](docs/PROGRESS_LOG.md).
 
 ## Documents
 
@@ -17,7 +17,7 @@ Two methods are implemented from their papers in PyTorch and compared on the sam
 | [docs/PROGRESS_LOG.md](docs/PROGRESS_LOG.md) | Dated log of work, measurements and decisions |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Every agreed decision, the open ones, and what was dropped |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | How each phase is built: spec, headless developer session, review loop, commits |
-| [docs/specs/](docs/specs/) | One spec per phase, written from `TEMPLATE.md` before the phase starts |
+| [docs/specs/](docs/specs/) | One spec per phase, written from `TEMPLATE.md` by that phase's developer session before it codes |
 | [LoomGuard Project Starter.md](LoomGuard%20Project%20Starter.md) | The original idea. Where it disagrees with `docs/`, `docs/` wins. |
 
 Diagrams are Mermaid. In VS Code press `Ctrl+Shift+V` (needs the `bierner.markdown-mermaid` extension). GitHub renders them directly.

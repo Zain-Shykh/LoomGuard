@@ -5,7 +5,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 ## How to use this plan
 
 - Work through the phases in order. A phase is done only when every acceptance criterion is ticked and the evidence is recorded in `PROGRESS_LOG.md`.
-- This plan is the roadmap. Before a phase starts it gets a detailed spec in `docs/specs/`, and it is built by the process in [WORKFLOW.md](WORKFLOW.md). Status values: `Not started`, `Spec approved`, `Code complete`, `Runs complete`, `Done`.
+- This plan is the roadmap. Each phase is built by its own headless developer session under [WORKFLOW.md](WORKFLOW.md). That session first writes a detailed spec in `docs/specs/`, which must keep every acceptance criterion listed here. Status values: `Not started`, `Code complete`, `Runs complete`, `Done`.
 - "Laptop" means CPU-only work with no dataset: code, unit tests on synthetic data, documentation. "Training PC" means anything that needs a GPU or a dataset.
 - Update the status table below when a phase changes state.
 

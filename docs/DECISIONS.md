@@ -75,9 +75,9 @@ How to use this file:
 | D-52 | 2026-11-12 | Datasets, model bundles and MVTec images are never committed | Size and licence | ARCHITECTURE 10 |
 | D-53 | 2026-11-12 | Evaluation and the app share one code path, the `Inspector` | Report numbers come from the code the demo runs | ARCHITECTURE 12 |
 | D-54 | 2026-11-12 | Progress is judged by acceptance criteria with evidence, not by dates | | IMPLEMENTATION_PLAN |
-| D-55 | 2026-11-12 | Spec-first workflow: every phase gets a spec in `docs/specs/` from the template, approved before any code | Context lives in documents, not in chat | WORKFLOW |
-| D-56 | 2026-11-12 | Each phase is implemented by a fresh headless Claude session (Sonnet 5.5, medium effort) that ends with a review loop against a reviewer agent | A clean context per phase; independent check against drift and stale docs | WORKFLOW |
-| D-57 | 2026-11-12 | The main session (Fable 5.2) is the orchestrator: writes specs, launches sessions, verifies, pushes. Three commits per phase: spec, implementation, review. | High-level control stays in one place | WORKFLOW |
+| D-55 | 2026-11-12, revised 2026-11-13 | Spec-first workflow: every phase gets a spec in `docs/specs/` from the template before any code. **The developer session of that phase writes the spec itself**, from the plan and the design documents; it must keep every acceptance criterion of the plan. (First version: the orchestrator wrote the spec and the owner approved it before coding.) | Context lives in documents, not in chat; the whole phase runs in one fresh context | WORKFLOW |
+| D-56 | 2026-11-12 | Each phase is done by a fresh headless Claude session (Sonnet 5.5, medium effort): spec, plan, implementation, then a review loop against a reviewer agent that also checks the spec against the plan | A clean context per phase; independent check against drift and stale docs | WORKFLOW |
+| D-57 | 2026-11-12, revised 2026-11-13 | The main session (Fable 5.2) is the orchestrator: launches sessions with the prompt, verifies their reports, pushes. It does not write specs or phase code. Three commits per phase (spec, implementation, review), made locally by the developer session and pushed by the orchestrator after verification. | High-level control stays in one place | WORKFLOW |
 
 ## Awaiting confirmation
 

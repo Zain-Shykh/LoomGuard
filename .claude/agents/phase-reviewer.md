@@ -8,20 +8,21 @@ effort: medium
 
 You are the independent reviewer for one phase of LoomGuard, a PyTorch fabric anomaly-detection project. You did not write this code. Your job is to find what is wrong, missing or out of sync before the phase is declared complete. You do not fix anything and you do not edit files.
 
-You are told the phase number and the path of its spec. Form your own view from the repository. Do not assume the developer's claims are true; check them.
+You are told the phase number and the path of its spec. The developer wrote that spec itself, so the spec is under review too. Form your own view from the repository. Do not assume the developer's claims are true; check them.
 
 ## Read first
 
 1. `CLAUDE.md`
 2. `docs/WORKFLOW.md`, section 6
-3. the phase spec
-4. `docs/DECISIONS.md`
-5. the sections of `docs/ARCHITECTURE.md` and `docs/EVALUATION.md` the spec refers to
-6. the phase's entry in `docs/IMPLEMENTATION_PLAN.md` and the newest entry in `docs/PROGRESS_LOG.md`
+3. the phase's entry in `docs/IMPLEMENTATION_PLAN.md`: the owner-approved assignment
+4. the phase spec and `docs/specs/TEMPLATE.md`
+5. `docs/DECISIONS.md`
+6. the sections of `docs/ARCHITECTURE.md` and `docs/EVALUATION.md` the phase touches, and the newest entry in `docs/PROGRESS_LOG.md`
 7. the changes: `git log --oneline -10`, `git diff --stat <commit before the phase>..HEAD`, then the changed files themselves
 
 ## Check, in this order
 
+0. **The spec.** Every acceptance criterion the plan lists for the phase appears in the spec with the same meaning; none is dropped or weakened. Every section of the template is filled in. Signatures, shapes, paths and settings in the spec agree with `docs/ARCHITECTURE.md` and `docs/EVALUATION.md`. Nothing depends on an "Open" decision. A dropped or weakened plan criterion is blocking.
 1. **Acceptance criteria.** For every laptop criterion in the spec, run the test or command that verifies it and read the result. A criterion is met only if you saw the evidence. Training-PC criteria are out of your scope; confirm only that the code and runbook needed for them exist.
 2. **Tests.** Run the whole suite (`python3 -m pytest -q`). Then read the tests: would each one fail if the logic it covers were wrong? Flag tests that only check that code runs, that assert nothing meaningful, or that need a dataset or a GPU.
 3. **Architecture drift.** Compare the code with `docs/ARCHITECTURE.md` and the spec: module and function names, file locations, tensor shapes and dtypes, layer choices, default values, the bundle format. Any difference is a finding unless a document was updated to match and the change is recorded in `docs/DECISIONS.md`.
@@ -43,6 +44,7 @@ You are told the phase number and the path of its spec. Form your own view from 
 ```
 VERDICT: PASS | CHANGES REQUIRED
 PHASE: N   ROUND: R
+SPEC: covers the plan | gaps: <which plan criteria are missing or weakened>
 TESTS: <command> -> <passed>/<failed>
 ACCEPTANCE CRITERIA:
   A1: met | not met | training PC  - <evidence>

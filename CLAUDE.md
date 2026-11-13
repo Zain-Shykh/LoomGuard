@@ -15,7 +15,7 @@ The design is fixed in `docs/`. Read the relevant document before writing code, 
 | `docs/PROGRESS_LOG.md` | What has been done and measured |
 | `docs/DECISIONS.md` | What is agreed, what is open, what was dropped |
 | `docs/WORKFLOW.md` | The process: spec first, one fresh session per phase, review loop, commits |
-| `docs/specs/` | The spec of each phase; the contract for the session that builds it |
+| `docs/specs/` | The spec of each phase, written by that phase's session before it codes |
 
 `LoomGuard Project Starter.md` is the original idea. Where it disagrees with `docs/`, `docs/` wins.
 
@@ -71,7 +71,7 @@ The package is `inspection`, not `inspect`: a folder named `inspect` shadows the
 
 ## Working style
 
-- Work happens phase by phase under `docs/WORKFLOW.md`. No code for a phase before its spec in `docs/specs/` is approved. If you were launched as a developer session or as the reviewer, that file and your prompt define your job.
+- Work happens phase by phase under `docs/WORKFLOW.md`. The developer session of a phase writes its spec in `docs/specs/` first; no code for a phase before its spec is written and committed. If you were launched as a developer session or as the reviewer, that file and your prompt define your job.
 - Do not make or implement anything listed under "Open" in `docs/DECISIONS.md`. Record decisions you do make there.
 - Implement the methods ourselves from the papers. No anomaly-detection library; learning is the goal.
 - Smallest code that meets the acceptance criteria of the current phase. No scaffolding for later phases.

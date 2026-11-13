@@ -16,6 +16,18 @@ Entry template:
 
 ---
 
+## 2026-11-13: Workflow revised, the developer session writes the spec
+
+- **Phase:** between 0 and 1
+- **Who / where:** Zain, laptop
+- **Done:** `WORKFLOW.md`, the developer prompt, the reviewer agent and the spec template changed so that the whole phase runs in the headless session: spec, plan, implementation, review. The orchestrator only prepares, launches, verifies and pushes.
+- **Evidence:** the `phase-reviewer` agent is now offered as an agent type in a Claude session opened in this repository, so its definition file loads. The workflow diagram renders.
+- **Decisions:** D-55 and D-57 revised. No owner approval of the spec before coding; the safeguards are the plan the spec must cover, the reviewer's spec check, and the owner reading the spec with the final report.
+- **Problems / next:**
+  - Still unverified: whether the `effort` key in the reviewer's front matter takes effect.
+  - Preflight for Phase 1: install `pytest` and CPU PyTorch on the laptop.
+  - Next: launch the Phase 1 developer session.
+
 ## 2026-11-12: Workflow, decisions record and spec template
 
 - **Phase:** 0 (closed)

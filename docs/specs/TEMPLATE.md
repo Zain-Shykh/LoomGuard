@@ -3,15 +3,17 @@
 <!--
 Copy this file to docs/specs/phase-<N>-<slug>.md and fill in every section.
 Write "None" where a section does not apply; do not delete sections.
-The spec is the contract for one phase. See docs/WORKFLOW.md.
+The spec is written by the phase's developer session before it writes any code,
+from the phase entry in docs/IMPLEMENTATION_PLAN.md and the design documents.
+It must keep every acceptance criterion of the plan. See docs/WORKFLOW.md.
 -->
 
 | | |
 |---|---|
 | Phase | N |
-| Status | Draft / Approved / Code complete / Runs complete / Done |
+| Status | Written / Code complete / Runs complete / Done |
 | Spec written | YYYY-MM-DD |
-| Approved by owner | YYYY-MM-DD or "not yet" |
+| Written by | developer session, phase N |
 | Depends on | Phases that must be Done first |
 | Plan entry | `docs/IMPLEMENTATION_PLAN.md`, Phase N |
 
@@ -66,9 +68,11 @@ New config keys with default values and meaning.
 
 ### 4.5 Dependencies
 
-Packages this phase adds to `pyproject.toml`. The orchestrator installs them before the session starts. Write "None" if there are none.
+Packages this phase needs and adds to `pyproject.toml`. The developer session cannot install packages: if one is not installed, it reports `BLOCKED`. Write "None" if there are none.
 
 ## 5. Tasks
+
+The plan for the phase: ordered, small, each one verifiable.
 
 ### Laptop (developer session)
 
@@ -80,11 +84,11 @@ Packages this phase adds to `pyproject.toml`. The orchestrator installs them bef
 
 ## 6. Acceptance criteria
 
-Every criterion says how it is verified. Laptop criteria are checked by the developer session and the reviewer. Training-PC criteria are checked by the operator.
+All acceptance criteria of the plan's entry for this phase, plus any added here. Every criterion says how it is verified. Laptop criteria are checked by the developer session and the reviewer. Training-PC criteria are checked by the operator.
 
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
-| A1 | | Laptop | `pytest tests/test_x.py::test_y` | [ ] |
+| A1 | (from plan) ... | Laptop | `pytest tests/test_x.py::test_y` | [ ] |
 | A2 | | Training PC | runbook step 2, value recorded in the progress log | [ ] |
 
 ## 7. Test plan
@@ -125,6 +129,7 @@ Filled in at the end of the phase. Leave empty while drafting.
 
 | | |
 |---|---|
+| Spec commit | |
 | Implementation commit | |
 | Review commit | |
 | Review rounds and verdict | |
