@@ -1,0 +1,24 @@
+# RD4AD on RAW-FABRID, one unified bundle over all seven rolls, training seed 2 (3 seeds: s0, s1, s2).
+# The split is the same for all seeds (config seed 0); only the initialisation and the random crops change.
+# D-24: 20,000 iterations for the unified regime. Fixed budget, last checkpoint (D-25).
+dataset: raw_fabrid
+root: data/RAW_FABRID
+regime: unified
+method: rd4ad
+tag: s2
+seed: 0
+backbone_weights: IMAGENET1K_V1
+rd4ad:
+  iterations: 20000
+  batch_size: 16
+  lr: 0.005
+  betas: [0.5, 0.999]
+  seed: 2
+  val_tiles: 64
+  val_every: 1000
+  log_every: 200
+device: auto
+num_workers: 8
+hist_bins: 10000
+artifacts: artifacts
+results: results

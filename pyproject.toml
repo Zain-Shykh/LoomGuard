@@ -24,3 +24,5 @@ include = ["loomguard*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not slow'"
+markers = ["slow: minutes of CPU time (run with pytest -m slow)"]

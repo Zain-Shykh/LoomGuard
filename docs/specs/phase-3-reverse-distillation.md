@@ -179,7 +179,7 @@ None added (torch, torchvision, numpy, pillow, pyyaml are present). The `slow` m
 1. `models/rd4ad.py`; shape, parameter-count, frozen-teacher, loss and anomaly-map tests (plan task 1).
 2. Training loop in `RD4AD.fit` with validation loss and float16 export; loop, overfit and round-trip tests (plan task 2).
 3. `RandomCropDataset`; `runs.py` and `fit.py` / `evaluate.py` method dispatch; configs; end-to-end tests on synthetic MVTec-like and RAW-FABRID-like trees.
-4. Run the slow overfit test at 32 x 32 and at 256 x 256 on the CPU (hours of CPU at 256, run once in the background) and record the result.
+4. Run the slow overfit test at 256 x 256 on the CPU (about 40 minutes, run once in the background) and record the result.
 5. Full `pytest`; commit `phase 3: implementation`.
 6. Review loop, doc sync, commit `phase 3: review fixes and doc sync`.
 
@@ -198,7 +198,7 @@ A1 to A7 are the plan's criteria with unchanged meaning (A2 is made precise: the
 |---|---|---|---|---|
 | A1 | Shape unit test: embedding is 2048x8x8; decoder outputs are 256x64x64, 512x32x32, 1024x16x16 (for a 256x256 input through the real backbone architecture) | Laptop | `pytest tests/test_rd4ad.py::test_shapes` | [ ] |
 | A2 | Trainable parameter count is 83.8 M (within 1 percent). The teacher has zero trainable parameters and stays in `eval()` mode during training (unit test) | Laptop | `pytest tests/test_rd4ad.py::test_parameter_count tests/test_rd4ad.py::test_teacher_frozen_through_training` | [ ] |
-| A3 | Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations | Laptop (32 x 32 tiles and 256 x 256 tiles on CPU, `slow`); Training PC (256 x 256 on the GPU) | `pytest -m slow tests/test_rd4ad.py::test_overfit_eight_tiles` | [ ] |
+| A3 | Overfit test: on 8 tiles the loss falls below 0.05 within 300 iterations | Laptop (256 x 256 tiles on CPU, `slow`, about 40 minutes); Training PC (same test on the GPU) | `pytest -m slow tests/test_rd4ad.py::test_overfit_eight_tiles` | [ ] |
 | A4 | RD4AD on MVTec textures, mean over five categories: image AUROC 98.5 or more, pixel AUROC 96.7 or more, AUPRO 92.0 or more | Training PC (code, config and targets check tested on the laptop) | Laptop: `pytest tests/test_fit_evaluate.py tests/test_runs.py::test_shipped_configs_load`. Training PC: runbook step 3, the mean table printed by `evaluate.py` shows PASS for all three | [ ] |
 | A5 | Peak VRAM at batch 16 is under 11 GB. Measured iterations per second recorded, and the compute table in EVALUATION.md updated | Training PC | runbook step 4: `peak_vram_gb`, `iters_per_second` in the bundles' `metrics.json` | [ ] |
 | A6 | No code path reads test data during training (code review item) | Laptop | `pytest tests/test_fit_evaluate.py::test_rd4ad_fit_reads_no_test_rows`; reviewer reads `fit_rd4ad` and `RD4AD.fit` | [ ] |
@@ -224,7 +224,7 @@ All CPU, synthetic, no dataset, no downloaded weights (`Backbone(weights=None)`)
 | `test_rd4ad.py::test_anomaly_map_and_score` | A8 |
 | `test_rd4ad.py::test_fit_budget_and_logging` | A9: a counting generator is consumed exactly `iterations` times; a short generator raises ValueError; the curve has the expected entries and the val loss is logged at `val_every` and at the end; the model is in eval mode afterwards |
 | `test_rd4ad.py::test_loss_falls_quickly` | A9: 15 iterations on 4 tiles of 32 x 32 at lr 0.005 cut the loss by at least half |
-| `test_rd4ad.py::test_overfit_eight_tiles[32, 256]` (slow) | A3: 8 fixed tiles, 300 iterations, final train loss below 0.05 (CPU or CUDA, whichever the machine has) |
+| `test_rd4ad.py::test_overfit_eight_tiles` (slow) | A3: 8 fixed fabric-like weave tiles of 256 x 256, 300 iterations, final train loss below 0.05 (CPU or CUDA, whichever the machine has) |
 | `test_rd4ad.py::test_save_load_float16` | A10 |
 | `test_dataset.py::test_random_crops` | A11 |
 | `test_runs.py::test_load_config`, `test_profiles_and_paths`, `test_shipped_configs_load` | A13 |
@@ -240,7 +240,7 @@ Prerequisite: the Phase 1 and 2 environment (PyTorch 2.7 or newer with CUDA 12.8
 git pull
 source .venv/bin/activate
 pytest                                               # default suite must pass
-pytest -m slow tests/test_rd4ad.py                   # overfit test at 32 and 256 on the GPU: 8 tiles, loss < 0.05 in 300 iterations
+pytest -m slow tests/test_rd4ad.py                   # overfit test at 256 on the GPU: 8 tiles, loss < 0.05 in 300 iterations
 
 # 1. MVTec AD textures, RD4AD, 5,000 iterations per category (about 20 to 25 minutes each at 4 it/s)
 python scripts/fit.py      --config configs/mvtec_rd4ad.yaml | tee artifacts/phase3_mvtec_fit.txt
@@ -280,7 +280,7 @@ EOF
 
 | Step | Expected | Record in |
 |---|---|---|
-| 0 | all tests pass, overfit loss below 0.05 at both sizes | `PROGRESS_LOG.md` |
+| 0 | all tests pass, overfit loss below 0.05 | `PROGRESS_LOG.md` |
 | 1 | mean over 5 textures: image AUROC at least 98.5, pixel AUROC at least 96.7, AUPRO at least 92.0 (percent) | `PROGRESS_LOG.md`, `results/mvtec/per_fabric/rd4ad/` |
 | 2 | peak VRAM under 11 GB; iterations per second noted; compute table updated | `PROGRESS_LOG.md`, `docs/EVALUATION.md` |
 | 3 to 4 | three result files; mean and spread of the metrics in the table | `PROGRESS_LOG.md`, `results/raw_fabrid/unified/rd4ad_s{0,1,2}/` |
@@ -299,7 +299,7 @@ EOF
 | A-10: mixed precision is bfloat16 autocast on CUDA only, no GradScaler; the loss is computed in float32 | D-24 says "mixed precision" without a dtype. bfloat16 needs no scaler and the RTX 5070 supports it. Easy to switch |
 | A-11: crops are drawn from the train rows' parent images (uniform over parents, uniform origin over the parent extent), not from the fixed tile grid | D-22 says random crops; the manifest only holds grid tiles. Crops come only from train parents, so rule 1 and rule 2 are not touched |
 | A-12: `rd4ad.seed` and the `tag` config key; the 3 RAW-FABRID seeds share the split (config seed 0) and differ in initialisation and crops; `tag` is appended to the method directory | EVALUATION says "3 seeds for RD4AD" without defining what varies. A fixed split keeps the seeds comparable with PatchCore and measures training variance. Easy to reverse |
-| A-13: validation loss uses up to 64 `val` tiles (config `val_tiles`), with the student in `eval()`; the two overfit tests are `slow` and deselected by default | D-25 only says "validation loss on held-out normal tiles, logged only to spot divergence". The CPU cost of an 84 M-parameter Adam step makes a 300-iteration test too slow for the default suite |
+| A-13/A-14: validation loss uses up to 64 `val` tiles (config `val_tiles`), with the student in `eval()`; the overfit test is `slow` and deselected by default | D-25 only says "validation loss on held-out normal tiles, logged only to spot divergence". The CPU cost of an 84 M-parameter Adam step makes a 300-iteration test too slow for the default suite |
 | The 5,000-iteration budget (D-24) is not the paper's 200 epochs on MVTec categories with 280 to 320 images (about 3,500 iterations at batch 16, so close), but the targets may still be missed | Report and analyse; no tuning on test results (D-35) |
 | The real backbone and real data are not available on the laptop, so numbers, VRAM and speed cannot be seen here. The overfit test uses random-weight teachers | Runbook with exact commands; integration tests with the real network architecture at random weights |
 | Random-crop loading of 1792 x 1024 PNGs may bound the iterations per second | `num_workers` in the configs; the runbook says to record and raise it if it/s is far below the GPU's speed |

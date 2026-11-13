@@ -13,7 +13,10 @@ from loomguard.data.dataset import preprocess
 from loomguard.data.tiling import stitch, tile
 from loomguard.eval.metrics import aupro, average_precision, roc_auc
 from loomguard.models.backbone import Backbone
+from loomguard.data.manifest import select
 from loomguard.models.patchcore import PatchCore
+from loomguard.models.rd4ad import RD4AD
+from loomguard.runs import build_rows, load_config
 
 
 def load_script(name):
@@ -36,15 +39,18 @@ def seeded_backbone(weights=None):
 def same_random_backbone(monkeypatch):
     monkeypatch.setattr(fit, "Backbone", seeded_backbone)
     monkeypatch.setattr(evaluate, "Backbone", seeded_backbone)
-KEYS = {"dataset", "regime", "fabric", "method", "git_commit", "seed", "config", "n_train_tiles", "n_val_tiles",
-        "n_test_good", "n_test_defect", "tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap",
-        "ms_per_tile_cpu", "peak_vram_gb", "peak_ram_gb", "fit_minutes", "coreset_seconds", "bundle_mb",
-        "coreset_ratio", "bank_size", "hist_bins", "device"}
+COMMON = {"dataset", "regime", "fabric", "method", "git_commit", "seed", "config", "n_train_tiles", "n_val_tiles",
+          "n_test_good", "n_test_defect", "tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap",
+          "ms_per_tile_cpu", "peak_vram_gb", "peak_ram_gb", "fit_minutes", "bundle_mb", "hist_bins", "device"}
+KEYS = {"patchcore": COMMON | {"coreset_seconds", "coreset_ratio", "bank_size"},
+        "rd4ad": COMMON | {"iterations", "iters_per_second", "final_train_loss", "final_val_loss"}}
+MODEL = {"patchcore": PatchCore, "rd4ad": RD4AD}
 
 
 def write_cfg(tmp_path, **kw):
     cfg = {"method": "patchcore", "seed": 0, "backbone_weights": None, "device": "cpu", "hist_bins": 10000,
            "patchcore": {"max_tiles": 8, "coreset_ratio": 0.005, "proj_dim": 32, "batch_size": 4},
+           "rd4ad": {"iterations": 2, "batch_size": 2, "val_tiles": 2, "val_every": 1, "log_every": 1},
            "artifacts": str(tmp_path / "artifacts"), "results": str(tmp_path / "results"), **kw}
     p = tmp_path / "cfg.yaml"
     p.write_text(yaml.safe_dump(cfg))
@@ -52,28 +58,36 @@ def write_cfg(tmp_path, **kw):
 
 
 def check_bundle_and_result(tmp_path, cfg, profile, res):
-    out = Path(cfg["artifacts"]) / cfg["dataset"] / profile / "patchcore"
+    method = cfg["method"]
+    out = Path(cfg["artifacts"]) / cfg["dataset"] / profile / method
     assert {p.name for p in out.iterdir()} == {"model.pt", "config.yaml", "metrics.json"}
-    bank = torch.load(out / "model.pt", weights_only=True)
-    assert bank.dtype == torch.float16 and bank.shape[1] == 1536 and len(bank) == res["bank_size"]
-    on_disk = json.loads((Path(cfg["results"]) / cfg["dataset"] / cfg["regime"] / "patchcore" / f"{profile}.json").read_text())
-    assert set(on_disk) == KEYS and on_disk == json.loads(json.dumps(res))
+    saved = torch.load(out / "model.pt", weights_only=True)
+    if method == "patchcore":
+        assert saved.dtype == torch.float16 and saved.shape[1] == 1536 and len(saved) == res["bank_size"]
+    else:  # student state dict, floating tensors in float16
+        assert all(v.dtype == torch.float16 for v in saved.values() if v.is_floating_point())
+        assert res["iterations"] == 2 and res["iters_per_second"] > 0 and res["final_val_loss"] is not None
+        assert yaml.safe_load((out / "config.yaml").read_text())["layers"] == ["layer1", "layer2", "layer3"]
+    on_disk = json.loads((Path(cfg["results"]) / cfg["dataset"] / cfg["regime"] / method / f"{profile}.json").read_text())
+    assert set(on_disk) == KEYS[method] and on_disk == json.loads(json.dumps(res))
     assert (Path(cfg["artifacts"]) / "manifests" / f"{cfg['dataset']}.csv").is_file()
     assert all(0 <= res[k] <= 1 for k in ("tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap"))
     return out
 
 
-def test_mvtec_end_to_end(mvtec_root, tmp_path):
+@pytest.mark.parametrize("method", ["patchcore", "rd4ad"])
+def test_mvtec_end_to_end(mvtec_root, tmp_path, method):
     p = write_cfg(tmp_path, dataset="mvtec", root=str(mvtec_root), regime="per_fabric", fabrics=["tile"],
-                  targets={"tile_auroc": 0.0})
+                  targets={"tile_auroc": 0.0}, method=method)
     fit.main(["--config", str(p)])
     res = evaluate.main(["--config", str(p)])["tile"]
     cfg = yaml.safe_load(p.read_text()) | {"dataset": "mvtec", "regime": "per_fabric"}
     out = check_bundle_and_result(tmp_path, cfg, "tile", res)
-    # 18 train tiles capped to 8, 2 val images, 3 good + 4 defective test images
-    assert res["n_train_tiles"] == 8 and res["n_val_tiles"] == 2 and (res["n_test_good"], res["n_test_defect"]) == (3, 4)
+    # 18 train tiles (PatchCore caps them to 8, RD4AD samples crops from all 18), 2 val images, 3 good + 4 defective test images
+    assert res["n_train_tiles"] == (8 if method == "patchcore" else 18) and res["n_val_tiles"] == 2
+    assert (res["n_test_good"], res["n_test_defect"]) == (3, 4)
     # independent recomputation: resize, score, exact metrics
-    pc = PatchCore.load(out / "model.pt", seeded_backbone(), "cpu")
+    pc = MODEL[method].load(out / "model.pt", seeded_backbone(), "cpu")
     scores, heats, masks, labels = [], [], [], []
     for kind, label in (("good", 0), ("crack", 1), ("hole", 1)):
         for f in sorted((mvtec_root / "tile" / "test" / kind).glob("*.png")):
@@ -90,15 +104,18 @@ def test_mvtec_end_to_end(mvtec_root, tmp_path):
     assert res["aupro_30"] == pytest.approx(aupro(heats, masks), abs=5e-3)
 
 
-def test_raw_fabrid_unified_end_to_end(raw_root, tmp_path):
-    p = write_cfg(tmp_path, dataset="raw_fabrid", root=str(raw_root), regime="unified")
+@pytest.mark.parametrize("method", ["patchcore", "rd4ad"])
+def test_raw_fabrid_unified_end_to_end(raw_root, tmp_path, method):
+    p = write_cfg(tmp_path, dataset="raw_fabrid", root=str(raw_root), regime="unified", method=method)
     fit.main(["--config", str(p)])
     res = evaluate.main(["--config", str(p)])["unified"]
     cfg = yaml.safe_load(p.read_text()) | {"dataset": "raw_fabrid", "regime": "unified"}
     out = check_bundle_and_result(tmp_path, cfg, "unified", res)
-    assert res["n_train_tiles"] == 8 and res["n_val_tiles"] == 12 and (res["n_test_good"], res["n_test_defect"]) == (4, 6)
+    n_train = len(select(build_rows(load_config(p)), split="train"))
+    assert res["n_train_tiles"] == (8 if method == "patchcore" else n_train) and n_train > 8
+    assert res["n_val_tiles"] == 12 and (res["n_test_good"], res["n_test_defect"]) == (4, 6)
     # independent recomputation: tile whole parent images, score, stitch, exact metrics on full images
-    pc = PatchCore.load(out / "model.pt", seeded_backbone(), "cpu")
+    pc = MODEL[method].load(out / "model.pt", seeded_backbone(), "cpu")
     scores, labels, heats, masks = [], [], [], []
     for f in sorted((raw_root / "masks").glob("*_d*.png")):
         gt = np.asarray(Image.open(f)) > 0
@@ -130,3 +147,26 @@ def test_fit_reads_only_train_rows(raw_root, tmp_path, monkeypatch):
     fit.main(["--config", str(p)])
     assert seen and {r.split for r in seen} == {"train"}
     assert len({r.fabric for r in seen}) == 2  # per_fabric: both rolls fitted
+
+
+def test_rd4ad_fit_reads_no_test_rows(raw_root, tmp_path, monkeypatch):
+    """CLAUDE.md rule 2: only train rows reach the crop stream, only val rows the validation batches, no test row is read."""
+    seen = {"crops": [], "val": []}
+
+    class SpyCrops(fit.RandomCropDataset):
+        def __init__(self, rows, root, length, seed):
+            seen["crops"].extend(rows)
+            super().__init__(rows, root, length, seed)
+
+    class SpyTiles(fit.TileDataset):
+        def __init__(self, rows, root):
+            seen["val"].extend(rows)
+            super().__init__(rows, root)
+
+    monkeypatch.setattr(fit, "RandomCropDataset", SpyCrops)
+    monkeypatch.setattr(fit, "TileDataset", SpyTiles)
+    p = write_cfg(tmp_path, dataset="raw_fabrid", root=str(raw_root), regime="per_fabric", method="rd4ad")
+    fit.main(["--config", str(p)])
+    assert seen["crops"] and {r.split for r in seen["crops"]} == {"train"}
+    assert seen["val"] and {r.split for r in seen["val"]} == {"val"} and len(seen["val"]) <= 2 * 2  # val_tiles 2 per profile
+    assert len({r.fabric for r in seen["crops"]}) == 2  # per_fabric: both rolls fitted

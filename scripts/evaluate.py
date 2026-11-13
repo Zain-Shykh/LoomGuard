@@ -1,4 +1,4 @@
-"""Evaluate fitted PatchCore bundles on the test split and write results/<dataset>/<regime>/<method>/<profile>.json.
+"""Evaluate fitted PatchCore or RD4AD bundles on the test split and write results/<dataset>/<regime>/<method>/<profile>.json.
 
     python scripts/evaluate.py --config configs/mvtec_patchcore.yaml
 
@@ -20,29 +20,30 @@ from loomguard.data.manifest import select
 from loomguard.data.tiling import stitch
 from loomguard.eval.metrics import ScoreCounts, average_precision, quantize, roc_auc
 from loomguard.models.backbone import Backbone
-from loomguard.models.patchcore import PatchCore
-from loomguard.runs import build_rows, bundle_dir, git_commit, load_config, pick_device, profiles, result_path
+from loomguard.runs import build_rows, bundle_dir, git_commit, load_config, load_model, pick_device, profiles, result_path
 
 KEYS = ("tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap")
+METHOD_KEYS = {"patchcore": ("coreset_ratio", "bank_size", "coreset_seconds"),
+               "rd4ad": ("iterations", "iters_per_second", "final_train_loss", "final_val_loss")}  # from fit's metrics.json
 
 
-def _tiles(pc, rows, cfg, timing=None):
+def _tiles(model, rows, cfg, timing=None):
     """Yield (score, heatmap 1x256x256, mask 1x256x256) per row, in row order."""
-    loader = DataLoader(TileDataset(rows, cfg["root"]), batch_size=cfg["patchcore"]["batch_size"], shuffle=False,
+    loader = DataLoader(TileDataset(rows, cfg["root"]), batch_size=cfg[cfg["method"]]["batch_size"], shuffle=False,
                         num_workers=cfg["num_workers"])
     for x, m, _ in loader:
         t0 = time.perf_counter()
-        score, heat = pc.score(x)
-        if pc.device.type == "cuda":
+        score, heat = model.score(x)
+        if model.device.type == "cuda":
             torch.cuda.synchronize()
         if timing is not None:
             timing[0] += time.perf_counter() - t0
         yield from zip(score.cpu(), heat.cpu(), m)
 
 
-def _parents(pc, rows, cfg, timing=None):
+def _parents(model, rows, cfg, timing=None):
     """Yield (tile scores, stitched heatmap H x W, stitched mask H x W bool) per parent image."""
-    stream, i = _tiles(pc, rows, cfg, timing), 0
+    stream, i = _tiles(model, rows, cfg, timing), 0
     while i < len(rows):
         j = i
         while j < len(rows) and rows[j].parent == rows[i].parent:
@@ -62,17 +63,17 @@ def _parents(pc, rows, cfg, timing=None):
 
 def evaluate_profile(cfg, name, prows, device) -> dict:
     out = bundle_dir(cfg, name)
-    pc = PatchCore.load(out / "model.pt", Backbone(cfg["backbone_weights"]), device)
+    model = load_model(cfg, out / "model.pt", Backbone(cfg["backbone_weights"]), device)
     test = select(prows, split="test")
     timing, scores, labels, lo, hi = [0.0], [], [], np.inf, -np.inf
-    for s, heat, _ in _parents(pc, test, cfg, timing):  # pass 1
+    for s, heat, _ in _parents(model, test, cfg, timing):  # pass 1
         scores += s
         lo, hi = min(lo, float(heat.min())), max(hi, float(heat.max()))
     labels = [r.label for r in test]
     if hi <= lo:
         hi = lo + 1.0
     counts = ScoreCounts(cfg["hist_bins"])
-    for _, heat, mask in _parents(pc, test, cfg):  # pass 2
+    for _, heat, mask in _parents(model, test, cfg):  # pass 2
         counts.add(quantize(heat, lo, hi, cfg["hist_bins"]), mask.numpy(), regions=True)
     fit = json.loads((out / "metrics.json").read_text())
     res = {"dataset": cfg["dataset"], "regime": cfg["regime"], "fabric": name, "method": cfg["method"],
@@ -82,9 +83,8 @@ def evaluate_profile(cfg, name, prows, device) -> dict:
            "tile_auroc": roc_auc(scores, labels), "tile_ap": average_precision(scores, labels),
            "aupro_30": counts.aupro(0.3), "pixel_auroc": counts.auroc(), "pixel_ap": counts.ap(),
            f"ms_per_tile_{device.type}": 1000 * timing[0] / len(test), "peak_vram_gb": fit["peak_vram_gb"],
-           "peak_ram_gb": fit["peak_ram_gb"], "fit_minutes": fit["fit_minutes"], "coreset_seconds": fit["coreset_seconds"],
-           "bundle_mb": fit["bundle_mb"], "coreset_ratio": cfg["patchcore"]["coreset_ratio"],
-           "bank_size": fit["bank_size"], "hist_bins": cfg["hist_bins"], "device": device.type}
+           "peak_ram_gb": fit["peak_ram_gb"], "fit_minutes": fit["fit_minutes"], "bundle_mb": fit["bundle_mb"],
+           **{k: fit[k] for k in METHOD_KEYS[cfg["method"]]}, "hist_bins": cfg["hist_bins"], "device": device.type}
     res = {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in res.items()}
     p = result_path(cfg, name)
     p.parent.mkdir(parents=True, exist_ok=True)

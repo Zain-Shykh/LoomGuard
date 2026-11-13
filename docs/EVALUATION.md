@@ -160,7 +160,7 @@ Development subset: "ZJU-mini" is the first pattern of each group (5 patterns). 
 
 ## 5. Result files
 
-One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json`:
+One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json` (`<method>` carries the config's `tag` when there is one, e.g. `rd4ad_s1` for the three RAW-FABRID seeds):
 
 ```json
 {
@@ -173,7 +173,7 @@ One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json`:
 }
 ```
 
-The zeros are placeholders for the format. Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `coreset_seconds`, `bundle_mb`, `coreset_ratio`, `bank_size`, `hist_bins` and `device`; `tau`, the false-alarm, recall, Dice and IoU keys arrive with Phase 4. Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
+The zeros are placeholders for the format. Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `bundle_mb`, `hist_bins` and `device`, plus per method `coreset_seconds`, `coreset_ratio` and `bank_size` (PatchCore) or `iterations`, `iters_per_second`, `final_train_loss` and `final_val_loss` (RD4AD); `tau`, the false-alarm, recall, Dice and IoU keys arrive with Phase 4. Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
 
 ## 6. Compute budget (estimates, to be replaced by measurements)
 

@@ -1,0 +1,24 @@
+# RD4AD on the five MVTec AD textures: the implementation check of EVALUATION.md section 3 (decisions D-24, D-33).
+# MVTec images are resized to 256 as a whole (the one documented exception, D-21), so a "random crop" is the whole image.
+# Fixed budget, last checkpoint, no test data during training (D-25).
+dataset: mvtec
+root: data/mvtec_ad
+regime: per_fabric
+fabrics: [carpet, grid, leather, tile, wood]
+method: rd4ad
+seed: 0
+backbone_weights: IMAGENET1K_V1
+rd4ad:
+  iterations: 5000        # D-24: per fabric profile
+  batch_size: 16
+  lr: 0.005
+  betas: [0.5, 0.999]
+  val_tiles: 64           # normal validation tiles, loss logged only to spot divergence
+  val_every: 500
+  log_every: 100
+device: auto
+num_workers: 4
+hist_bins: 10000
+artifacts: artifacts
+results: results
+targets: {tile_auroc: 98.5, pixel_auroc: 96.7, aupro_30: 92.0}   # percent, mean over the five categories; report only

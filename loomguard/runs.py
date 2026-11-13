@@ -10,8 +10,11 @@ import yaml
 from loomguard.data.manifest import MVTEC_TEXTURES, TileRow, build_mvtec, build_raw_fabrid
 
 DEFAULTS = {"seed": 0, "backbone_weights": "IMAGENET1K_V1", "device": "auto", "num_workers": 0, "hist_bins": 10_000,
-            "artifacts": "artifacts", "results": "results", "fabrics": None, "targets": None}
+            "artifacts": "artifacts", "results": "results", "fabrics": None, "targets": None, "tag": ""}
 PATCHCORE_DEFAULTS = {"max_tiles": 600, "coreset_ratio": 0.10, "proj_dim": 128, "batch_size": 16}
+RD4AD_DEFAULTS = {"iterations": 5000, "batch_size": 16, "lr": 0.005, "betas": [0.5, 0.999], "seed": None,
+                  "val_tiles": 64, "val_every": 500, "log_every": 100}
+METHODS = ("patchcore", "rd4ad")
 
 
 def load_config(path: Path | str) -> dict:
@@ -20,11 +23,14 @@ def load_config(path: Path | str) -> dict:
     missing = {"dataset", "root", "regime", "method"} - set(cfg)
     if missing:
         raise KeyError(f"{path} lacks required keys {sorted(missing)}")
-    if cfg["method"] != "patchcore":
-        raise ValueError(f"method {cfg['method']!r} is not implemented yet (only 'patchcore')")
+    if cfg["method"] not in METHODS:
+        raise ValueError(f"method must be one of {METHODS}, got {cfg['method']!r}")
     if cfg["regime"] not in ("per_fabric", "unified"):
         raise ValueError(f"regime must be per_fabric or unified, got {cfg['regime']!r}")
-    cfg = {**DEFAULTS, **cfg, "patchcore": {**PATCHCORE_DEFAULTS, **cfg.get("patchcore", {})}}
+    cfg = {**DEFAULTS, **cfg, "patchcore": {**PATCHCORE_DEFAULTS, **cfg.get("patchcore", {})},
+           "rd4ad": {**RD4AD_DEFAULTS, **cfg.get("rd4ad", {})}}
+    if cfg["rd4ad"]["seed"] is None:
+        cfg["rd4ad"]["seed"] = cfg["seed"]
     cfg["config"] = str(path)
     return cfg
 
@@ -67,12 +73,23 @@ def subsample(rows: list[TileRow], max_tiles: int, seed: int) -> list[TileRow]:
     return [rows[i] for i in sorted(keep)]
 
 
+def _method_dir(cfg: dict) -> str:
+    return f"{cfg['method']}_{cfg['tag']}" if cfg["tag"] else cfg["method"]  # tag: separate runs of one method (seeds)
+
+
 def bundle_dir(cfg: dict, profile: str) -> Path:
-    return Path(cfg["artifacts"]) / cfg["dataset"] / profile / cfg["method"]
+    return Path(cfg["artifacts"]) / cfg["dataset"] / profile / _method_dir(cfg)
 
 
 def result_path(cfg: dict, profile: str) -> Path:
-    return Path(cfg["results"]) / cfg["dataset"] / cfg["regime"] / cfg["method"] / f"{profile}.json"
+    return Path(cfg["results"]) / cfg["dataset"] / cfg["regime"] / _method_dir(cfg) / f"{profile}.json"
+
+
+def load_model(cfg: dict, path: Path, backbone, device: torch.device):
+    """The fitted PatchCore or RD4AD of cfg["method"], loaded from a bundle's model.pt."""
+    from loomguard.models.patchcore import PatchCore
+    from loomguard.models.rd4ad import RD4AD
+    return {"patchcore": PatchCore, "rd4ad": RD4AD}[cfg["method"]].load(path, backbone, device)
 
 
 def git_commit() -> str:

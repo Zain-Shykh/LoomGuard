@@ -1,4 +1,6 @@
 """Dataset that crops tiles out of parent images at load time (decision D-15). No augmentation (D-22)."""
+import random
+from dataclasses import replace
 from pathlib import Path
 from typing import Sequence
 
@@ -9,6 +11,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 
 from loomguard.data.manifest import TileRow
+from loomguard.data.tiling import TILE
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -36,7 +39,9 @@ class TileDataset(Dataset):
         return self._last[mode][1]
 
     def __getitem__(self, i: int) -> tuple[Tensor, Tensor, int]:
-        r = self.rows[i]
+        return self.get(self.rows[i])
+
+    def get(self, r: TileRow) -> tuple[Tensor, Tensor, int]:
         box = (r.x0, r.y0, r.x0 + r.w, r.y0 + r.h)
         img = self._open(r.image, "RGB").crop(box)
         if r.mask:
@@ -47,3 +52,26 @@ class TileDataset(Dataset):
             img = img.resize((r.resize, r.resize), Image.BILINEAR)
             mask = mask.resize((r.resize, r.resize), Image.NEAREST)
         return preprocess(img), torch.from_numpy((np.asarray(mask) > 0).astype(np.float32))[None], r.label
+
+
+class RandomCropDataset(Dataset):
+    """RD4AD training stream (D-22): item i is a TILE x TILE crop at a random position of a random parent image.
+    No flips, no rotations. Deterministic per (seed, i), so it is safe with DataLoader workers. Give it train rows only.
+    A row with `resize` (MVTec) is a whole resized image and is returned as it is."""
+
+    def __init__(self, rows: Sequence[TileRow], root: Path | str, length: int, seed: int):
+        self.base, self.length, self.seed = TileDataset(rows, root), length, seed
+        parents: dict[str, list[TileRow]] = {}
+        for r in rows:
+            parents.setdefault(r.parent, []).append(r)
+        self.parents = [(g[0], max(r.x0 + r.w for r in g), max(r.y0 + r.h for r in g)) for g in parents.values()]
+
+    def __len__(self) -> int:
+        return self.length
+
+    def __getitem__(self, i: int) -> tuple[Tensor, Tensor, int]:
+        rng = random.Random(f"{self.seed}/{i}")
+        r, width, height = rng.choice(self.parents)
+        if not r.resize:
+            r = replace(r, x0=rng.randint(0, max(0, width - TILE)), y0=rng.randint(0, max(0, height - TILE)), w=TILE, h=TILE)
+        return self.base.get(r)

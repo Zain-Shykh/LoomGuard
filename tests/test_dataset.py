@@ -3,8 +3,8 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from loomguard.data.dataset import IMAGENET_MEAN, IMAGENET_STD, TileDataset, preprocess
-from loomguard.data.manifest import build_mvtec, build_raw_fabrid
+from loomguard.data.dataset import IMAGENET_MEAN, IMAGENET_STD, RandomCropDataset, TileDataset, preprocess
+from loomguard.data.manifest import build_mvtec, build_raw_fabrid, select
 from loomguard.data.tiling import tile
 
 
@@ -65,3 +65,30 @@ def test_dataloader_batches(raw_root):
     rows = build_raw_fabrid(raw_root)
     x, mask, label = next(iter(DataLoader(TileDataset(rows, raw_root), batch_size=4)))
     assert x.shape == (4, 3, 256, 256) and mask.shape == (4, 1, 256, 256) and label.shape == (4,)
+
+
+def test_random_crops(raw_root, mvtec_root):
+    rows = select(build_raw_fabrid(raw_root), split="train", fabric="RolloB")
+    parents = {r.image for r in rows}
+    full = {p: preprocess(Image.open(raw_root / p)) for p in parents}  # 3 x 256 x 512 each
+    ds, again = RandomCropDataset(rows, raw_root, 40, seed=0), RandomCropDataset(rows, raw_root, 40, seed=0)
+    assert len(ds) == 40
+    origins, used = set(), set()
+    for i in range(40):
+        x, m, label = ds[i]
+        assert x.shape == (3, 256, 256) and m.shape == (1, 256, 256) and label == 0
+        assert torch.equal(x, again[i][0])  # deterministic per (seed, i)
+        # a plain window of one of the train parents: no flip, no rotation, nothing else
+        hits = [(p, x0) for p, img in full.items() for x0 in range(257) if torch.equal(img[:, :, x0:x0 + 256], x)]
+        assert len(hits) == 1
+        used.add(hits[0][0])
+        origins.add(hits[0][1])
+    assert used <= parents and len(used) > 1 and len(origins) > 10  # several parents, several positions
+    assert not torch.equal(ds[0][0], RandomCropDataset(rows, raw_root, 40, seed=1)[0][0])
+    # MVTec rows are whole resized images, returned as they are
+    mv = select(build_mvtec(mvtec_root, ["tile"]), split="train")
+    ds = RandomCropDataset(mv, mvtec_root, 5, seed=0)
+    by_image = {r.image: TileDataset([r], mvtec_root)[0][0] for r in mv}
+    for i in range(5):
+        x = ds[i][0]
+        assert x.shape == (3, 256, 256) and any(torch.equal(x, y) for y in by_image.values())
