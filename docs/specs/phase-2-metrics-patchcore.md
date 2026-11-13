@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 2 |
-| Status | Written |
+| Status | Code complete (training-PC runbook outstanding) |
 | Spec written | 2026-11-13 |
 | Written by | developer session, phase 2 |
 | Depends on | Phase 1 (Code complete; its training-PC runbook is queued and does not block this phase, decision D-58) |
@@ -185,7 +185,7 @@ def main(argv: list[str] | None = None) -> dict[str, dict]     # profile -> resu
 **Scripts**
 
 - `fit.py`: builds the manifest (deterministic from `root` and `seed`), writes it to `<artifacts>/manifests/<dataset>.csv`, and for every profile takes the `train` rows only, applies `subsample(..., max_tiles, seed)`, loads them with `TileDataset` (`shuffle=False`, so a parent's tiles stay consecutive), fits PatchCore and writes the bundle directory `bundle_dir(cfg, profile)`: `model.pt`, `config.yaml` (the resolved config plus `profile`, `git_commit`), `metrics.json` (fit-side system metrics: `n_train_tiles`, `bank_size`, `fit_minutes`, `coreset_seconds`, `peak_vram_gb` (0 on CPU), `peak_ram_gb` (process peak RSS), `bundle_mb`). `calibration.json` is Phase 4. It prints one line per profile.
-- `evaluate.py`: rebuilds the manifest, and for every profile loads the bundle (`torch.load(weights_only=True)` via `PatchCore.load`) and scores only the profile's `test` rows. Tiles are grouped by parent (rows are consecutive per parent, Phase 1), the tile heatmaps and tile masks are stitched back to the full parent image with `tiling.stitch` (a mask stitched from identical copies is exact), and pixel metrics are computed on the full image, so defects that straddle tile borders are one region (MVTec: the single 256 x 256 resized image). Tile metrics use the per-tile scores and labels (EVALUATION 2.1: a tile is defective if its mask has a defect pixel; the manifest `label` says so). It writes `results/<dataset>/<regime>/<method>/<profile>.json` and merges the test metrics into the bundle's `metrics.json`. For `per_fabric` runs with more than one profile it prints the mean table, and if the config has `targets` it prints PASS or FAIL per target (D-33); targets are reported, never used for any decision.
+- `evaluate.py`: rebuilds the manifest, and for every profile loads the bundle (`torch.load(weights_only=True)` via `PatchCore.load`) and scores only the profile's `test` rows. Tiles are grouped by parent (rows are consecutive per parent, Phase 1), the tile heatmaps and tile masks are stitched back to the full parent image with `tiling.stitch` (a mask stitched from identical copies is exact), and pixel metrics are computed on the full image, so defects that straddle tile borders are one region (MVTec: the single 256 x 256 resized image). Tile metrics use the per-tile scores and labels (EVALUATION 2.1: a tile is defective if its mask has a defect pixel; the manifest `label` says so). It writes `results/<dataset>/<regime>/<method>/<profile>.json` and merges the test metrics into the bundle's `metrics.json`. With more than one profile it prints the mean table (profiles whose metric is undefined are skipped), and if the config has `targets` it prints PASS or FAIL per target (D-33); targets are reported, never used for any decision.
 - Result JSON keys (a subset of EVALUATION 5; the operating-point keys `tau`, `false_alarms_per_1000`, `tile_recall`, `dice`, `iou` arrive in Phase 4): `dataset, regime, fabric, method, git_commit, seed, config, n_train_tiles, n_val_tiles, n_test_good, n_test_defect, tile_auroc, tile_ap, aupro_30, pixel_auroc, pixel_ap, ms_per_tile_<cuda|cpu>, peak_vram_gb, peak_ram_gb, fit_minutes, coreset_seconds, bundle_mb, coreset_ratio, bank_size, hist_bins, device`. Metrics are fractions in [0, 1]; `targets` in the config are in percent.
 - `ms_per_tile_*` is the wall time of `PatchCore.score` over pass 1 divided by the number of tiles, with `torch.cuda.synchronize()` around it on CUDA.
 - Rule 2 (no test influence): `fit.py` reads no row whose split is not `train`; `evaluate.py` only reads `test` rows and chooses nothing from them.
@@ -243,19 +243,19 @@ A1 to A5 are the plan's criteria with unchanged meaning. A6 onward are added.
 
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
-| A1 | AUPRO matches a brute-force implementation to 1e-6 on toy masks. A perfect heatmap scores 1.0 and a constant heatmap scores about 0 (we make it exactly 0) | Laptop | `pytest tests/test_metrics.py::test_aupro_matches_brute_force tests/test_metrics.py::test_aupro_perfect_and_constant tests/test_metrics.py::test_aupro_hand_value` | [ ] |
-| A2 | Backbone unit test: for a 256x256 input the three outputs have shapes 256x64x64, 512x32x32, 1024x16x16, and no parameter requires gradients | Laptop | `pytest tests/test_backbone.py` | [ ] |
+| A1 | AUPRO matches a brute-force implementation to 1e-6 on toy masks. A perfect heatmap scores 1.0 and a constant heatmap scores about 0 (we make it exactly 0) | Laptop | `pytest tests/test_metrics.py::test_aupro_matches_brute_force tests/test_metrics.py::test_aupro_perfect_and_constant tests/test_metrics.py::test_aupro_hand_value` | [x] |
+| A2 | Backbone unit test: for a 256x256 input the three outputs have shapes 256x64x64, 512x32x32, 1024x16x16, and no parameter requires gradients | Laptop | `pytest tests/test_backbone.py` | [x] |
 | A3 | PatchCore on MVTec textures, mean over five categories: image AUROC 97.9 or more, pixel AUROC 96.6 or more, AUPRO 90.7 or more (EVALUATION 3) | Training PC (code, config and targets check tested on the laptop) | Laptop: `pytest tests/test_fit_evaluate.py`. Training PC: runbook step 3, the mean table printed by `evaluate.py` shows PASS for all three | [ ] |
 | A4 | Coreset selection for 600 tiles finishes in under 10 minutes on the training PC. Peak RAM and VRAM recorded | Training PC (code tested on the laptop) | Laptop: `pytest tests/test_patchcore.py -k coreset`. Training PC: runbook step 5, `coreset_seconds`, `peak_ram_gb`, `peak_vram_gb` in the bundle `metrics.json` | [ ] |
 | A5 | RAW-FABRID unified PatchCore results are in `results/` and summarised in `PROGRESS_LOG.md` | Training PC | runbook steps 4 to 6, `results/raw_fabrid/unified/patchcore/unified.json` committed | [ ] |
-| A6 | AUROC and AP equal hand-computed values on toy scores, including ties, and a one-class input gives `nan` | Laptop | `pytest tests/test_metrics.py::test_roc_auc_and_ap_hand_values` | [ ] |
-| A7 | The histogram versions of pixel AUROC, AP and AUPRO equal the exact ones when each distinct score has its own bin and are within 1e-3 on 10,000 bins of random continuous scores | Laptop | `pytest tests/test_metrics.py::test_histogram_matches_exact` | [ ] |
-| A8 | Connected components are 8-connected and agree with a flood-fill reference on random masks | Laptop | `pytest tests/test_metrics.py::test_connected_components` | [ ] |
-| A9 | PatchCore parts are correct: `embed` is B x 1536 x 32 x 32; `greedy_coreset` equals a brute-force farthest-point reference and covers clusters; the bank is float16 with `max(1, round(ratio * N))` rows; scores equal a brute-force nearest-neighbour distance; tile score is the grid max; heatmap is B x 1 x 256 x 256 and peaks on an injected anomaly; a bank saved by `save` loads with `weights_only=True` and gives the same scores | Laptop | `pytest tests/test_patchcore.py` | [ ] |
-| A10 | The tile cap is stratified by parent image, deterministic for a seed, and keeps manifest order | Laptop | `pytest tests/test_runs.py::test_subsample` | [ ] |
-| A11 | `fit.py` then `evaluate.py` run end to end on tiny synthetic MVTec-like and RAW-FABRID-like datasets on CPU with a tiny coreset, produce the bundle files and a result JSON with all keys, and the reported tile and pixel metrics equal an independent recomputation (tile, score, stitch, exact metrics) | Laptop | `pytest tests/test_fit_evaluate.py` | [ ] |
-| A12 | `fit.py` reads only `train` rows and `evaluate.py` only `test` rows (CLAUDE.md rule 2) | Laptop | `pytest tests/test_fit_evaluate.py::test_fit_reads_only_train_rows` | [ ] |
-| A13 | The whole test suite passes on the laptop with no dataset present | Laptop | `pytest` in the project venv | [ ] |
+| A6 | AUROC and AP equal hand-computed values on toy scores, including ties, and a one-class input gives `nan` | Laptop | `pytest tests/test_metrics.py::test_roc_auc_and_ap_hand_values` | [x] |
+| A7 | The histogram versions of pixel AUROC, AP and AUPRO equal the exact ones when each distinct score has its own bin and are within 1e-3 on 10,000 bins of random continuous scores | Laptop | `pytest tests/test_metrics.py::test_histogram_matches_exact` | [x] |
+| A8 | Connected components are 8-connected and agree with a flood-fill reference on random masks | Laptop | `pytest tests/test_metrics.py::test_connected_components` | [x] |
+| A9 | PatchCore parts are correct: `embed` is B x 1536 x 32 x 32; `greedy_coreset` equals a brute-force farthest-point reference and covers clusters; the bank is float16 with `max(1, round(ratio * N))` rows; scores equal a brute-force nearest-neighbour distance; tile score is the grid max; heatmap is B x 1 x 256 x 256 and peaks on an injected anomaly; a bank saved by `save` loads with `weights_only=True` and gives the same scores | Laptop | `pytest tests/test_patchcore.py` | [x] |
+| A10 | The tile cap is stratified by parent image, deterministic for a seed, and keeps manifest order | Laptop | `pytest tests/test_runs.py::test_subsample` | [x] |
+| A11 | `fit.py` then `evaluate.py` run end to end on tiny synthetic MVTec-like and RAW-FABRID-like datasets on CPU with a tiny coreset, produce the bundle files and a result JSON with all keys, and the reported tile and pixel metrics equal an independent recomputation (tile, score, stitch, exact metrics) | Laptop | `pytest tests/test_fit_evaluate.py` | [x] |
+| A12 | `fit.py` reads only `train` rows and `evaluate.py` only `test` rows (CLAUDE.md rule 2) | Laptop | `pytest tests/test_fit_evaluate.py::test_fit_reads_only_train_rows` | [x] |
+| A13 | The whole test suite passes on the laptop with no dataset present | Laptop | `pytest` in the project venv | [x] |
 
 ## 7. Test plan
 
@@ -274,8 +274,8 @@ All CPU, synthetic, no dataset, no downloaded weights (`Backbone(weights=None)` 
 | `test_backbone.py::test_gaussian_blur` | Preserves a constant, sums to one, spreads an impulse symmetrically, same shape |
 | `test_patchcore.py::test_embed_shape` | A9: with the real `Backbone(None)`, B x 1536 x 32 x 32 |
 | `test_patchcore.py::test_coreset_*` | A4 and A9: equals brute-force farthest-point selection; picks one point per far-apart cluster; returns distinct indices; `k >= N` returns all; deterministic for a seed; projection variant keeps covering |
-| `test_patchcore.py::test_bank_size_and_dtype`, `test_score_matches_bruteforce`, `test_heatmap_localises_anomaly`, `test_save_load` | A9, with a small fake backbone that gives the right shapes |
-| `test_runs.py::test_subsample`, `test_profiles`, `test_load_config` | A10; per-fabric and unified grouping; defaults and required keys |
+| `test_patchcore.py::test_bank_size_and_dtype`, `test_score_matches_bruteforce_and_tile_score_is_grid_max`, `test_heatmap_localises_anomaly_and_save_load` | A9, with a small fake backbone that gives the right shapes |
+| `test_runs.py::test_subsample`, `test_profiles_and_paths`, `test_load_config` | A10; per-fabric and unified grouping; defaults and required keys |
 | `test_fit_evaluate.py::test_mvtec_end_to_end`, `test_raw_fabrid_unified_end_to_end` | A11 (the RAW-FABRID tree has defects straddling a tile border, so stitched full-image regions are exercised) |
 | `test_fit_evaluate.py::test_fit_reads_only_train_rows` | A12 |
 
@@ -351,12 +351,12 @@ Nothing in this spec depends on an item under "Open" in `DECISIONS.md` (O-01, O-
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
-| Review commit | |
-| Review rounds and verdict | |
-| Tests | |
-| Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Spec commit | b39877e `phase 2: spec` |
+| Implementation commit | 28ce03e `phase 2: implementation` (then a small `phase 2: docs in line before review` commit with the decision rows and doc corrections) |
+| Review commit | `phase 2: review fixes and doc sync` (the last commit of the phase) |
+| Review rounds and verdict | 2 rounds. Round 1: CHANGES REQUIRED (progress log entry and plan status not yet written, mean over undefined metrics; two minor). Round 2: PASS, two minor doc findings, fixed |
+| Tests | `pytest -q`: 67 passed, 0 failed, no dataset present (metrics 8, backbone 3, patchcore 8, runs 4, fit/evaluate 3, Phase 1 and smoke 41) |
+| Results commit (training PC) | pending: runbook steps 0 to 7, then `phase 2: results` |
+| Decisions made | A-06 to A-09 (Awaiting confirmation) |
+| Deviations from this spec | None in design. Test-only: with random backbone weights the tests seed the network identically in `fit`, `evaluate` and the independent recomputation (`seeded_backbone` in `tests/test_fit_evaluate.py`). `evaluate.py` skips undefined (nan) metrics in the printed mean. A3, A4 and A5 stay unticked until the training-PC run |
 | Closed by owner | |

@@ -102,7 +102,7 @@ def main(argv: list[str] | None = None) -> dict[str, dict]:
         results[name] = evaluate_profile(cfg, name, prows, device)
         print(name, " ".join(f"{k}={results[name][k]:.4f}" for k in KEYS if results[name][k] is not None))
     if len(results) > 1:
-        mean = {k: float(np.mean([r[k] for r in results.values()])) for k in KEYS}
+        mean = {k: float(np.mean([r[k] for r in results.values() if r[k] is not None] or [np.nan])) for k in KEYS}
         print("mean over", len(results), "profiles:", " ".join(f"{k}={v:.4f}" for k, v in mean.items()))
         for k, target in (cfg["targets"] or {}).items():  # reported only, never used for a decision
             print(f"  {k}: {100 * mean[k]:.2f} vs target {target}: {'PASS' if 100 * mean[k] >= target else 'FAIL'}")

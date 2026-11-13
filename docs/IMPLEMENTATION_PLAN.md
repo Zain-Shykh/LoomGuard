@@ -15,7 +15,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 |---|---|---|---|---|
 | 0 | Design and dataset verification | Laptop | 1 session | **Done** |
 | 1 | Repository skeleton and data layer | Both | 1 week | Code complete |
-| 2 | Metrics and PatchCore | Both | 1.5 weeks | Not started |
+| 2 | Metrics and PatchCore | Both | 1.5 weeks | Code complete |
 | 3 | Reverse Distillation | Both | 1.5 weeks | Not started |
 | 4 | Calibration, inspection and grading | Both | 1 week | Not started |
 | 5 | Cross-fabric study | Training PC | 2 weeks | Not started |
@@ -94,16 +94,16 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Tasks.**
 
-1. `loomguard/eval/metrics.py`: AUROC, AP, pixel AUROC, pixel AP, AUPRO at 0.3, histogram-based versions for large test sets. (Laptop)
-2. `loomguard/models/backbone.py`: frozen WideResNet-50-2 returning layer1, layer2, layer3. (Laptop)
-3. `loomguard/models/patchcore.py`: pooling, concatenation, random projection, greedy k-center coreset, nearest-neighbour scoring, heatmap. (Laptop, with tiny tensors)
-4. `scripts/fit.py` and `scripts/evaluate.py` driven by a YAML config. (Laptop)
-5. Run PatchCore on the five MVTec textures, then on RAW-FABRID unified. (Training PC)
+1. `loomguard/eval/metrics.py`: AUROC, AP, pixel AUROC, pixel AP, AUPRO at 0.3, histogram-based versions for large test sets. (Laptop) **Done 2026-11-13**
+2. `loomguard/models/backbone.py`: frozen WideResNet-50-2 returning layer1, layer2, layer3. (Laptop) **Done 2026-11-13**
+3. `loomguard/models/patchcore.py`: pooling, concatenation, random projection, greedy k-center coreset, nearest-neighbour scoring, heatmap. (Laptop, with tiny tensors) **Done 2026-11-13**
+4. `scripts/fit.py` and `scripts/evaluate.py` driven by a YAML config. (Laptop) **Done 2026-11-13**; tested end to end on synthetic trees.
+5. Run PatchCore on the five MVTec textures, then on RAW-FABRID unified. (Training PC) Configs and runbook in `docs/specs/phase-2-metrics-patchcore.md`; the runs are the operator's.
 
 **Acceptance criteria.**
 
-- [ ] AUPRO matches a brute-force implementation to 1e-6 on toy masks. A perfect heatmap scores 1.0 and a constant heatmap scores about 0.
-- [ ] Backbone unit test: for a 256x256 input the three outputs have shapes 256x64x64, 512x32x32, 1024x16x16, and no parameter requires gradients.
+- [x] AUPRO matches a brute-force implementation to 1e-6 on toy masks. A perfect heatmap scores 1.0 and a constant heatmap scores about 0. (Exactly 0 with the step integration of A-06; `tests/test_metrics.py`.)
+- [x] Backbone unit test: for a 256x256 input the three outputs have shapes 256x64x64, 512x32x32, 1024x16x16, and no parameter requires gradients. (`tests/test_backbone.py`.)
 - [ ] PatchCore on MVTec textures, mean over five categories: image AUROC 97.9 or more, pixel AUROC 96.6 or more, AUPRO 90.7 or more (EVALUATION.md section 3).
 - [ ] Coreset selection for 600 tiles finishes in under 10 minutes on the training PC. Peak RAM and VRAM recorded.
 - [ ] RAW-FABRID unified PatchCore results are in `results/` and summarised in `PROGRESS_LOG.md`.

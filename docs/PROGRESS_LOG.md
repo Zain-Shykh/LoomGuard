@@ -16,6 +16,23 @@ Entry template:
 
 ---
 
+## 2026-11-13: Phase 2 laptop work, metrics and PatchCore
+
+- **Phase:** 2 (Code complete; training-PC tasks outstanding)
+- **Who / where:** developer session, laptop
+- **Done:**
+  - `loomguard/eval/metrics.py`: exact AUROC and AP, `ScoreCounts` histograms for pixel AUROC, AP and AUPRO, 8-connected component labelling without scipy.
+  - `loomguard/models/backbone.py` (frozen WideResNet-50-2 to layer3, `gaussian_blur`) and `loomguard/models/patchcore.py` (pooling, concatenation, seeded random projection, greedy k-center coreset, nearest-neighbour scoring, heatmap, float16 bank save and load).
+  - `loomguard/runs.py`, `scripts/fit.py`, `scripts/evaluate.py`, `configs/mvtec_patchcore.yaml`, `configs/raw_fabrid_patchcore.yaml`.
+  - Spec `docs/specs/phase-2-metrics-patchcore.md` with the training-PC runbook.
+- **Evidence:** `pytest -q`: 67 passed, 0 failed, no dataset present (new: metrics 8, backbone 3, patchcore 8, runs 4, fit/evaluate 3). AUPRO equals a loop-based brute force with its own flood fill to 1e-6, a hand-derived value (0.175 / 0.3), 1.0 for a perfect map and 0.0 for a constant map. `fit.py` then `evaluate.py` run end to end on synthetic MVTec-like and RAW-FABRID-like trees (random backbone weights, tiny coreset); the reported tile metrics equal an independent tile, score, stitch, exact-metric recomputation and the pixel metrics agree within 5e-3. The backbone has 24.86 M parameters, none requiring gradients.
+- **Decisions:** A-06 to A-09 in `DECISIONS.md` (own metrics code and the AUPRO step integration; `runs.py` and the config schema; two-pass evaluation on stitched images; backbone defaults and the tile-score / mask relation). EVALUATION 2.1 and 5, ARCHITECTURE 5 and 12, CLAUDE.md layout corrected.
+- **Review:** 2 rounds. Round 1 CHANGES REQUIRED (progress log entry and plan status missing, spec not yet ticked, mean over undefined metrics), all fixed. Round 2 PASS with two minor doc findings (test names in the spec), fixed. Final suite: 67 passed.
+- **Problems / next:**
+  - Not seen on real data: the MVTec and RAW-FABRID numbers (targets 97.9 / 96.6 / 90.7), real ImageNet weights, coreset time and memory for 600 tiles, GPU latency. The laptop cannot download weights.
+  - Open for Phase 4: PatchCore's tile score is the max of the unblurred grid while the mask uses the blurred heatmap (A-09), so one `tau` for both needs a rule.
+  - Next: the operator runs the Phase 2 runbook after the Phase 1 one and commits `phase 2: results`.
+
 ## 2026-11-13: Phase 1 laptop work, data layer
 
 - **Phase:** 1 (Code complete; training-PC tasks outstanding)
