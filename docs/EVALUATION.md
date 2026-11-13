@@ -32,7 +32,8 @@ AUPRO: for each threshold, compute for every ground-truth connected component th
 
 Implementation rules:
 
-- Detection and pixel AUROC/AP come from `sklearn.metrics`. AUPRO is our own code, tested against a brute-force version on toy masks.
+- All metrics are our own code in `loomguard/eval/metrics.py` (scikit-learn is not a dependency, decision A-06), tested against hand-computed values and a brute-force version on toy masks. Ties count one half in AUROC; AP is the usual step-wise definition.
+- AUPRO regions are the 8-connected components of each ground-truth mask. The PRO curve is integrated as a step function (the value at false-positive rate `f` is the best PRO reachable with FPR at most `f`), so a perfect heatmap scores 1 and a constant one 0.
 - Pixel metrics on large test sets (RAW-FABRID has about 370 million test pixels) are computed from score histograms with 10,000 bins, not from sorted raw scores.
 - A tile is labelled defective if its ground-truth mask has at least one defect pixel. This matches the RAW-FABRID official patches.
 
@@ -172,7 +173,7 @@ One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json`:
 }
 ```
 
-The zeros are placeholders for the format. A script builds the summary tables for the report and the Results page of the app from these files.
+The zeros are placeholders for the format. Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `coreset_seconds`, `bundle_mb`, `coreset_ratio`, `bank_size`, `hist_bins` and `device`; `tau`, the false-alarm, recall, Dice and IoU keys arrive with Phase 4. Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
 
 ## 6. Compute budget (estimates, to be replaced by measurements)
 

@@ -49,6 +49,7 @@ loomguard/
   eval/        metrics, calibrate
   inspection/  postprocess, grading
   pipeline.py  Inspector: the single path used by evaluation and by the app
+  runs.py      config, manifest dispatch and paths shared by scripts/fit.py and scripts/evaluate.py
 scripts/       verify_datasets.py, fit.py, evaluate.py
 app/           streamlit_app.py
 configs/       one YAML per dataset and method

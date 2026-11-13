@@ -183,6 +183,8 @@ flowchart TD
 - **Coreset:** greedy k-center picks patches that cover the feature space evenly, so rare-but-normal texture is kept. Selection runs on the GPU on the 128-d projection; the stored vectors are the original 1,536-d ones.
 - **Coreset ratio:** 10 percent for benchmarks. 1 percent (about 6,000 vectors, 19 MB) for the CPU demo. The PatchCore paper reports almost no loss at 1 percent on textures.
 
+Code: `loomguard/models/backbone.py` (`Backbone`, `gaussian_blur`), `loomguard/models/patchcore.py` (`PatchCore.embed/fit/score/save/load`, `greedy_coreset`). The bank is saved as a plain float16 tensor. All patch vectors are held as float16 on the CPU, only the 128-d projection goes to the GPU for the coreset.
+
 ### 5.2 Scoring a tile
 
 ```mermaid
@@ -438,6 +440,7 @@ loomguard/
   models/      backbone.py, patchcore.py, rd4ad.py
   eval/        metrics.py, calibrate.py
   inspection/  postprocess.py, grading.py
+  runs.py      config, manifest dispatch, fabric profiles, tile cap and paths shared by fit.py and evaluate.py
   pipeline.py  Inspector: bundle + image in, heatmap + defects + grade out
                (the package is "inspection", not "inspect", which would shadow the standard library)
 scripts/       verify_datasets.py, fit.py, evaluate.py
