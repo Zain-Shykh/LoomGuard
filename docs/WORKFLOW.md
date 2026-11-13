@@ -66,6 +66,7 @@ Before launching, the orchestrator checks:
 - The previous phase is `Done`, or the owner has agreed to start anyway.
 - The packages the phase will need are installed. The developer session is not allowed to install packages. The orchestrator lists what is installed in the prompt's notes.
 - The existing tests pass.
+- The project virtual environment `.venv/` is activated in the shell that launches the session (`source .venv/bin/activate`), so that `python3` and `pytest` inside the session resolve to it and not to the system Python, which has no PyTorch.
 
 ### Step 2: launch (orchestrator)
 

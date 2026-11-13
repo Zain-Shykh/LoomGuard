@@ -16,6 +16,17 @@ Entry template:
 
 ---
 
+## 2026-11-13: Laptop environment installed
+
+- **Phase:** between 0 and 1 (preflight)
+- **Who / where:** Zain, laptop
+- **Done:** project virtual environment `.venv/` (git-ignored, 1.1 GB) with CPU PyTorch 2.15.0, torchvision 0.29.2, numpy 2.5.4, pillow 13.0.0, pyyaml 6.0.3, pytest 9.2.0, and `loomguard` installed in editable mode.
+- **Evidence:** `pytest -q` gives 1 passed. An untrained WideResNet-50-2 gives layer1 256x64x64, layer2 512x32x32, layer3 1024x16x16 for a 256x256 input, as in `ARCHITECTURE.md`. `git status` is clean.
+- **Decisions:** none. `WORKFLOW.md` preflight now says to activate `.venv` before launching a session.
+- **Problems / next:**
+  - Free disk is 2.5 GB. ImageNet weights for the backbone (about 130 MB) are not downloaded; laptop tests must build the model with `weights=None`.
+  - Next: launch the Phase 1 developer session.
+
 ## 2026-11-13: Workflow revised, the developer session writes the spec
 
 - **Phase:** between 0 and 1
