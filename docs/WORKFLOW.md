@@ -63,7 +63,7 @@ A phase passes through these states, shown in the status table of `IMPLEMENTATIO
 Before launching, the orchestrator checks:
 
 - `git status` is clean and `main` is up to date with `origin/main`.
-- The previous phase is `Done`, or the owner has agreed to start anyway.
+- The previous phase is `Done`, or `Code complete` with its training-PC runbook queued (decision D-58), or the owner has agreed to start anyway. Under D-58 a phase never waits for training-PC results; only decisions that need measured results (O-01 at the Phase 7 gate) wait for them.
 - The packages the phase will need are installed. The developer session is not allowed to install packages. The orchestrator lists what is installed in the prompt's notes.
 - The existing tests pass.
 - The project virtual environment `.venv/` is activated in the shell that launches the session (`source .venv/bin/activate`), so that `python3` and `pytest` inside the session resolve to it and not to the system Python, which has no PyTorch.
