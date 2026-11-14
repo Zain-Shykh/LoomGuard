@@ -38,7 +38,7 @@ def test_check_reports_missing(tmp_path, capsys):
     # AITEX is counted, not named
     for f in (tmp_path / "aitex" / "per_fabric" / "patchcore").glob("fabric0[0-2].json"):
         f.unlink()
-    assert "aitex/per_fabric/patchcore: missing 4 of 7 files" in summarize.missing_cells(summarize.load_results(tmp_path))
+    assert "aitex/per_fabric/patchcore: missing only 4 of 7 files" in summarize.missing_cells(summarize.load_results(tmp_path))
 
 
 def test_ablation_tables_and_plots(tmp_path, capsys):

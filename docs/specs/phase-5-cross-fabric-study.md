@@ -202,8 +202,8 @@ Expected GPU time (EVALUATION 6 speeds, 4 it/s, batch 16): PatchCore about 100 b
 |---|---|
 | Spec commit | 186bca3 |
 | Implementation commit | 1ad94e9 |
-| Review commit | |
-| Review rounds and verdict | |
+| Review commit | `phase 5: review fixes and doc sync` |
+| Review rounds and verdict | 1 round, PASS (three minor findings fixed) |
 | Tests | `pytest -q`: 128 passed, 1 slow test deselected (new: zju/aitex 7, study 9, summarize 2) |
 | Results commit (training PC) | |
 | Decisions made | A-21 to A-25 |

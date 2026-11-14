@@ -27,7 +27,7 @@ Entry template:
   - Spec `docs/specs/phase-5-cross-fabric-study.md` with the runbook and GPU-time estimate (RD4AD about 38 h, above the 27 h of the compute table, mostly RAW-FABRID held-out at 20,000 iterations; A-22).
 - **Evidence:** `pytest -q`: 128 passed, 0 failed, 1 slow test deselected (new: zju/aitex 7, study 9, summarize 2). End-to-end driver on a synthetic four-pattern ZJU tree runs four regimes, writes the expected result paths, skips on rerun and survives a failing config; held-out `fit` reads no train or val row of the held-out fabric; image metrics and `by_fabric` equal an independent recomputation; `test_every_cell_has_a_config` ties every EVALUATION 4.3 cell and ablation variant to a config; `test_headline_settings_fixed` pins D-23/D-24 values.
 - **Decisions:** A-21 to A-25.
-- **Review:** see below once recorded.
+- **Review:** round 1 PASS (the first reviewer attempt could not run Bash and returned INCOMPLETE; the progress log entry it found missing was written before the second attempt). Three minor findings fixed: the AITEX `--check` wording, the review record, and the note that the plan's headline-settings tick covers the laptop part only (the operator logs any later change).
 - **Problems / next:** ZJU-Leaper and AITEX layouts unverified; ZLEval glue and all runs, findings and failure-case images are training-PC tasks (runbook, spec section 8). Driver end-to-end test takes about 100 s.
 
 ## 2026-11-14: Phase 4 laptop work, calibration, inspection and grading

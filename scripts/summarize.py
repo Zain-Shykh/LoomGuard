@@ -65,7 +65,7 @@ def missing_cells(R: dict) -> list[str]:
         for m in METHODS:
             d = headline(ds, regime, m)
             have = {k[3] for k in R if k[:3] == (ds, regime, d)}
-            lack = sorted(set(names) - have) if isinstance(names, list) else ([f"{len(have)} of {names} files"] if len(have) < names else [])
+            lack = sorted(set(names) - have) if isinstance(names, list) else ([f"only {len(have)} of {names} files"] if len(have) < names else [])
             if lack:
                 out.append(f"{ds}/{regime}/{d}: missing {', '.join(lack)}")
     return out
