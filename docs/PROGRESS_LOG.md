@@ -16,6 +16,20 @@ Entry template:
 
 ---
 
+## 2026-11-14: Phase 4 laptop work, calibration, inspection and grading
+
+- **Phase:** 4 (Code complete; training-PC tasks outstanding)
+- **Who / where:** developer session, laptop
+- **Done:**
+  - `loomguard/eval/calibrate.py` (`calibrate`, `val_peaks`), `loomguard/inspection/postprocess.py` (closing, area filter, components, minimum-area rectangle length), `loomguard/inspection/grading.py` (four-point bands, points per 100 sq yd, grade), `loomguard/pipeline.py` (`Inspector`, `Scored`, `Inspection`, bundle load, roll grading).
+  - `scripts/fit.py` writes `calibration.json`; `scripts/evaluate.py` now runs every test image through `Inspector` and adds `tau`, `false_alarms_per_1000`, `tile_recall`, `dice`, `iou` and per-roll grading (`rolls`, `grade_agreement`, `points_error_mean`, `defect_count_error_mean`). New config keys and `px_per_mm: 4.0` in the RAW-FABRID configs.
+  - Spec `docs/specs/phase-4-calibration-inspection-grading.md` with the training-PC runbook (false-alarm band, per-roll grading, Hub upload, laptop load).
+  - The Phase 2 open question is settled (A-15): the operating tile score is the heatmap maximum for both methods; `score()` and the MVTec criteria are untouched.
+- **Evidence:** `pytest -q`: 110 passed, 0 failed, 1 slow test deselected (new: calibrate 5, postprocess 7, grading 9 cases, pipeline 8, inspection config 2; fit/evaluate end-to-end tests extended). Hand-computed grading: 50, 100, 200, 300 mm lines at 4 px/mm score 1, 2, 3, 4 points; empty mask 0 points, grade A; one RAW-FABRID frame is 0.13717 sq yd. A 3 px gap is closed, a 5 px gap is not, a 10 px blob is removed. `Inspector` on a 1792x1024 image equals hand tiling, scoring and stitching bit for bit. End-to-end `fit.py` then `evaluate.py` (both methods, MVTec-like and RAW-FABRID-like synthetic trees): tau, false-alarm, recall, Dice, IoU and the per-roll grades equal an independent recomputation.
+- **Decisions:** A-15 to A-20 in `DECISIONS.md`. ARCHITECTURE 5.2, 8, 9, 10 and EVALUATION 2.2, 5 updated.
+- **Review:** round 1 CHANGES REQUIRED (documents only: progress log, README, spec record, a broken table in ARCHITECTURE 5.2, spec file table); fixed. Round 2 below.
+- **Problems / next:** not seen on real data: the false-alarm rate against the 5 to 20 per 1,000 band, per-roll grade agreement on the 7 rolls, a real bundle on the laptop CPU. The `ms_per_tile` figure now includes tiling and stitching (A-18). Bundles fitted before this phase must be refitted. Next: the operator runs the Phase 4 runbook and commits `phase 4: results`.
+
 ## 2026-11-13: Phase 3 laptop work, Reverse Distillation
 
 - **Phase:** 3 (Code complete; training-PC tasks outstanding)
@@ -45,7 +59,7 @@ Entry template:
 - **Review:** 2 rounds. Round 1 CHANGES REQUIRED (progress log entry and plan status missing, spec not yet ticked, mean over undefined metrics), all fixed. Round 2 PASS with two minor doc findings (test names in the spec), fixed. Final suite: 67 passed.
 - **Problems / next:**
   - Not seen on real data: the MVTec and RAW-FABRID numbers (targets 97.9 / 96.6 / 90.7), real ImageNet weights, coreset time and memory for 600 tiles, GPU latency. The laptop cannot download weights.
-  - Open for Phase 4: PatchCore's tile score is the max of the unblurred grid while the mask uses the blurred heatmap (A-09), so one `tau` for both needs a rule.
+  - Open for Phase 4: PatchCore's tile score is the max of the unblurred grid while the mask uses the blurred heatmap (A-09), so one `tau` for both needs a rule (settled in Phase 4, A-15).
   - Next: the operator runs the Phase 2 runbook after the Phase 1 one and commits `phase 2: results`.
 
 ## 2026-11-13: Phase 1 laptop work, data layer

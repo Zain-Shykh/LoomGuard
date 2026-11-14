@@ -17,7 +17,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 | 1 | Repository skeleton and data layer | Both | 1 week | Code complete |
 | 2 | Metrics and PatchCore | Both | 1.5 weeks | Code complete |
 | 3 | Reverse Distillation | Both | 1.5 weeks | Code complete |
-| 4 | Calibration, inspection and grading | Both | 1 week | Not started |
+| 4 | Calibration, inspection and grading | Both | 1 week | Code complete |
 | 5 | Cross-fabric study | Training PC | 2 weeks | Not started |
 | 6 | Streamlit application | Laptop | 1.5 weeks | Not started |
 | 7 | Stretch goals (decision gate) | Both | optional | Not started |
@@ -152,12 +152,12 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Acceptance criteria.**
 
-- [ ] Grading unit tests with synthetic masks: a 50 mm line scores 1 point, 100 mm scores 2, 200 mm scores 3, 300 mm scores 4, at 4 px/mm. An empty mask gives 0 points and grade A.
-- [ ] Two blobs 3 px apart are merged into one defect; a 10 px blob is removed (unit tests).
-- [ ] `Inspector` output on a full 1792x1024 image equals tiling, scoring and stitching done by hand (test with a deterministic fake model).
+- [x] Grading unit tests with synthetic masks: a 50 mm line scores 1 point, 100 mm scores 2, 200 mm scores 3, 300 mm scores 4, at 4 px/mm. An empty mask gives 0 points and grade A.
+- [x] Two blobs 3 px apart are merged into one defect; a 10 px blob is removed (unit tests).
+- [x] `Inspector` output on a full 1792x1024 image equals tiling, scoring and stitching done by hand (test with a deterministic fake model; `tests/test_pipeline.py`).
 - [ ] On RAW-FABRID, false alarms on test-normal tiles are between 5 and 20 per 1,000 for the 10 per 1,000 target, for both methods. If not, the cause is analysed and written up.
 - [ ] Per-roll grade from predicted masks and from ground-truth masks reported for all 7 rolls (points error and grade agreement).
-- [ ] A bundle saved on the training PC loads and runs on the laptop CPU with `weights_only=True`.
+- [ ] A bundle saved on the training PC loads and runs on the laptop CPU with `weights_only=True`. (Synthetic round trip passes in `tests/test_pipeline.py`; the real bundle is runbook step 5.)
 
 ---
 

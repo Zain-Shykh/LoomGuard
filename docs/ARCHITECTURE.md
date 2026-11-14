@@ -209,9 +209,9 @@ Simplifications against the paper, each with its upgrade path:
 |---|---|---|
 | Concatenate to 1,536-d | Adaptive pooling to 1,024-d | Only if the MVTec sanity check misses its target |
 | Tile score = max patch distance | Max distance re-weighted by neighbour density | Same |
-
-**Two tile scores, two jobs (decision A-15).** `PatchCore.score` returns the max of the unblurred grid as its tile score; this is the published quantity and feeds the threshold-free `tile_auroc` and `tile_ap`. The operating decision (calibration, "is this tile flagged", the mask) uses one map for everything: the maximum of the blurred tile heatmap, for both methods. A tile is flagged exactly when at least one of its heatmap pixels is above `tau`. For RD4AD the two scores are the same number.
 | Exact search with `torch.cdist` | FAISS index | If CPU latency per tile exceeds the demo budget |
+
+**Two tile scores, two jobs (decision A-15).** The "Tile score = max over the grid" box in the diagram is `PatchCore.score`'s first return value, the max of the unblurred grid: the published quantity, used for the threshold-free `tile_auroc` and `tile_ap`. The operating decision (calibration, "is this tile flagged", the mask) uses one map for everything: the maximum of the blurred tile heatmap, for both methods. A tile is flagged exactly when at least one of its heatmap pixels is above `tau`. For RD4AD the two scores are the same number.
 
 ## 6. Method 2: Reverse Distillation (RD4AD)
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 4 |
-| Status | Written |
+| Status | Code complete (training-PC runbook outstanding) |
 | Spec written | 2026-11-14 |
 | Written by | developer session, phase 4 |
 | Depends on | Phases 1 to 3 (Code complete; their training-PC runbooks are queued and do not block this phase, decision D-58) |
@@ -54,7 +54,8 @@ Read:
 | `scripts/evaluate.py` | changed | scoring through `Inspector`; operating-point and grading metrics |
 | `configs/raw_fabrid_*.yaml` | changed | `px_per_mm: 4.0`, `scale_assumed: false`, `grade_rolls: true` |
 | `tests/test_calibrate.py`, `test_postprocess.py`, `test_grading.py`, `test_pipeline.py` | new | section 7 |
-| `tests/test_fit_evaluate.py`, `tests/test_runs.py` | changed | new bundle file and result keys, config keys |
+| `tests/test_fit_evaluate.py` | changed | new bundle file and result keys, independent recomputation |
+| `tests/test_inspection_config.py` | new | config defaults and RAW-FABRID scale |
 | docs | changed | section 9 |
 
 ### 4.2 Interfaces
@@ -126,7 +127,7 @@ class Inspector:
     def __init__(self, model, tau: float, px_per_mm: float = 4.0, scale_assumed: bool = True, resize: int | None = None,
                  grading: dict | None = None, batch_size: int = 16): ...
     @classmethod
-    def load(cls, bundle: Path | str, device="cpu") -> "Inspector":
+    def load(cls, bundle: Path | str, device="cpu", backbone=None) -> "Inspector":
         """Reads config.yaml, calibration.json and model.pt (torch.load weights_only=True through the model class)."""
     def score_image(self, img: PIL.Image.Image) -> Scored     # resize (PIL bilinear) if set, preprocess, tile, score, stitch
     def decide(self, s: Scored, tau: float | None = None) -> Inspection   # threshold, clean, measure, points; no model call
@@ -190,17 +191,17 @@ None. Connected components come from `loomguard/eval/metrics.py`; closing uses `
 
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
-| A1 | Grading unit tests with synthetic masks: a 50 mm line scores 1 point, 100 mm scores 2, 200 mm scores 3, 300 mm scores 4, at 4 px/mm. An empty mask gives 0 points and grade A. | Laptop | `tests/test_grading.py::test_line_points`, `::test_empty_mask_grade_a` | [ ] |
-| A2 | Two blobs 3 px apart are merged into one defect; a 10 px blob is removed. | Laptop | `tests/test_postprocess.py::test_close_merges_3px_gap`, `::test_small_blob_removed` | [ ] |
-| A3 | `Inspector` output on a full 1792x1024 image equals tiling, scoring and stitching done by hand (deterministic fake model). | Laptop | `tests/test_pipeline.py::test_inspector_matches_manual_pipeline` | [ ] |
+| A1 | Grading unit tests with synthetic masks: a 50 mm line scores 1 point, 100 mm scores 2, 200 mm scores 3, 300 mm scores 4, at 4 px/mm. An empty mask gives 0 points and grade A. | Laptop | `tests/test_grading.py::test_line_points`, `::test_empty_mask_grade_a` | [x] |
+| A2 | Two blobs 3 px apart are merged into one defect; a 10 px blob is removed. | Laptop | `tests/test_postprocess.py::test_close_merges_3px_gap`, `::test_small_blob_removed` | [x] |
+| A3 | `Inspector` output on a full 1792x1024 image equals tiling, scoring and stitching done by hand (deterministic fake model). | Laptop | `tests/test_pipeline.py::test_inspector_matches_manual_pipeline` | [x] |
 | A4 | On RAW-FABRID, false alarms on test-normal tiles are between 5 and 20 per 1,000 for the 10 per 1,000 target, for both methods. If not, the cause is analysed and written up. | Training PC | runbook step 3; `false_alarms_per_1000` in `results/raw_fabrid/unified/*/unified.json` | [ ] |
 | A5 | Per-roll grade from predicted masks and from ground-truth masks reported for all 7 rolls (points error and grade agreement). | Training PC | runbook step 4; `rolls`, `grade_agreement`, `points_error_mean` in the same files | [ ] |
-| A6 | A bundle saved on the training PC loads and runs on the laptop CPU with `weights_only=True`. | Laptop (test) and Training PC (real bundle) | `tests/test_pipeline.py::test_bundle_round_trip` (synthetic); runbook step 5 (real bundle) | [ ] |
-| A7 | Added: `calibrate` returns the `ceil((n+1)*(1-far))`-th order statistic, flags n < 500 as low confidence, and about `target_far` of the calibration tiles exceed it. | Laptop | `tests/test_calibrate.py` | [ ] |
-| A8 | Added: tile decision and mask agree: a tile has `peak > tau` iff its heatmap has a pixel above `tau`; `score()` of both models is unchanged. | Laptop | `tests/test_pipeline.py::test_tile_flag_matches_mask`; `tests/test_patchcore.py`, `tests/test_rd4ad.py` unchanged and passing | [ ] |
-| A9 | Added: `fit.py` writes `calibration.json` from val tiles only; `evaluate.py` goes through `Inspector` (no own tiling or stitching), and its operating-point and grading numbers equal an independent recomputation. | Laptop | `tests/test_fit_evaluate.py` | [ ] |
-| A10 | Added: monotone in `tau`; grade cut-offs read from config; points bands at the exact limits (75, 150, 230 mm). | Laptop | `tests/test_pipeline.py::test_tau_monotone`, `tests/test_grading.py` | [ ] |
-| A11 | Added: all Phase 1 to 3 tests still pass. | Laptop | `pytest` | [ ] |
+| A6 | A bundle saved on the training PC loads and runs on the laptop CPU with `weights_only=True`. | Laptop (test) and Training PC (real bundle) | `tests/test_pipeline.py::test_bundle_round_trip` (synthetic); runbook step 5 (real bundle) | [x] synthetic; real bundle pending |
+| A7 | Added: `calibrate` returns the `ceil((n+1)*(1-far))`-th order statistic, flags n < 500 as low confidence, and about `target_far` of the calibration tiles exceed it. | Laptop | `tests/test_calibrate.py` | [x] |
+| A8 | Added: tile decision and mask agree: a tile has `peak > tau` iff its heatmap has a pixel above `tau`; `score()` of both models is unchanged. | Laptop | `tests/test_pipeline.py::test_tile_flag_matches_mask`; `tests/test_patchcore.py`, `tests/test_rd4ad.py` unchanged and passing | [x] |
+| A9 | Added: `fit.py` writes `calibration.json` from val tiles only; `evaluate.py` goes through `Inspector` (no own tiling or stitching), and its operating-point and grading numbers equal an independent recomputation. | Laptop | `tests/test_fit_evaluate.py` | [x] |
+| A10 | Added: monotone in `tau`; grade cut-offs read from config; points bands at the exact limits (75, 150, 230 mm). | Laptop | `tests/test_pipeline.py::test_tau_monotone`, `tests/test_grading.py` | [x] |
+| A11 | Added: all Phase 1 to 3 tests still pass. | Laptop | `pytest` | [x] |
 
 ## 7. Test plan
 
@@ -298,12 +299,12 @@ Commit `phase 4: results` with `results/**.json`, the log entry, ticks in this s
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
-| Review commit | |
-| Review rounds and verdict | |
-| Tests | |
-| Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Spec commit | 082a2c9 |
+| Implementation commit | 4cead6a |
+| Review commit | see git log (`phase 4: review fixes and doc sync`) |
+| Review rounds and verdict | round 1 CHANGES REQUIRED (documents only), round 2 recorded in PROGRESS_LOG.md |
+| Tests | `pytest -q`: 110 passed, 0 failed, 1 slow deselected |
+| Results commit (training PC) | pending |
+| Decisions made | A-15 to A-20 |
+| Deviations from this spec | `Inspector.load` has an extra `backbone=None` argument (lets `evaluate.py` and tests inject the backbone; A-18). `tests/test_inspection_config.py` is new, `tests/test_runs.py` unchanged. A4, A5 and the real-bundle half of A6 are training-PC criteria and stay unticked. |
 | Closed by owner | |
