@@ -227,6 +227,15 @@ def test_ensure_bundle_downloads_once(tmp_path, hub):
     assert list(d.parent.glob(".download-*")) == []
 
 
+def test_ensure_bundle_replaces_incomplete_bundle(tmp_path, hub):
+    loc = app.Locations(tmp_path / "bundles", tmp_path, tmp_path, hub.url, "user/repo")
+    broken = tmp_path / "bundles" / "raw_fabrid" / "RolloA" / "patchcore"
+    broken.mkdir(parents=True)
+    (broken / "model.pt").write_bytes(b"half a bundle")
+    d = app.ensure_bundle(loc, "raw_fabrid/RolloA", "patchcore")
+    assert all((d / f).is_file() for f in app.BUNDLE_FILES) and (d / "model.pt").read_bytes() == b"content of model.pt"
+
+
 def test_ensure_bundle_errors(tmp_path, hub, monkeypatch):
     mk = lambda repo, url=hub.url: app.Locations(tmp_path / "bundles", tmp_path, tmp_path, url, repo)  # noqa: E731
     for loc, pid, m, msg in [(mk(""), "raw_fabrid/RolloA", "patchcore", "no Hub repository"),

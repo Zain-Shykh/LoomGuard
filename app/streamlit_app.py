@@ -181,6 +181,8 @@ def ensure_bundle(loc: Locations, profile_id: str, method_dir: str) -> Path:
                     if size > MAX_BUNDLE_FILE:
                         raise BundleError(f"{rel}/{f} is larger than {MAX_BUNDLE_FILE // 2**20} MB; download stopped.")
                     out.write(chunk)
+        if dest.exists() and not all((dest / f).is_file() for f in BUNDLE_FILES):
+            shutil.rmtree(dest)  # an incomplete bundle must not block the download
         if not dest.exists():  # another session may have finished first
             tmp.rename(dest)
     except BundleError:

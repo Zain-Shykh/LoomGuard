@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 6 |
-| Status | Written |
+| Status | Code complete |
 | Spec written | 2026-11-14 |
 | Written by | developer session, phase 6 |
 | Depends on | Phases 1 to 5 (Code complete, runbooks queued, D-58). Needs `Inspector` and the bundle format of Phase 4 and the results layout of Phase 5. |
@@ -106,7 +106,7 @@ def locations() -> Locations
 
 def list_profiles(loc: Locations) -> dict[str, dict]
     """id "<dataset>/<fabric>" -> {"label": str, "methods": {display name: method directory}}. Union of assets/profiles.json
-    and the bundles found under loc.bundles (<dataset>/<fabric>/<method dir>/calibration.json)."""
+    (only when a Hub repository is configured, A-26) and the bundles found under loc.bundles (<dataset>/<fabric>/<method dir>/calibration.json)."""
 
 def ensure_bundle(loc: Locations, profile_id: str, method_dir: str) -> Path
     """<loc.bundles>/<profile_id>/<method_dir> if it holds model.pt, calibration.json and config.yaml. Otherwise download
@@ -198,15 +198,15 @@ The first seven are the plan's, in its order. "Laptop part" is what this session
 | A1 | From a clean clone, `pip install` and `streamlit run app/streamlit_app.py` work on a CPU-only machine with no dataset. | Laptop part: the extra is declared and the app starts and renders every page with no dataset and no bundle. Fresh clone: runbook 1 | `pytest tests/test_app.py::test_starts_without_bundles_or_data`, `test_pyproject_declares_app_extra`; headless `streamlit run` (section 8, step 0); runbook 1 | [ ] |
 | A2 | A 1792x1024 image is processed in under 10 seconds on the laptop CPU with the PatchCore 1 percent bundle. Measured time recorded. | Laptop part: the page reports the measured time of the inspection. Measurement: runbook 2 | `test_inspect_sample_reports_time_and_matches_evaluate`; runbook 2 (value in the progress log) | [ ] |
 | A3 | The app's heatmap and defect list for a sample image equal the output of `scripts/evaluate.py` for the same image and bundle. | Laptop part: synthetic bundle, equal score, flag, defect table and heatmap. Real sample: runbook 3 | `test_inspect_sample_reports_time_and_matches_evaluate`; runbook 3 | [ ] |
-| A4 | A non-image file, an oversized file and a corrupt image each produce a clear error message and no crash. | Laptop | `test_read_image_rejects`, `test_upload_errors_in_app` (non-image, oversized, corrupt, wrong format, too many pixels, too small) | [ ] |
+| A4 | A non-image file, an oversized file and a corrupt image each produce a clear error message and no crash. | Laptop | `test_read_image_rejects`, `test_upload_errors_in_app` (non-image, oversized, corrupt, wrong format, too many pixels, too small) | [x] |
 | A5 | An image of the wrong fabric produces the "unknown fabric" warning instead of a meaningless defect list. | Laptop part: synthetic wrong fabric, rule unit test. Real images: runbook 5 | `test_unknown_fabric_rule`, `test_wrong_fabric_warning_hides_defects`; runbook 5 | [ ] |
-| A6 | Results for uploaded images of unknown origin are labelled "assumed scale"; single-image grades are labelled as extrapolations. | Laptop | `test_scale_label`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation` | [ ] |
+| A6 | Results for uploaded images of unknown origin are labelled "assumed scale"; single-image grades are labelled as extrapolations. | Laptop | `test_scale_label`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation` | [x] |
 | A7 | The roll stream runs to the end on a RAW-FABRID demo roll and its final grade matches the Phase 4 number. | Laptop part: synthetic roll runs to the end and equals `evaluate.py`'s per-roll result. Real roll: runbook 4 | `test_roll_stream_matches_evaluate`, `test_stream_roll_equals_inspect_roll`; runbook 4 | [ ] |
-| A8 | The Results page shows tables and plots from `results/` and does not crash on an empty folder. (Plan task 3.) | Laptop | `test_results_page` | [ ] |
-| A9 | A bundle that is not on disk is downloaded from the weights host once and then served from the cache; bad names and failed downloads give a clear error. (Plan task 5.) | Laptop, against a local HTTP server | `test_ensure_bundle_downloads_once`, `test_ensure_bundle_errors` | [ ] |
-| A10 | The sample picker and the roll picker work from whatever is in `assets/`, show the attribution, and handle a missing attribution entry. (Plan task 5.) | Laptop | `test_list_samples_and_rolls`, `test_shipped_samples_are_listed_with_attribution`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation` | [ ] |
+| A8 | The Results page shows tables and plots from `results/` and does not crash on an empty folder. (Plan task 3.) | Laptop | `test_results_page` | [x] |
+| A9 | A bundle that is not on disk is downloaded from the weights host once and then served from the cache; bad names and failed downloads give a clear error. (Plan task 5.) | Laptop, against a local HTTP server | `test_ensure_bundle_downloads_once`, `test_ensure_bundle_errors` | [x] |
+| A10 | The sample picker and the roll picker work from whatever is in `assets/`, show the attribution, and handle a missing attribution entry. (Plan task 5.) | Laptop | `test_list_samples_and_rolls`, `test_shipped_samples_are_listed_with_attribution`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation` | [x] |
 | A11 | Deployment files for a Hugging Face Space exist (CPU PyTorch requirements, Space front matter); the actual deployment is the runbook. (Plan task 6.) | Laptop part; deploy: runbook 6 | `test_deploy_files`; runbook 6 | [ ] |
-| A12 | The app contains no tiling, scoring or grading code of its own (CLAUDE.md rule 5). | Laptop | `test_app_has_no_pipeline_code` (the source imports `Inspector` and does not import `loomguard.data.tiling`, `loomguard.models`, `loomguard.inspection.postprocess`), reviewer | [ ] |
+| A12 | The app contains no tiling, scoring or grading code of its own (CLAUDE.md rule 5). | Laptop | `test_app_has_no_pipeline_code` (the source imports `Inspector` and does not import `loomguard.data.tiling`, `loomguard.models`, `loomguard.inspection.postprocess`), reviewer | [x] |
 
 ## 7. Test plan
 
@@ -365,12 +365,12 @@ cp deploy/requirements.txt requirements.txt && cp deploy/README_space.md README.
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
-| Review commit | |
-| Review rounds and verdict | |
-| Tests | |
-| Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Spec commit | 29e2e21 |
+| Implementation commit | 0649118 |
+| Review commit | d4f4ee4 (docs, pre-review) and the final `phase 6: review fixes and doc sync` |
+| Review rounds and verdict | 1 round, PASS; four minor findings fixed (spec docstring of `list_profiles`, A-20 annotation, incomplete-bundle retry with a new test, this record) |
+| Tests | `pytest -q`: 154 passed, 0 failed, 1 slow deselected (`tests/test_app.py`: 26) |
+| Results commit (training PC) | pending: runbook steps 1 to 6 |
+| Decisions made | A-26 to A-29 |
+| Deviations from this spec | `use_container_width` dropped (deprecated in the installed Streamlit); Streamlit enforces the file extension too, so tests send a GIF named `.png` for the content check; A1, A2, A3, A5, A7 and A11 stay unticked: only their laptop part is met, the rest is the runbook. |
 | Closed by owner | |
