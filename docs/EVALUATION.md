@@ -43,9 +43,9 @@ All use the single threshold `tau` calibrated on normal validation tiles (see AR
 
 | Metric | Definition |
 |---|---|
-| False alarms per 1,000 normal tiles | Normal test tiles with score above `tau`, per 1,000. Target is 10. |
-| Tile recall | Fraction of defective test tiles with score above `tau` |
-| Pixel Dice and IoU | Overlap of the cleaned predicted mask with the ground truth, over all defective test tiles |
+| False alarms per 1,000 normal tiles | Normal test tiles whose heatmap maximum is above `tau`, per 1,000. Target is 10 (accepted band 5 to 20). |
+| Tile recall | Fraction of defective test tiles whose heatmap maximum is above `tau` |
+| Pixel Dice and IoU | Overlap of the cleaned predicted mask with the ground truth, pooled over the pixels of all defective test tiles (`2I/(P+G)`, `I/(P+G-I)`) |
 | ZJU-Leaper official metrics | F1 pixel (Dice), F1 region, F1 sample from the official `ZLEval`, for comparison with the dataset paper |
 
 ### 2.3 Grading metrics (RAW-FABRID rolls)
@@ -173,7 +173,7 @@ One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json` (`<me
 }
 ```
 
-The zeros are placeholders for the format. Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `bundle_mb`, `hist_bins` and `device`, plus per method `coreset_seconds`, `coreset_ratio` and `bank_size` (PatchCore) or `iterations`, `iters_per_second`, `final_train_loss` and `final_val_loss` (RD4AD); `tau`, the false-alarm, recall, Dice and IoU keys arrive with Phase 4. Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
+The zeros are placeholders for the format. Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `bundle_mb`, `hist_bins` and `device`, plus per method `coreset_seconds`, `coreset_ratio` and `bank_size` (PatchCore) or `iterations`, `iters_per_second`, `final_train_loss` and `final_val_loss` (RD4AD); Phase 4 adds `tau`, `false_alarms_per_1000`, `tile_recall`, `dice` and `iou` (null when undefined) and, when the config sets `grade_rolls` (RAW-FABRID), `rolls` (per fabric: `frames`, `defects_pred`, `defects_gt`, `points_pred`, `points_gt`, `points_per_100_pred`, `points_per_100_gt`, `grade_pred`, `grade_gt`), `grade_agreement`, `points_error_mean` and `defect_count_error_mean`. The operating tile score is the heatmap maximum for both methods (A-15); `tile_auroc` and `tile_ap` still use the model's published tile score. RAW-FABRID's test pool contains only defective images, so its "rolls" are the test frames of each roll, not complete rolls (A-17). Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
 
 ## 6. Compute budget (estimates, to be replaced by measurements)
 

@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 
 from loomguard.data.dataset import RandomCropDataset, TileDataset
 from loomguard.data.manifest import select, write_manifest
+from loomguard.eval.calibrate import calibrate, val_peaks
 from loomguard.models.backbone import Backbone
 from loomguard.models.patchcore import PatchCore
 from loomguard.models.rd4ad import RD4AD
@@ -68,6 +69,10 @@ def main(argv: list[str] | None = None) -> None:
         out = bundle_dir(cfg, name)
         out.mkdir(parents=True, exist_ok=True)
         model.save(out / "model.pt")
+        # tau from normal validation tiles only (rule 2): heatmap maxima, the same quantity the Inspector thresholds
+        cal = calibrate(val_peaks(model, select(prows, split="val"), cfg["root"], cfg[cfg["method"]]["batch_size"], cfg["num_workers"]),
+                        cfg["target_far"])
+        (out / "calibration.json").write_text(json.dumps(cal, indent=2))
         with open(out / "config.yaml", "w") as f:
             yaml.safe_dump({**cfg, "profile": name, "git_commit": git_commit(), "tile_size": 256,
                             "layers": ["layer2", "layer3"] if cfg["method"] == "patchcore" else ["layer1", "layer2", "layer3"]}, f)
@@ -77,7 +82,8 @@ def main(argv: list[str] | None = None) -> None:
                    "bundle_mb": (out / "model.pt").stat().st_size / 2**20}
         (out / "metrics.json").write_text(json.dumps(metrics, indent=2))
         print(f"{name}: {stats['n_train_tiles']} train tiles, {line}, peak RAM {metrics['peak_ram_gb']:.1f} GB, "
-              f"peak VRAM {metrics['peak_vram_gb']:.1f} GB -> {out}")
+              f"peak VRAM {metrics['peak_vram_gb']:.1f} GB, tau {cal['tau']:.4f}"
+              f"{' (LOW-CONFIDENCE calibration)' if cal['low_confidence'] else ''} -> {out}")
 
 
 if __name__ == "__main__":

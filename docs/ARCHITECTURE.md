@@ -209,6 +209,8 @@ Simplifications against the paper, each with its upgrade path:
 |---|---|---|
 | Concatenate to 1,536-d | Adaptive pooling to 1,024-d | Only if the MVTec sanity check misses its target |
 | Tile score = max patch distance | Max distance re-weighted by neighbour density | Same |
+
+**Two tile scores, two jobs (decision A-15).** `PatchCore.score` returns the max of the unblurred grid as its tile score; this is the published quantity and feeds the threshold-free `tile_auroc` and `tile_ap`. The operating decision (calibration, "is this tile flagged", the mask) uses one map for everything: the maximum of the blurred tile heatmap, for both methods. A tile is flagged exactly when at least one of its heatmap pixels is above `tau`. For RD4AD the two scores are the same number.
 | Exact search with `torch.cdist` | FAISS index | If CPU latency per tile exceeds the demo budget |
 
 ## 6. Method 2: Reverse Distillation (RD4AD)
@@ -351,12 +353,12 @@ ViT-Small (37 M parameters) is the 12 GB-safe choice. The paper reports 99.3 ima
 Each bundle carries one threshold `tau`, set without any defect data:
 
 1. Run the model on the held-out normal validation tiles of that fabric profile.
-2. Take each tile's heatmap maximum.
+2. Take each tile's heatmap maximum (the blurred heatmap, for PatchCore as well as RD4AD, decision A-15).
 3. `tau` is the `ceil((n + 1) * 0.99) / n` quantile of those maxima, so about 1 percent of normal tiles exceed it.
 
 The same `tau` gives the tile decision (score above `tau`) and the pixel mask (heatmap above `tau`). One threshold, one source of truth. The target false-alarm rate (default 1 percent) is a config value.
 
-The bundle also stores the median and 99th percentile of validation scores, so the UI can show scores on a common 0 to 1 style scale across models.
+The bundle also stores the median and 99th percentile of validation scores, so the UI can show scores on a common 0 to 1 style scale across models. Fewer than 500 validation tiles sets `low_confidence` in `calibration.json`. Code: `loomguard/eval/calibrate.py` (`calibrate`, `val_peaks`); `scripts/fit.py` writes the file.
 
 ## 9. Inspection and grading
 
@@ -379,7 +381,7 @@ flowchart TD
 - The four-point system scores holes differently. LoomGuard cannot tell a hole from another defect without defect-type labels, so holes are scored by length like everything else. This is stated in the UI.
 - `px_per_mm`: 4.0 for RAW-FABRID (stated by the dataset), 5.0 for TSFabrics (derived from 127 PPI). For ZJU-Leaper, AITEX and uploaded images of unknown origin the value is an assumption and the UI labels the result "assumed scale".
 - **A grade is only meaningful for a roll.** One RAW-FABRID frame is 0.137 square yards, so a single 1-point defect extrapolates to 730 points per 100 square yards. For a single uploaded image the app shows defects and points, and marks the grade as an extrapolation. Roll mode sums over all frames.
-- Minimum blob area, closing size and the grade cut-offs are calibration knobs in the config.
+- Minimum blob area, closing size and the grade cut-offs are calibration knobs in the config (`grading: {closing, min_area_px, cutoffs}`; `px_per_mm`, `scale_assumed`). Code: `loomguard/inspection/postprocess.py` (closing by max-pool, components from `eval/metrics.py`, minimum-area rectangle by a 1 degree rotation search), `loomguard/inspection/grading.py`. Points bands are inclusive upper limits (a 75 mm defect scores 1).
 
 ## 10. Model bundle
 
@@ -389,7 +391,7 @@ Everything the Inspector needs for one fabric profile and method:
 artifacts/<dataset>/<fabric>/<method>/
   model.pt            PatchCore: memory bank tensor (float16)
                       RD4AD: student state dict (float16)
-  calibration.json    tau, target false-alarm rate, validation score statistics
+  calibration.json    tau, target false-alarm rate, n_val_tiles, low_confidence, median / p99 / min / max of the validation heatmap maxima
   config.yaml         tile size, layers, coreset ratio or training settings, px_per_mm, seed
   metrics.json        fit-side system metrics, then the test metrics of this bundle
                       (RD4AD: iterations, iters_per_second, final_train_loss, final_val_loss, loss_curve, peak_vram_gb)

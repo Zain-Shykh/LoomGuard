@@ -14,3 +14,6 @@ device: auto
 hist_bins: 10000
 artifacts: artifacts
 results: results
+px_per_mm: 4.0        # stated by the dataset (ARCHITECTURE 9)
+scale_assumed: false
+grade_rolls: true    # per-roll predicted-vs-ground-truth grading in evaluate.py

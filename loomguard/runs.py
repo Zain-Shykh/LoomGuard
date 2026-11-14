@@ -10,7 +10,9 @@ import yaml
 from loomguard.data.manifest import MVTEC_TEXTURES, TileRow, build_mvtec, build_raw_fabrid
 
 DEFAULTS = {"seed": 0, "backbone_weights": "IMAGENET1K_V1", "device": "auto", "num_workers": 0, "hist_bins": 10_000,
-            "artifacts": "artifacts", "results": "results", "fabrics": None, "targets": None, "tag": ""}
+            "artifacts": "artifacts", "results": "results", "fabrics": None, "targets": None, "tag": "",
+            "target_far": 0.01, "px_per_mm": 4.0, "scale_assumed": True, "grade_rolls": False}
+GRADING_DEFAULTS = {"closing": 5, "min_area_px": 16, "cutoffs": [20, 40, 60]}
 PATCHCORE_DEFAULTS = {"max_tiles": 600, "coreset_ratio": 0.10, "proj_dim": 128, "batch_size": 16}
 RD4AD_DEFAULTS = {"iterations": 5000, "batch_size": 16, "lr": 0.005, "betas": [0.5, 0.999], "seed": None,
                   "val_tiles": 64, "val_every": 500, "log_every": 100}
@@ -28,7 +30,8 @@ def load_config(path: Path | str) -> dict:
     if cfg["regime"] not in ("per_fabric", "unified"):
         raise ValueError(f"regime must be per_fabric or unified, got {cfg['regime']!r}")
     cfg = {**DEFAULTS, **cfg, "patchcore": {**PATCHCORE_DEFAULTS, **cfg.get("patchcore", {})},
-           "rd4ad": {**RD4AD_DEFAULTS, **cfg.get("rd4ad", {})}}
+           "rd4ad": {**RD4AD_DEFAULTS, **cfg.get("rd4ad", {})}, "grading": {**GRADING_DEFAULTS, **cfg.get("grading", {})}}
+    cfg.setdefault("resize", 256 if cfg["dataset"] == "mvtec" else None)  # MVTec protocol: whole image resized (D-21)
     if cfg["rd4ad"]["seed"] is None:
         cfg["rd4ad"]["seed"] = cfg["seed"]
     cfg["config"] = str(path)
