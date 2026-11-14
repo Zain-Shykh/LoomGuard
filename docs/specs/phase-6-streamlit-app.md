@@ -86,9 +86,9 @@ def scale_label(px_per_mm: float, scale_assumed: bool, from_upload: bool) -> str
     """"4.0 px/mm (assumed scale)" if scale_assumed or from_upload, else "4.0 px/mm (stated by the dataset)"."""
 
 def overlay(img: Image.Image, heat: Tensor, tau: float) -> Image.Image
-    """img (any mode, H x W) blended with the heatmap (H x W float32): transparent at 0, red-yellow at 2 * tau, clipped."""
+    """img (any mode, H x W) blended with the heatmap (H x W float32): transparent at 0, yellow to red up to 2 * tau, clipped."""
 
-def defect_table(defects: list[Defect]) -> pandas.DataFrame
+def defect_table(defects: Iterable[Defect]) -> pandas.DataFrame
     """Columns: #, length mm, area mm2, x, y, points (centre of the defect in image pixels)."""
 
 def stream_roll(insp: Inspector, frames: Iterable[Image.Image]) -> Iterator[tuple[int, Inspection, RollGrade]]
@@ -204,7 +204,7 @@ The first seven are the plan's, in its order. "Laptop part" is what this session
 | A7 | The roll stream runs to the end on a RAW-FABRID demo roll and its final grade matches the Phase 4 number. | Laptop part: synthetic roll runs to the end and equals `evaluate.py`'s per-roll result. Real roll: runbook 4 | `test_roll_stream_matches_evaluate`, `test_stream_roll_equals_inspect_roll`; runbook 4 | [ ] |
 | A8 | The Results page shows tables and plots from `results/` and does not crash on an empty folder. (Plan task 3.) | Laptop | `test_results_page` | [ ] |
 | A9 | A bundle that is not on disk is downloaded from the weights host once and then served from the cache; bad names and failed downloads give a clear error. (Plan task 5.) | Laptop, against a local HTTP server | `test_ensure_bundle_downloads_once`, `test_ensure_bundle_errors` | [ ] |
-| A10 | The sample picker and the roll picker work from whatever is in `assets/`, show the attribution, and handle a missing attribution entry. (Plan task 5.) | Laptop | `test_list_samples_and_rolls`, `test_sample_credit_is_shown` | [ ] |
+| A10 | The sample picker and the roll picker work from whatever is in `assets/`, show the attribution, and handle a missing attribution entry. (Plan task 5.) | Laptop | `test_list_samples_and_rolls`, `test_shipped_samples_are_listed_with_attribution`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation` | [ ] |
 | A11 | Deployment files for a Hugging Face Space exist (CPU PyTorch requirements, Space front matter); the actual deployment is the runbook. (Plan task 6.) | Laptop part; deploy: runbook 6 | `test_deploy_files`; runbook 6 | [ ] |
 | A12 | The app contains no tiling, scoring or grading code of its own (CLAUDE.md rule 5). | Laptop | `test_app_has_no_pipeline_code` (the source imports `Inspector` and does not import `loomguard.data.tiling`, `loomguard.models`, `loomguard.inspection.postprocess`), reviewer | [ ] |
 
@@ -219,7 +219,7 @@ All on CPU, no dataset. Bundles are built by the real `fit.py` on the synthetic 
 | `test_unknown_fabric_rule` | Hand-built `Inspection` objects: small mask and few flagged tiles is false; mask over 30% is true; half the tiles flagged with 4 or more tiles is true; a single flagged tile of one is false. |
 | `test_stream_roll_equals_inspect_roll` | With a deterministic fake model, the running grade after each frame equals `grade_roll` of the partial sums, and the last equals `Inspector.inspect_roll`. |
 | `test_overlay_and_defect_table` | Zero heat leaves the image unchanged; heat at `2 * tau` is red-yellow; the table has the columns and values of known `Defect`s. |
-| `test_list_samples_and_rolls`, `test_sample_credit_is_shown` | Files without entries, entries without files, extension filtering, a frame name with `/` rejected; the credit text appears on the page. |
+| `test_list_samples_and_rolls`, `test_shipped_samples_are_listed_with_attribution` | Files without entries, entries without files, extension filtering, a roll with a `/` or a missing frame left out; the shipped placeholder is listed with its credit. The credit text of a sample appears on the page: checked in `test_upload_is_labelled_assumed_scale_and_grade_extrapolation`. |
 | `test_ensure_bundle_downloads_once`, `test_ensure_bundle_errors` | A threaded `http.server` serves a bundle; first call downloads three files, second call makes no request; hub unset, bad repo name, `..` in a path part, HTTP 404 and an oversize file give `BundleError` and leave no partial directory. |
 | `test_starts_without_bundles_or_data` | `AppTest` with empty directories: no exception on any of the three pages; the app says no bundle is available. |
 | `test_inspect_sample_reports_time_and_matches_evaluate` | End to end: `fit.py`, `evaluate.py` (with `dump_predictions`) on the synthetic tree; the app on a test image shows the score, the verdict, the defect table and the processing time; they equal the dumped `scores.csv` and the defects measured from the dumped mask; `Inspector.score_image(...).heat` equals the heat stitched by hand. |
@@ -278,9 +278,29 @@ python3 scripts/evaluate.py --config <copy of configs/raw_fabrid_per_fabric_patc
 #    predictions are in artifacts/predictions/raw_fabrid/per_fabric/patchcore_cr1/Rollo1A/ (scores.csv and one PNG per image)
 python3 - <<'EOF'
 # the app's Inspect page (AppTest) on one test image: its score and defect table against scores.csv and the dumped mask
-import sys; sys.path.insert(0, "app")
-# ... see tests/test_app.py::test_inspect_sample_reports_time_and_matches_evaluate for the exact comparison; run it on the real bundle by
-#     setting LOOMGUARD_BUNDLES, LOOMGUARD_ASSETS to a folder holding the sample, and the same image name in scores.csv.
+import csv, json, os, shutil
+from pathlib import Path
+import numpy as np
+from PIL import Image
+from streamlit.testing.v1 import AppTest
+from loomguard.pipeline import Inspector
+rel = "<an image path as written in the first column of scores.csv, e.g. images/Rollo1A_....png>"
+root, name = Path("data/RAW_FABRID"), Path(rel).name
+pred = Path("artifacts/predictions/raw_fabrid/per_fabric/patchcore_cr1/Rollo1A")
+a = Path("artifacts/demo_assets"); (a / "samples").mkdir(parents=True, exist_ok=True)
+shutil.copy(root / rel, a / "samples" / name)
+(a / "samples" / "samples.json").write_text(json.dumps([{"file": name, "profile": "raw_fabrid/Rollo1A"}]))
+os.environ.update(LOOMGUARD_ASSETS=str(a), LOOMGUARD_BUNDLES="artifacts")
+at = AppTest.from_file("app/streamlit_app.py", default_timeout=600).run()
+at.sidebar.selectbox(key="profile").select("raw_fabrid/Rollo1A")
+at.sidebar.selectbox(key="model").select("patchcore_cr1")   # a bundle found on disk is listed under its directory name
+at.sidebar.selectbox(key="pick").select(name).run()
+row = next(r for r in csv.DictReader(open(pred / "scores.csv")) if r["parent"] == rel)
+m = {x.label: x.value for x in at.metric}
+print("score app:", m["Score"], "evaluate:", row["score"], "flagged evaluate:", row["flagged"], "verdict app:", at.subheader[0].value)
+mask = np.asarray(Image.open(pred / f"{Path(rel).stem}.png")) > 0
+print("defects app:     ", at.dataframe[0].value[["length mm", "points"]].values.tolist() if at.dataframe else [])
+print("defects evaluate:", [(round(d.length_mm, 1), d.points) for d in Inspector.load("artifacts/raw_fabrid/Rollo1A/patchcore_cr1").measure(mask)[1]])
 EOF
 
 # 4. demo roll and Phase 4 number (A7): build a local roll from the test pool of one roll (not committed)
@@ -296,6 +316,7 @@ for f in frames: shutil.copy(Path(cfg["root"]) / f, out / Path(f).name)
 (out / "roll.json").write_text(json.dumps({"label": "RAW-FABRID roll 1, test pool", "profile": "raw_fabrid/Rollo1A",
     "frames": [Path(f).name for f in frames], "credit": "RAW-FABRID, CC BY 4.0, <citation>"}))
 EOF
+cp assets/profiles.json artifacts/demo_assets/
 LOOMGUARD_ASSETS=artifacts/demo_assets streamlit run app/streamlit_app.py   # Roll stream, play to the end
 #    compare the final points per 100 sq yd and grade with results/raw_fabrid/per_fabric/patchcore_cr1/Rollo1A.json["rolls"]["Rollo1A"]
 

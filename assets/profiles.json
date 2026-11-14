@@ -1,0 +1,9 @@
+{"hub_repo": "", "profiles": [
+  {"id": "raw_fabrid/Rollo1A", "label": "RAW-FABRID roll 1", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo2A", "label": "RAW-FABRID roll 2", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo3A", "label": "RAW-FABRID roll 3", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo4A", "label": "RAW-FABRID roll 4", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo5A", "label": "RAW-FABRID roll 5", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo6A", "label": "RAW-FABRID roll 6", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}},
+  {"id": "raw_fabrid/Rollo7A", "label": "RAW-FABRID roll 7", "methods": {"PatchCore (1% coreset)": "patchcore_cr1", "Reverse Distillation": "rd4ad"}}
+]}

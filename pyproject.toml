@@ -18,6 +18,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+# Streamlit app (Phase 6). The tests of the app need it too: pip install -e ".[dev,app]"
+app = ["streamlit>=1.45"]
 
 [tool.setuptools.packages.find]
 include = ["loomguard*"]

@@ -1,0 +1,6 @@
+[server]
+# Above the app's own limit (MAX_BYTES = 25 MB in app/streamlit_app.py), so the app's message is the one users see.
+maxUploadSize = 32
+
+[browser]
+gatherUsageStats = false

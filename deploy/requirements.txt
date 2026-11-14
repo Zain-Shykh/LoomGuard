@@ -1,0 +1,5 @@
+# For a Hugging Face Space (Streamlit SDK, free CPU tier): copy to requirements.txt in the Space repository.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+.[app]
