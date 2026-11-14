@@ -19,7 +19,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 | 3 | Reverse Distillation | Both | 1.5 weeks | Code complete |
 | 4 | Calibration, inspection and grading | Both | 1 week | Code complete |
 | 5 | Cross-fabric study | Training PC | 2 weeks | Code complete |
-| 6 | Streamlit application | Laptop | 1.5 weeks | Not started |
+| 6 | Streamlit application | Laptop | 1.5 weeks | Code complete |
 | 7 | Stretch goals (decision gate) | Both | optional | Not started |
 | 8 | Report and release | Laptop | 1 week | Not started |
 
@@ -204,13 +204,13 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 **Acceptance criteria.**
 
-- [ ] From a clean clone, `pip install` and `streamlit run app/streamlit_app.py` work on a CPU-only machine with no dataset.
-- [ ] A 1792x1024 image is processed in under 10 seconds on the laptop CPU with the PatchCore 1 percent bundle. Measured time recorded.
-- [ ] The app's heatmap and defect list for a sample image equal the output of `scripts/evaluate.py` for the same image and bundle.
-- [ ] A non-image file, an oversized file and a corrupt image each produce a clear error message and no crash.
-- [ ] An image of the wrong fabric produces the "unknown fabric" warning instead of a meaningless defect list.
-- [ ] Results for uploaded images of unknown origin are labelled "assumed scale"; single-image grades are labelled as extrapolations.
-- [ ] The roll stream runs to the end on a RAW-FABRID demo roll and its final grade matches the Phase 4 number.
+- [ ] From a clean clone, `pip install` and `streamlit run app/streamlit_app.py` work on a CPU-only machine with no dataset. (The `app` extra is declared, the app starts headless and every page renders with no dataset and no bundle; the fresh-clone install is runbook step 1.)
+- [ ] A 1792x1024 image is processed in under 10 seconds on the laptop CPU with the PatchCore 1 percent bundle. Measured time recorded. (The page reports the measured time; the value needs the real bundle, runbook step 2b.)
+- [ ] The app's heatmap and defect list for a sample image equal the output of `scripts/evaluate.py` for the same image and bundle. (Equal on a synthetic bundle fitted by `fit.py`, `test_inspect_sample_reports_time_and_matches_evaluate`; a real sample is runbook step 3.)
+- [x] A non-image file, an oversized file and a corrupt image each produce a clear error message and no crash. (`test_read_image_rejects`, `test_upload_errors_in_app`)
+- [ ] An image of the wrong fabric produces the "unknown fabric" warning instead of a meaningless defect list. (Works on a synthetic wrong fabric, `test_wrong_fabric_warning_hides_defects`; the thresholds need real wrong-fabric images, runbook step 5, A-27.)
+- [x] Results for uploaded images of unknown origin are labelled "assumed scale"; single-image grades are labelled as extrapolations. (`test_scale_label`, `test_upload_is_labelled_assumed_scale_and_grade_extrapolation`)
+- [ ] The roll stream runs to the end on a RAW-FABRID demo roll and its final grade matches the Phase 4 number. (Runs to the end on a synthetic roll and equals `evaluate.py`'s per-roll result, `test_roll_stream_matches_evaluate`; the real roll is runbook step 4.)
 
 ---
 

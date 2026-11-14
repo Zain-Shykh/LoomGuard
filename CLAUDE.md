@@ -36,7 +36,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 # training PC (RTX 5070)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
-pip install -e ".[dev]"
+pip install -e ".[dev,app]"   # app = Streamlit (Phase 6, needed by tests/test_app.py); the training PC can use ".[dev]"
 pytest
 ```
 
@@ -51,7 +51,9 @@ loomguard/
   pipeline.py  Inspector: the single path used by evaluation and by the app
   runs.py      config, manifest dispatch, paths (incl. run tag) and model loading shared by scripts/fit.py and scripts/evaluate.py
 scripts/       verify_datasets.py, fit.py, evaluate.py, study.py, summarize.py, failure_cases.py
-app/           streamlit_app.py
+app/           streamlit_app.py (thin UI over Inspector: upload validation, bundle download, three pages)
+assets/        samples/ (images + samples.json attribution), rolls/<name>/roll.json demo rolls, profiles.json bundle registry
+deploy/        requirements.txt and README_space.md for the Hugging Face Space
 configs/       one YAML per run (base/ fragments via `extends`, studies/ run lists)
 tests/         CPU-only, no dataset required
 results/       small metric JSON files, committed

@@ -430,11 +430,15 @@ Streamlit is a course requirement. The app runs on CPU and is deployed on the fr
 
 Design points:
 
-- The user must choose a fabric profile. A one-class model only knows the fabric it was fitted on; an image of any other fabric lights up everywhere. The app says so when nearly the whole image is flagged.
-- Upload is a trust boundary: accept PNG, JPEG, TIFF and BMP only, cap the file size and pixel count, decode with Pillow inside a `try`, and never use the uploaded filename as a path.
-- Models are cached with `st.cache_resource`. The sensitivity slider moves `tau` without re-running the model.
-- CPU budget: a 1792x1024 image is 28 tiles. Target under 10 s with PatchCore at 1 percent coreset. Measured in Phase 6.
-- A few RAW-FABRID sample images (CC BY 4.0, with attribution) ship in `assets/samples/` so the demo works with no dataset. MVTec images are never shipped.
+- The user must choose a fabric profile. A one-class model only knows the fabric it was fitted on; an image of any other fabric lights up everywhere. The app says so (the "Unknown fabric" warning, in place of the verdict, defect table, points and grade) when the cleaned mask covers 30 percent of the pixels, or when at least half of the tiles of an image with 4 or more tiles are flagged (heuristic, A-27, to be checked on real wrong-fabric images).
+- Upload is a trust boundary (`read_image`): the format is decided from the content (PNG, JPEG, TIFF, BMP only), at most 25 MB, at most 16 megapixels, both sides at least 256 px, decoded with Pillow inside a `try`; the file name is never used. Every refusal is a one-line `st.error`.
+- Models are cached with `st.cache_resource`; the scored image is kept in the session, so the sensitivity slider (`tau / s`, s from 0.5 to 2.0) moves `tau` through `Inspector.decide` without re-running the model.
+- Bundles: `<bundles>/<dataset>/<fabric>/<method>/` on disk, else downloaded with `urllib` from `<hub>/<repo>/resolve/main/...` (three files, size capped, atomic rename, A-26). `assets/profiles.json` lists what the Space offers once a Hub repository is set; bundles found on disk are always listed. Environment: `LOOMGUARD_BUNDLES`, `LOOMGUARD_ASSETS`, `LOOMGUARD_RESULTS`, `LOOMGUARD_HUB_REPO`, `LOOMGUARD_HUB_URL`.
+- Scale labels: the bundle's scale is "stated by the dataset" only for a sample of that dataset (its `samples.json` entry names the profile); uploads of unknown origin are always "assumed scale". A single image shows points and a grade marked as an extrapolation; the roll page shows the roll grade.
+- Samples: `assets/samples/samples.json` (title, credit, profile, synthetic) beside the images; a file without an entry is still offered, captioned "no attribution entry". Demo rolls: `assets/rolls/<name>/roll.json` (label, profile, ordered frame names, credit). The Results page reuses `scripts/summarize.py`.
+- CPU budget: a 1792x1024 image is 28 tiles. Target under 10 s with PatchCore at 1 percent coreset. The page shows the measured time; the value for a real bundle is recorded by the Phase 6 runbook.
+- A few RAW-FABRID sample images (CC BY 4.0, with attribution) are added to `assets/samples/` by the operator (the repository ships one synthetic placeholder) so the demo works with no dataset. MVTec images are never shipped.
+- Deployment: `deploy/requirements.txt` (CPU PyTorch, `.[app]`) and `deploy/README_space.md` (Space front matter) are copied into the Space repository; `.streamlit/config.toml` sets the upload cap above the app's own.
 
 ## 12. Repository layout (planned)
 
@@ -452,6 +456,8 @@ loomguard/
 scripts/       verify_datasets.py, fit.py, evaluate.py, study.py (runs a list of configs), summarize.py (tables, SVG plots,
                coverage check), failure_cases.py
 app/           streamlit_app.py
+assets/        samples/ with samples.json (attribution), rolls/<name>/roll.json, profiles.json (bundle registry)
+deploy/        requirements.txt and README_space.md for the Hugging Face Space
 configs/       one YAML per run (base/ holds shared fragments pulled in with `extends`), studies/ the run lists
 tests/         CPU-only, synthetic textures, no dataset needed
 results/       committed metric files

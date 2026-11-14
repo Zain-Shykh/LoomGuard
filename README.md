@@ -4,7 +4,7 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics); Phase 5 code complete (ZJU-Leaper and AITEX adapters, per-group and held-out regimes, ablation configs, `scripts/study.py`, `scripts/summarize.py`, `scripts/failure_cases.py`). Waiting for the training-PC runbooks of Phases 1 to 5 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics); Phase 5 code complete (ZJU-Leaper and AITEX adapters, per-group and held-out regimes, ablation configs, `scripts/study.py`, `scripts/summarize.py`, `scripts/failure_cases.py`); Phase 6 code complete (Streamlit app: inspect image, roll stream, results; upload validation, bundle download, unknown-fabric warning, Space deployment files). Waiting for the training-PC runbooks of Phases 1 to 6 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
 
 ## Documents
 
@@ -80,9 +80,18 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 # training PC (RTX 5070): needs PyTorch 2.7 or newer with CUDA 12.8 wheels
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
-pip install -e ".[dev]"
+pip install -e ".[dev,app]"   # app = Streamlit (Phase 6, needed by tests/test_app.py); the training PC can use ".[dev]"
 pytest
 ```
+
+## Running the app (CPU, no dataset)
+
+```bash
+pip install -e ".[app]"                       # after PyTorch, see above
+streamlit run app/streamlit_app.py
+```
+
+The app needs model bundles: put them under `artifacts/<dataset>/<fabric>/<method>/` or set `LOOMGUARD_HUB_REPO` to the Hugging Face model repository that holds them (they are downloaded on first use). Without a bundle it starts and says so. Sample images and demo rolls are read from `assets/`; the Space deployment files are in `deploy/`. Details and the training-PC runbook: `docs/specs/phase-6-streamlit-app.md`.
 
 ## Running the cross-fabric study (training PC)
 
