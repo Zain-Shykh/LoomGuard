@@ -152,7 +152,7 @@ Notes:
 
 Details: `docs/specs/phase-6-streamlit-app.md`, section 8, steps 1 to 6. Summary:
 
-1. Create a Hugging Face model repository for the bundles and upload the demo bundles (`huggingface-cli upload ...`; install `huggingface_hub` on this machine only for this). Put the repository name in `assets/profiles.json` (`hub_repo`) and tell the project owner the name.
+1. Create a Hugging Face model repository for the bundles and upload the demo bundles (`huggingface-cli upload ...`; install `huggingface_hub` on this machine only for this). The repository is `Zain-1389/loomguard-bundles` (public, owned by the project owner). Set `LOOMGUARD_HUB_REPO=Zain-1389/loomguard-bundles` for the checks. Only at the very end, put the name in `assets/profiles.json` (`hub_repo`) and update `tests/test_app.py::test_shipped_assets_start_the_app`, which assumes it is empty.
 2. On a laptop or any CPU-only machine: fresh clone, `pip install -e ".[app]"` with CPU PyTorch, `streamlit run app/streamlit_app.py`. Time a 1792x1024 image with the PatchCore 1 percent bundle: the median must be under 10 seconds.
 3. Check that the app's score, flag and defect list equal `evaluate.py`'s dumped predictions for one real image (script in the spec).
 4. Build a demo roll from one RAW-FABRID roll, play it in the Roll stream page, and compare the final points and grade with the result JSON.
