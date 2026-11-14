@@ -1,0 +1,7 @@
+# RAW-FABRID: per roll, unified (seed 0 is the RD4AD headline), leave-one-roll-out.
+configs/raw_fabrid_per_fabric_patchcore.yaml
+configs/raw_fabrid_patchcore.yaml
+configs/raw_fabrid_held_out_patchcore.yaml
+configs/raw_fabrid_per_fabric_rd4ad.yaml
+configs/raw_fabrid_rd4ad_s0.yaml
+configs/raw_fabrid_held_out_rd4ad.yaml

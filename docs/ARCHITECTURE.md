@@ -445,12 +445,14 @@ loomguard/
   eval/        metrics.py, calibrate.py
   inspection/  postprocess.py, grading.py
   runs.py      config, manifest dispatch, fabric profiles, tile cap, paths and model loading shared by fit.py and evaluate.py
-               (a config's `tag` is appended to the method directory, e.g. rd4ad_s1, so seeds do not overwrite each other)
+               (a config's `tag` is appended to the method directory, e.g. rd4ad_s1, so seeds and ablations do not overwrite each other;
+               regimes per_fabric, per_group, unified, held_out; `min_overlap` is read by the manifest builders and by the Inspector)
   pipeline.py  Inspector: bundle + image in, heatmap + defects + grade out
                (the package is "inspection", not "inspect", which would shadow the standard library)
-scripts/       verify_datasets.py, fit.py, evaluate.py
+scripts/       verify_datasets.py, fit.py, evaluate.py, study.py (runs a list of configs), summarize.py (tables, SVG plots,
+               coverage check), failure_cases.py
 app/           streamlit_app.py
-configs/       one YAML per dataset and method
+configs/       one YAML per run (base/ holds shared fragments pulled in with `extends`), studies/ the run lists
 tests/         CPU-only, synthetic textures, no dataset needed
 results/       committed metric files
 docs/

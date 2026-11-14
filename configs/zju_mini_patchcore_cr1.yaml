@@ -1,0 +1,7 @@
+# Ablation coreset ratio 1% (default 10%), ZJU-mini.
+extends: [base/zju.yaml, base/patchcore.yaml]
+regime: per_fabric
+tag: cr1
+fabrics: [pattern1, pattern4, pattern8, pattern13, pattern16]
+patchcore:
+  coreset_ratio: 0.01

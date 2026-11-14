@@ -1,0 +1,7 @@
+# Headline PatchCore settings (D-23), fixed in advance (D-35).
+method: patchcore
+patchcore:
+  max_tiles: 600
+  coreset_ratio: 0.10
+  proj_dim: 128
+  batch_size: 16

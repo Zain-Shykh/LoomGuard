@@ -60,7 +60,8 @@ def main(argv: list[str] | None = None) -> None:
     rows = build_rows(cfg)
     manifests = Path(cfg["artifacts"]) / "manifests"
     manifests.mkdir(parents=True, exist_ok=True)
-    write_manifest(rows, manifests / f"{cfg['dataset']}.csv")
+    tag = f"_{cfg['tag']}" if cfg["tag"] else ""  # ablations with overlap or resize change the manifest
+    write_manifest(rows, manifests / f"{cfg['dataset']}{tag}.csv")
     for name, prows in profiles(rows, cfg).items():
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats()

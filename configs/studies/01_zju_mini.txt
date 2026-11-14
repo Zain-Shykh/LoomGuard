@@ -1,0 +1,3 @@
+# Debug on ZJU-mini first (PatchCore before RD4AD).
+configs/zju_per_fabric_mini_patchcore.yaml
+configs/zju_per_fabric_mini_rd4ad.yaml

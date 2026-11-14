@@ -7,28 +7,45 @@ from pathlib import Path
 import torch
 import yaml
 
-from loomguard.data.manifest import MVTEC_TEXTURES, TileRow, build_mvtec, build_raw_fabrid
+from loomguard.data.manifest import (MVTEC_TEXTURES, TileRow, build_aitex, build_mvtec, build_raw_fabrid, build_zju,
+                                     zju_group)
 
 DEFAULTS = {"seed": 0, "backbone_weights": "IMAGENET1K_V1", "device": "auto", "num_workers": 0, "hist_bins": 10_000,
             "artifacts": "artifacts", "results": "results", "fabrics": None, "targets": None, "tag": "",
-            "target_far": 0.01, "px_per_mm": 4.0, "scale_assumed": True, "grade_rolls": False}
+            "target_far": 0.01, "px_per_mm": 4.0, "scale_assumed": True, "grade_rolls": False,
+            "min_overlap": 0, "held_out_scope": "all", "dump_predictions": False}
 GRADING_DEFAULTS = {"closing": 5, "min_area_px": 16, "cutoffs": [20, 40, 60]}
 PATCHCORE_DEFAULTS = {"max_tiles": 600, "coreset_ratio": 0.10, "proj_dim": 128, "batch_size": 16}
 RD4AD_DEFAULTS = {"iterations": 5000, "batch_size": 16, "lr": 0.005, "betas": [0.5, 0.999], "seed": None,
                   "val_tiles": 64, "val_every": 500, "log_every": 100}
 METHODS = ("patchcore", "rd4ad")
+REGIMES = ("per_fabric", "per_group", "unified", "held_out")
+
+
+def _merge(a: dict, b: dict) -> dict:
+    return {**a, **{k: _merge(a[k], v) if isinstance(v, dict) and isinstance(a.get(k), dict) else v for k, v in b.items()}}
+
+
+def _read(path: Path | str) -> dict:
+    """YAML with `extends: base.yaml | [a.yaml, b.yaml]` (paths relative to the file): bases first, the file wins."""
+    with open(path) as f:
+        cfg = yaml.safe_load(f)
+    bases = cfg.pop("extends", [])
+    out: dict = {}
+    for b in [bases] if isinstance(bases, str) else bases:
+        out = _merge(out, _read(Path(path).parent / b))
+    return _merge(out, cfg)
 
 
 def load_config(path: Path | str) -> dict:
-    with open(path) as f:
-        cfg = yaml.safe_load(f)
+    cfg = _read(path)
     missing = {"dataset", "root", "regime", "method"} - set(cfg)
     if missing:
         raise KeyError(f"{path} lacks required keys {sorted(missing)}")
     if cfg["method"] not in METHODS:
         raise ValueError(f"method must be one of {METHODS}, got {cfg['method']!r}")
-    if cfg["regime"] not in ("per_fabric", "unified"):
-        raise ValueError(f"regime must be per_fabric or unified, got {cfg['regime']!r}")
+    if cfg["regime"] not in REGIMES:
+        raise ValueError(f"regime must be one of {REGIMES}, got {cfg['regime']!r}")
     cfg = {**DEFAULTS, **cfg, "patchcore": {**PATCHCORE_DEFAULTS, **cfg.get("patchcore", {})},
            "rd4ad": {**RD4AD_DEFAULTS, **cfg.get("rd4ad", {})}, "grading": {**GRADING_DEFAULTS, **cfg.get("grading", {})}}
     cfg.setdefault("resize", 256 if cfg["dataset"] == "mvtec" else None)  # MVTec protocol: whole image resized (D-21)
@@ -42,18 +59,43 @@ def build_rows(cfg: dict) -> list[TileRow]:
     if cfg["dataset"] == "mvtec":
         return build_mvtec(Path(cfg["root"]), cfg["fabrics"] or MVTEC_TEXTURES, seed=cfg["seed"])
     if cfg["dataset"] == "raw_fabrid":
-        rows = build_raw_fabrid(Path(cfg["root"]), seed=cfg["seed"])
-        return [r for r in rows if not cfg["fabrics"] or r.fabric in cfg["fabrics"]]
-    raise ValueError(f"unknown dataset {cfg['dataset']!r}")
+        rows = build_raw_fabrid(Path(cfg["root"]), seed=cfg["seed"], min_overlap=cfg["min_overlap"])
+    elif cfg["dataset"] == "zju_leaper":
+        # held_out needs the other fabrics of the scope too; profiles() picks the held-out ones
+        keep = None if cfg["regime"] == "held_out" else cfg["fabrics"]
+        rows = build_zju(Path(cfg["root"]), keep, seed=cfg["seed"], resize=cfg["resize"] or 0, min_overlap=cfg["min_overlap"])
+    elif cfg["dataset"] == "aitex":
+        rows = build_aitex(Path(cfg["root"]), seed=cfg["seed"], min_overlap=cfg["min_overlap"])
+    else:
+        raise ValueError(f"unknown dataset {cfg['dataset']!r}")
+    return [r for r in rows if not cfg["fabrics"] or cfg["regime"] == "held_out" or r.fabric in cfg["fabrics"]]
+
+
+def _scope(fabric: str, cfg: dict) -> str:
+    return zju_group(fabric) if cfg["held_out_scope"] == "group" else "all"
 
 
 def profiles(rows: list[TileRow], cfg: dict) -> dict[str, list[TileRow]]:
-    if cfg["regime"] == "unified":
+    """Fabric profiles to fit. held_out: `<f>_held_out` = train and val rows of the other fabrics in the scope plus the
+    test rows of f only, so f's own train and val rows never reach fit and tau (D-32) comes from the other fabrics."""
+    regime = cfg["regime"]
+    if regime == "unified":
         return {"unified": list(rows)}
+    if regime == "held_out":
+        fabrics = cfg["fabrics"] or sorted({r.fabric for r in rows})
+        return {f"{f}_held_out": [r for r in rows if (r.fabric == f and r.split == "test") or
+                                  (r.fabric != f and r.split != "test" and _scope(r.fabric, cfg) == _scope(f, cfg))]
+                for f in fabrics}
+    if regime == "per_group" and cfg["dataset"] != "zju_leaper":
+        raise ValueError("per_group is defined for zju_leaper only")
     out: dict[str, list[TileRow]] = defaultdict(list)
     for r in rows:
-        out[r.fabric].append(r)
+        out[zju_group(r.fabric) if regime == "per_group" else r.fabric].append(r)
     return dict(out)
+
+
+def predictions_dir(cfg: dict, profile: str) -> Path:
+    return Path(cfg["artifacts"]) / "predictions" / cfg["dataset"] / cfg["regime"] / _method_dir(cfg) / profile
 
 
 def subsample(rows: list[TileRow], max_tiles: int, seed: int) -> list[TileRow]:

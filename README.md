@@ -4,7 +4,7 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics; 110 CPU tests). Waiting for the training-PC runbooks of Phases 1 to 4 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics); Phase 5 code complete (ZJU-Leaper and AITEX adapters, per-group and held-out regimes, ablation configs, `scripts/study.py`, `scripts/summarize.py`, `scripts/failure_cases.py`). Waiting for the training-PC runbooks of Phases 1 to 5 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
 
 ## Documents
 
@@ -82,6 +82,16 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
 pip install -e ".[dev]"
 pytest
+```
+
+## Running the cross-fabric study (training PC)
+
+Each run is one config file; a study is a list of configs and is resumable:
+
+```bash
+python scripts/study.py configs/studies/01_zju_mini.txt      # then 02 to 05, see docs/specs/phase-5-cross-fabric-study.md
+python scripts/summarize.py --check                          # which cells of EVALUATION 4.3 are still missing
+python scripts/summarize.py                                  # tables, CSV and SVG plots in results/report/
 ```
 
 ## Team workflow

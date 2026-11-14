@@ -1,0 +1,9 @@
+# Ablation tile overlap: 32 px (default 0), RAW-FABRID per roll.
+extends: [base/raw_fabrid.yaml, base/rd4ad.yaml]
+regime: per_fabric
+tag: ov32
+min_overlap: 32
+rd4ad:
+  iterations: 5000
+  val_every: 500
+  log_every: 100

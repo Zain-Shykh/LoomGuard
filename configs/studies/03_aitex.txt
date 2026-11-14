@@ -1,0 +1,3 @@
+# AITEX per fabric.
+configs/aitex_per_fabric_patchcore.yaml
+configs/aitex_per_fabric_rd4ad.yaml

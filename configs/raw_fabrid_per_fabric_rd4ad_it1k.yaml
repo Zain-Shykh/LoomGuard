@@ -1,0 +1,8 @@
+# Ablation training length: 1,000 iterations (default 5,000), RAW-FABRID per roll.
+extends: [base/raw_fabrid.yaml, base/rd4ad.yaml]
+regime: per_fabric
+tag: it1k
+rd4ad:
+  iterations: 1000
+  val_every: 100
+  log_every: 20

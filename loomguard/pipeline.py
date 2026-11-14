@@ -47,9 +47,10 @@ class Inspection:
 
 class Inspector:
     def __init__(self, model, tau: float, px_per_mm: float = 4.0, scale_assumed: bool = True, resize: int | None = None,
-                 grading: dict | None = None, batch_size: int = 16):
+                 grading: dict | None = None, batch_size: int = 16, min_overlap: int = 0):
         self.model, self.tau, self.px_per_mm, self.scale_assumed = model, tau, px_per_mm, scale_assumed
         self.resize, self.grading, self.batch_size = resize, {**GRADING, **(grading or {})}, batch_size
+        self.min_overlap = min_overlap
 
     @classmethod
     def load(cls, bundle: Path | str, device: str | torch.device = "cpu", backbone=None) -> "Inspector":
@@ -60,13 +61,13 @@ class Inspector:
         tau = json.loads((b / "calibration.json").read_text())["tau"]
         model = load_model(cfg, b / "model.pt", backbone or Backbone(cfg["backbone_weights"]), torch.device(device))  # weights_only=True inside
         return cls(model, tau, cfg["px_per_mm"], cfg["scale_assumed"], cfg.get("resize"), cfg.get("grading"),
-                   cfg.get(cfg["method"], {}).get("batch_size", 16))
+                   cfg.get(cfg["method"], {}).get("batch_size", 16), cfg.get("min_overlap", 0))
 
     def score_image(self, img: Image.Image) -> Scored:
         if self.resize:  # MVTec: the whole image is one tile, resized exactly as TileDataset does
             img = img.resize((self.resize, self.resize), Image.BILINEAR)
         x = preprocess(img)
-        tiles, origins = tile(x)
+        tiles, origins = tile(x, min_overlap=self.min_overlap)
         scores, heats = [], []
         for b in tiles.split(self.batch_size):
             s, h = self.model.score(b)

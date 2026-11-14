@@ -1,0 +1,7 @@
+# ZJU-Leaper, one model over all 19 patterns. D-24: 20,000 iterations.
+extends: [base/zju.yaml, base/rd4ad.yaml]
+regime: unified
+rd4ad:
+  iterations: 20000
+  val_every: 2000
+  log_every: 400

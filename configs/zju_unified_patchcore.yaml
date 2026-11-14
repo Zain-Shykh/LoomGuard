@@ -1,0 +1,3 @@
+# ZJU-Leaper, one model over all 19 patterns. D-24: 20,000 iterations.
+extends: [base/zju.yaml, base/patchcore.yaml]
+regime: unified

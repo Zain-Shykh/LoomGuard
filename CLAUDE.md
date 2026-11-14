@@ -50,9 +50,9 @@ loomguard/
   inspection/  postprocess, grading
   pipeline.py  Inspector: the single path used by evaluation and by the app
   runs.py      config, manifest dispatch, paths (incl. run tag) and model loading shared by scripts/fit.py and scripts/evaluate.py
-scripts/       verify_datasets.py, fit.py, evaluate.py
+scripts/       verify_datasets.py, fit.py, evaluate.py, study.py, summarize.py, failure_cases.py
 app/           streamlit_app.py
-configs/       one YAML per dataset and method
+configs/       one YAML per run (base/ fragments via `extends`, studies/ run lists)
 tests/         CPU-only, no dataset required
 results/       small metric JSON files, committed
 data/, artifacts/   git-ignored, never committed

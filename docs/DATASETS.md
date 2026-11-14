@@ -112,6 +112,8 @@ Unverified, check on download: exact image counts per pattern and split, image f
 
 Risk: Google Drive rate-limits popular large files. Use `gdown` and retry later if the quota error appears. The alternative host listed by the authors is `http://www.qaas.zju.edu.cn/zju-leaper`.
 
+Adapter (`build_zju`, Phase 5, not yet run on real files): reads `ImageSets/Patterns/pattern<n>.json` for the 19 patterns, finds files through an index of `Images/` and `Annotations/masks/` (ids with or without extension, any image extension), uses `normal/train` (90 percent train, 10 percent val, per pattern), `normal/test` and `defect/test`; `defect/train` is unused. Group membership comes from the table above (pattern numbers 1-3, 4-7, 8-12, 13-15, 16-19), which assumes the JSON numbering follows that order. A listed id without image or mask, a mask of the wrong size, or an image listed twice stops the run with a message that counts the problems. The group and total JSON files are not read.
+
 ## 3. MVTec AD textures (sanity check)
 
 - **Source:** <https://www.mvtec.com/company/research/datasets/mvtec-ad>. The page now asks for a short form before download.
@@ -133,6 +135,8 @@ Unofficial mirrors exist on Hugging Face. Prefer the official download.
 - With about 16 training images per fabric it is a low-data test: PatchCore should cope, a trained decoder may not.
 
 Unverified, check at ingest: mask-to-image pairing (some images are reported to have more than one mask file), and tiles that are mostly black border.
+
+Adapter (`build_aitex`, Phase 5, not yet run on real files): finds `Defect_images`, `NODefect_images` and `Mask_images` anywhere under the root; the fabric is the trailing `_<NN>` of the file stem (an assumption, an error names the first file that does not fit); masks are paired by `<stem>_mask*` and several masks of one image are united; per fabric the 20 normal images split 12 train and 8 val; tiles with more than half of their pixels below gray level 10 are dropped from every split (pixel metrics still run over whole images).
 
 ## 5. TSFabrics (optional)
 

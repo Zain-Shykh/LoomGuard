@@ -1,0 +1,14 @@
+# Ablations of EVALUATION 4.4 (reported as ablations, never used to tune the headline, D-35). PatchCore first.
+configs/zju_mini_patchcore_cr1.yaml
+configs/zju_mini_patchcore_cr25.yaml
+configs/zju_res256_patchcore.yaml
+configs/raw_fabrid_per_fabric_patchcore_cr1.yaml
+configs/raw_fabrid_per_fabric_patchcore_cr25.yaml
+configs/raw_fabrid_per_fabric_patchcore_n50.yaml
+configs/raw_fabrid_per_fabric_patchcore_n200.yaml
+configs/raw_fabrid_per_fabric_patchcore_ov32.yaml
+configs/raw_fabrid_per_fabric_rd4ad_it1k.yaml
+configs/raw_fabrid_per_fabric_rd4ad_ov32.yaml
+configs/zju_res256_rd4ad.yaml
+configs/raw_fabrid_rd4ad_s1.yaml
+configs/raw_fabrid_rd4ad_s2.yaml

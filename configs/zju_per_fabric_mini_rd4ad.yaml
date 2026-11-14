@@ -1,0 +1,8 @@
+# ZJU-Leaper per pattern, ZJU-mini (first pattern of each group): debug set, also headline results.
+extends: [base/zju.yaml, base/rd4ad.yaml]
+regime: per_fabric
+fabrics: [pattern1, pattern4, pattern8, pattern13, pattern16]
+rd4ad:
+  iterations: 5000
+  val_every: 500
+  log_every: 100

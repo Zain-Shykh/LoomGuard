@@ -1,0 +1,5 @@
+# Ablation tile overlap: 32 px (default 0), RAW-FABRID per roll.
+extends: [base/raw_fabrid.yaml, base/patchcore.yaml]
+regime: per_fabric
+tag: ov32
+min_overlap: 32

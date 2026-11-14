@@ -1,0 +1,12 @@
+# RAW-FABRID: stated scale of 4 px/mm, per-roll grading.
+dataset: raw_fabrid
+root: data/RAW_FABRID
+seed: 0
+backbone_weights: IMAGENET1K_V1
+device: auto
+hist_bins: 10000
+artifacts: artifacts
+results: results
+px_per_mm: 4.0
+scale_assumed: false
+grade_rolls: true

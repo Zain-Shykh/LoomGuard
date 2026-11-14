@@ -1,0 +1,9 @@
+# AITEX, small-data stress test (D-13).
+dataset: aitex
+root: data/AITEX
+seed: 0
+backbone_weights: IMAGENET1K_V1
+device: auto
+hist_bins: 10000
+artifacts: artifacts
+results: results

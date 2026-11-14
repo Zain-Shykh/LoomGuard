@@ -1,0 +1,10 @@
+# Ablation resolution: whole 512 image resized to 256, ZJU-mini.
+extends: [base/zju.yaml, base/rd4ad.yaml]
+regime: per_fabric
+tag: res256
+fabrics: [pattern1, pattern4, pattern8, pattern13, pattern16]
+resize: 256
+rd4ad:
+  iterations: 5000
+  val_every: 500
+  log_every: 100

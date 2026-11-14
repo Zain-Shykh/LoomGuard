@@ -66,6 +66,12 @@ class ScoreCounts:
                 self.pro_sum += (at_or_above / h.sum(1, keepdims=True)).sum(0)
                 self.regions += n
 
+    def merge(self, other: "ScoreCounts") -> None:
+        self.pos += other.pos
+        self.neg += other.neg
+        self.pro_sum += other.pro_sum
+        self.regions += other.regions
+
     def _descending(self):
         """tp, fp: cumulative counts flagged at thresholds from the highest bin down."""
         return self.pos[::-1].cumsum(), self.neg[::-1].cumsum()

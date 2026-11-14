@@ -1,0 +1,3 @@
+# RAW-FABRID, one model per roll (7). D-24: 5,000 iterations.
+extends: [base/raw_fabrid.yaml, base/patchcore.yaml]
+regime: per_fabric

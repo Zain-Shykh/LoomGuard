@@ -1,0 +1,7 @@
+# RAW-FABRID leave-one-roll-out (7 runs, 6 rolls each). RD4AD 20,000 iterations like the unified bundle (A-22).
+extends: [base/raw_fabrid.yaml, base/rd4ad.yaml]
+regime: held_out
+rd4ad:
+  iterations: 20000
+  val_every: 2000
+  log_every: 400

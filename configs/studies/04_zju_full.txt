@@ -1,0 +1,9 @@
+# Full ZJU-Leaper: remaining patterns, groups, unified, held-out (ZJU-mini patterns come from study 01).
+configs/zju_per_fabric_rest_patchcore.yaml
+configs/zju_per_group_patchcore.yaml
+configs/zju_unified_patchcore.yaml
+configs/zju_held_out_patchcore.yaml
+configs/zju_per_fabric_rest_rd4ad.yaml
+configs/zju_per_group_rd4ad.yaml
+configs/zju_unified_rd4ad.yaml
+configs/zju_held_out_rd4ad.yaml

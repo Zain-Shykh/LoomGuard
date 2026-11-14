@@ -1,0 +1,7 @@
+# AITEX, one model per fabric (7).
+extends: [base/aitex.yaml, base/rd4ad.yaml]
+regime: per_fabric
+rd4ad:
+  iterations: 5000
+  val_every: 500
+  log_every: 100

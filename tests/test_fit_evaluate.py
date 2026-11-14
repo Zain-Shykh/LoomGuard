@@ -44,7 +44,7 @@ def same_random_backbone(monkeypatch):
     monkeypatch.setattr(evaluate, "Backbone", seeded_backbone)
 COMMON = {"dataset", "regime", "fabric", "method", "git_commit", "seed", "config", "n_train_tiles", "n_val_tiles",
           "n_test_good", "n_test_defect", "tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap",
-          "tau", "false_alarms_per_1000", "tile_recall", "dice", "iou",
+          "tau", "false_alarms_per_1000", "tile_recall", "dice", "iou", "tag", "image_auroc", "image_ap",
           "ms_per_tile_cpu", "peak_vram_gb", "peak_ram_gb", "fit_minutes", "bundle_mb", "hist_bins", "device"}
 KEYS = {"patchcore": COMMON | {"coreset_seconds", "coreset_ratio", "bank_size"},
         "rd4ad": COMMON | {"iterations", "iters_per_second", "final_train_loss", "final_val_loss"}}
@@ -61,7 +61,7 @@ def write_cfg(tmp_path, **kw):
     return p
 
 
-ROLL_KEYS = {"rolls", "grade_agreement", "points_error_mean", "defect_count_error_mean"}
+ROLL_KEYS = {"by_fabric", "rolls", "grade_agreement", "points_error_mean", "defect_count_error_mean"}
 
 
 def independent_tau(model, rows, root, far=0.01):

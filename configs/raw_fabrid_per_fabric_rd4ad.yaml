@@ -1,0 +1,7 @@
+# RAW-FABRID, one model per roll (7). D-24: 5,000 iterations.
+extends: [base/raw_fabrid.yaml, base/rd4ad.yaml]
+regime: per_fabric
+rd4ad:
+  iterations: 5000
+  val_every: 500
+  log_every: 100

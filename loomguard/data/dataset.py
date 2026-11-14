@@ -1,4 +1,5 @@
 """Dataset that crops tiles out of parent images at load time (decision D-15). No augmentation (D-22)."""
+import functools
 import random
 from dataclasses import replace
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Sequence
 
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageChops
 from torch import Tensor
 from torch.utils.data import Dataset
 
@@ -15,6 +16,15 @@ from loomguard.data.tiling import TILE
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
+
+
+def load_mask(root: Path | str, rel: str) -> Image.Image:
+    """Mask as an L image. `rel` may join several files with '|': their union (AITEX images can have several masks)."""
+    ims = []
+    for p in rel.split("|"):
+        with Image.open(Path(root) / p) as im:
+            ims.append(im.convert("L"))
+    return functools.reduce(ImageChops.lighter, ims)
 
 
 def preprocess(img: Image.Image) -> Tensor:
@@ -34,8 +44,11 @@ class TileDataset(Dataset):
 
     def _open(self, rel: str, mode: str) -> Image.Image:
         if self._last.get(mode, ("",))[0] != rel:
-            with Image.open(self.root / rel) as im:
-                self._last[mode] = (rel, im.convert(mode))
+            if mode == "L":
+                self._last[mode] = (rel, load_mask(self.root, rel))
+            else:
+                with Image.open(self.root / rel) as im:
+                    self._last[mode] = (rel, im.convert(mode))
         return self._last[mode][1]
 
     def __getitem__(self, i: int) -> tuple[Tensor, Tensor, int]:

@@ -1,0 +1,9 @@
+# ZJU-Leaper, official Setting 1 (D-11). Scale unknown: assumed, labelled as such.
+dataset: zju_leaper
+root: data/ZJU-Leaper
+seed: 0
+backbone_weights: IMAGENET1K_V1
+device: auto
+hist_bins: 10000
+artifacts: artifacts
+results: results

@@ -1,0 +1,5 @@
+# ZJU-Leaper: per group, train without one pattern (last of the group), test on it (5 runs). 10,000 iterations like the group bundle.
+extends: [base/zju.yaml, base/patchcore.yaml]
+regime: held_out
+fabrics: [pattern3, pattern7, pattern12, pattern15, pattern19]
+held_out_scope: group

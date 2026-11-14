@@ -1,0 +1,6 @@
+# Ablation training-set size: 50 tiles (default 600), RAW-FABRID per roll.
+extends: [base/raw_fabrid.yaml, base/patchcore.yaml]
+regime: per_fabric
+tag: n50
+patchcore:
+  max_tiles: 50
