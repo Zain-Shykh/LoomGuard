@@ -16,6 +16,20 @@ Entry template:
 
 ---
 
+
+## 2026-11-14: Decisions confirmed, training-PC runbook written
+
+- **Phase:** between 6 and 7
+- **Who / where:** Zain, laptop
+- **Done:**
+  - The owner confirmed decisions A-01 to A-29; they moved to "Accepted" in `DECISIONS.md`. O-01 (third method) stays open and is deferred by the owner until the core study is finished.
+  - `docs/TRAINING_PC_RUNBOOK.md`: one ordered checklist for the training PC, built from section 8 of the six phase specs (environment, datasets and verification, MVTec gate, RAW-FABRID headline runs, cross-fabric study, app), with stop points and a pass-criteria table.
+- **Evidence:** all laptop work of Phases 1 to 6 is committed and pushed; the full suite gives 154 passed, 1 slow test deselected.
+- **Decisions:** none new.
+- **Problems / next:**
+  - Nothing has run on real data yet. The first training-PC run will probably need small adapter fixes.
+  - Next: the operator follows the runbook from Part 0. Phase 7 (gate) and Phase 8 (report) need its results.
+
 ## 2026-11-14: Phase 6 laptop work, Streamlit application
 
 - **Phase:** 6 (Code complete; real-bundle steps are training-PC / operator work)
