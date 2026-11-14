@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Phase | 5 |
-| Status | Written |
+| Status | Code complete |
 | Spec written | 2026-11-14 |
 | Written by | developer session, phase 5 |
 | Depends on | Phases 1 to 4 (Code complete, runbooks queued, D-58) |
@@ -117,20 +117,20 @@ None. `pyproject.toml` unchanged; plots are hand-written SVG.
 | # | Criterion | Where | Verified by | Met |
 |---|---|---|---|---|
 | A1 | Every cell of the regime table in EVALUATION 4.3 has a result file for both methods | Training PC | `python scripts/summarize.py --check` exits 0 | [ ] |
-| A1L | Laptop: every cell has a config in a study list; the check reports missing cells | Laptop | `tests/test_study.py::test_every_cell_has_a_config`, `tests/test_summarize.py::test_check_reports_missing` | [ ] |
-| A2 | Every run reproducible with one command and one config; config path and git commit in each result JSON | Both | `tests/test_study.py::test_driver_end_to_end` checks `config`, `git_commit`; command `python scripts/study.py LIST` or `fit.py` + `evaluate.py --config C` | [ ] |
-| A3 | All ablations of 4.4 run and plotted | Training PC | `results/report/ablations.md` and `figures/` contain all seven ablations | [ ] |
-| A3L | Laptop: a config for every ablation variant; tables and SVGs are produced from results | Laptop | `test_every_cell_has_a_config` (ablations part), `tests/test_summarize.py::test_ablation_tables_and_plots` | [ ] |
+| A1L | Laptop: every cell has a config in a study list; the check reports missing cells | Laptop | `tests/test_study.py::test_every_cell_has_a_config`, `tests/test_summarize.py::test_check_reports_missing` | [x] |
+| A2 | Every run reproducible with one command and one config; config path and git commit in each result JSON | Both | `tests/test_study.py::test_driver_end_to_end` checks `config`, `git_commit`; command `python scripts/study.py LIST` or `fit.py` + `evaluate.py --config C` | [x] |
+| A3 | All ablations of 4.4 (the four of the plan: resolution, coreset ratio, training-set size, overlap; plus the seeds row, five in the table) run and plotted | Training PC | `results/report/ablations.md` and `figures/` contain every ablation of `summarize.ABLATIONS` | [ ] |
+| A3L | Laptop: a config for every ablation variant; tables and SVGs are produced from results | Laptop | `test_every_cell_has_a_config` (ablations part), `tests/test_summarize.py::test_ablation_tables_and_plots` | [x] |
 | A4 | Written findings answer Q2, Q3, Q4, Q7 with numbers and at least three failure-case images per method | Training PC | `docs/FINDINGS.md`, images from `failure_cases.py` | [ ] |
-| A4L | Laptop: failure-case script writes the panels | Laptop | `tests/test_study.py::test_failure_cases` | [ ] |
-| A5 | Headline settings not changed after looking at test results; deviations logged | Both | `tests/test_study.py::test_headline_settings_fixed` (budgets, ratios); progress log | [ ] |
-| A6 | ZJU adapter: official-JSON splits, 10 percent val by parent, no parent in two splits, strict problem reports, resize rows | Laptop | `tests/test_zju_aitex.py::test_zju_*` | [ ] |
-| A7 | AITEX adapter: fabric from name, 12/8 split, border filter, several masks | Laptop | `tests/test_zju_aitex.py::test_aitex_*` | [ ] |
-| A8 | Regimes: per-group and held-out profiles; held-out fabric never in train or val rows | Laptop | `tests/test_zju_aitex.py::test_profiles_regimes`, `test_held_out_fit_reads_no_held_out_rows` | [ ] |
-| A9 | Image metrics and `by_fabric` equal an independent recomputation; pooled equals merged | Laptop | `tests/test_study.py::test_evaluate_image_and_by_fabric` | [ ] |
-| A10 | Overlap: manifest and `Inspector` use the overlapped grid, split unchanged | Laptop | `tests/test_zju_aitex.py::test_min_overlap` | [ ] |
-| A11 | No new dependency | Laptop | `git diff pyproject.toml` empty | [ ] |
-| A12 | Full suite passes | Laptop | `pytest -q` | [ ] |
+| A4L | Laptop: failure-case script writes the panels | Laptop | `tests/test_study.py::test_failure_cases` | [x] |
+| A5 | Headline settings not changed after looking at test results; deviations logged | Both | `tests/test_study.py::test_headline_settings_fixed` (budgets, ratios); progress log | [x] |
+| A6 | ZJU adapter: official-JSON splits, 10 percent val by parent, no parent in two splits, strict problem reports, resize rows | Laptop | `tests/test_zju_aitex.py::test_zju_*` | [x] |
+| A7 | AITEX adapter: fabric from name, 12/8 split, border filter, several masks | Laptop | `tests/test_zju_aitex.py::test_aitex_*` | [x] |
+| A8 | Regimes: per-group and held-out profiles; held-out fabric never in train or val rows | Laptop | `tests/test_zju_aitex.py::test_profiles_regimes`, `test_held_out_fit_reads_no_held_out_rows` | [x] |
+| A9 | Image metrics and `by_fabric` equal an independent recomputation; pooled equals merged | Laptop | `tests/test_study.py::test_evaluate_image_and_by_fabric` | [x] |
+| A10 | Overlap: manifest and `Inspector` use the overlapped grid, split unchanged | Laptop | `tests/test_zju_aitex.py::test_min_overlap` | [x] |
+| A11 | No new dependency | Laptop | `git diff pyproject.toml` empty | [x] |
+| A12 | Full suite passes | Laptop | `pytest -q` | [x] |
 | A13 | Adapters check out on real data | Training PC | runbook step 0 | [ ] |
 | A14 | ZLEval figures recorded | Training PC | runbook step 6 | [ ] |
 
@@ -200,12 +200,12 @@ Expected GPU time (EVALUATION 6 speeds, 4 it/s, batch 16): PatchCore about 100 b
 
 | | |
 |---|---|
-| Spec commit | |
-| Implementation commit | |
+| Spec commit | 186bca3 |
+| Implementation commit | 1ad94e9 |
 | Review commit | |
 | Review rounds and verdict | |
-| Tests | |
+| Tests | `pytest -q`: 128 passed, 1 slow test deselected (new: zju/aitex 7, study 9, summarize 2) |
 | Results commit (training PC) | |
-| Decisions made | |
-| Deviations from this spec | |
+| Decisions made | A-21 to A-25 |
+| Deviations from this spec | None. A2 and A5 are ticked for their laptop part; their training-PC part is in the runbook. |
 | Closed by owner | |

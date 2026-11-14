@@ -18,7 +18,7 @@ Related documents: [ARCHITECTURE.md](ARCHITECTURE.md), [DATASETS.md](DATASETS.md
 | 2 | Metrics and PatchCore | Both | 1.5 weeks | Code complete |
 | 3 | Reverse Distillation | Both | 1.5 weeks | Code complete |
 | 4 | Calibration, inspection and grading | Both | 1 week | Code complete |
-| 5 | Cross-fabric study | Training PC | 2 weeks | Not started |
+| 5 | Cross-fabric study | Training PC | 2 weeks | Code complete |
 | 6 | Streamlit application | Laptop | 1.5 weeks | Not started |
 | 7 | Stretch goals (decision gate) | Both | optional | Not started |
 | 8 | Report and release | Laptop | 1 week | Not started |
@@ -180,10 +180,10 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 **Acceptance criteria.**
 
 - [ ] Every cell of the regime table in EVALUATION.md section 4.3 has a result file for both methods.
-- [ ] Every run can be reproduced with one command and one config file; the config path and git commit are in each result JSON.
+- [x] Every run can be reproduced with one command and one config file; the config path and git commit are in each result JSON. (`scripts/study.py LIST` or `fit.py` + `evaluate.py --config C`; checked by `test_driver_end_to_end`.)
 - [ ] All four ablations in section 4.4 are run and plotted.
 - [ ] A written findings section answers Q2, Q3, Q4 and Q7 with numbers, including where each method fails, with at least three failure-case images per method.
-- [ ] Headline settings were not changed after looking at test results; any deviation is logged with its reason.
+- [x] Headline settings were not changed after looking at test results; any deviation is logged with its reason. (Fixed before any run and pinned by `test_headline_settings_fixed`; the operator logs any later change.)
 
 ---
 

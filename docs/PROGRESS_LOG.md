@@ -16,6 +16,20 @@ Entry template:
 
 ---
 
+## 2026-11-14: Phase 5 laptop work, cross-fabric study
+
+- **Phase:** 5 (Code complete; the study itself is training-PC work)
+- **Who / where:** developer session, laptop
+- **Done:**
+  - Adapters `build_zju` and `build_aitex` (tolerant file lookup, strict error reports; AITEX border filter and united multi-mask), `load_mask`, `min_overlap` through manifests and `Inspector`, `ScoreCounts.merge`.
+  - Regimes `per_group` and `held_out`, config `extends`, `dump_predictions`; `evaluate.py` adds `image_auroc`, `image_ap`, `by_fabric`, `tag`.
+  - 27 new configs (regimes, ZJU-mini, held-out, ablations `res256 cr1 cr25 n50 n200 it1k ov32`), run lists `configs/studies/01..05`, `scripts/study.py` (resumable driver), `scripts/summarize.py` (markdown, CSV, stdlib SVG, `--check`), `scripts/failure_cases.py`.
+  - Spec `docs/specs/phase-5-cross-fabric-study.md` with the runbook and GPU-time estimate (RD4AD about 38 h, above the 27 h of the compute table, mostly RAW-FABRID held-out at 20,000 iterations; A-22).
+- **Evidence:** `pytest -q`: 128 passed, 0 failed, 1 slow test deselected (new: zju/aitex 7, study 9, summarize 2). End-to-end driver on a synthetic four-pattern ZJU tree runs four regimes, writes the expected result paths, skips on rerun and survives a failing config; held-out `fit` reads no train or val row of the held-out fabric; image metrics and `by_fabric` equal an independent recomputation; `test_every_cell_has_a_config` ties every EVALUATION 4.3 cell and ablation variant to a config; `test_headline_settings_fixed` pins D-23/D-24 values.
+- **Decisions:** A-21 to A-25.
+- **Review:** see below once recorded.
+- **Problems / next:** ZJU-Leaper and AITEX layouts unverified; ZLEval glue and all runs, findings and failure-case images are training-PC tasks (runbook, spec section 8). Driver end-to-end test takes about 100 s.
+
 ## 2026-11-14: Phase 4 laptop work, calibration, inspection and grading
 
 - **Phase:** 4 (Code complete; training-PC tasks outstanding)
