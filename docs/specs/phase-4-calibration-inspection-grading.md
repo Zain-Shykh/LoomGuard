@@ -301,8 +301,8 @@ Commit `phase 4: results` with `results/**.json`, the log entry, ticks in this s
 |---|---|
 | Spec commit | 082a2c9 |
 | Implementation commit | 4cead6a |
-| Review commit | see git log (`phase 4: review fixes and doc sync`) |
-| Review rounds and verdict | round 1 CHANGES REQUIRED (documents only), round 2 recorded in PROGRESS_LOG.md |
+| Review commit | 704c2c4 (`phase 4: review fixes and doc sync`) plus the round 2 record fix |
+| Review rounds and verdict | round 1 CHANGES REQUIRED (documents only), round 2 PASS |
 | Tests | `pytest -q`: 110 passed, 0 failed, 1 slow deselected |
 | Results commit (training PC) | pending |
 | Decisions made | A-15 to A-20 |
