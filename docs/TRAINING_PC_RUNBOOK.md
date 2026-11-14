@@ -152,12 +152,12 @@ Notes:
 
 Details: `docs/specs/phase-6-streamlit-app.md`, section 8, steps 1 to 6. Summary:
 
-1. Create a Hugging Face model repository for the bundles and upload the demo bundles (`huggingface-cli upload ...`; install `huggingface_hub` on this machine only for this). The repository is `Zain-1389/loomguard-bundles` (public, owned by the project owner). Set `LOOMGUARD_HUB_REPO=Zain-1389/loomguard-bundles` for the checks. Only at the very end, put the name in `assets/profiles.json` (`hub_repo`) and update `tests/test_app.py::test_shipped_assets_start_the_app`, which assumes it is empty.
+1. Upload the demo bundles (`huggingface-cli upload ...`; install `huggingface_hub` on this machine only for this). The repository is `Zain-1389/loomguard-bundles` (public, owned by the project owner). Set `LOOMGUARD_HUB_REPO=Zain-1389/loomguard-bundles` for the checks. Only at the very end, put the name in `assets/profiles.json` (`hub_repo`) and update `tests/test_app.py::test_shipped_assets_start_the_app`, which assumes it is empty.
 2. On a laptop or any CPU-only machine: fresh clone, `pip install -e ".[app]"` with CPU PyTorch, `streamlit run app/streamlit_app.py`. Time a 1792x1024 image with the PatchCore 1 percent bundle: the median must be under 10 seconds.
 3. Check that the app's score, flag and defect list equal `evaluate.py`'s dumped predictions for one real image (script in the spec).
 4. Build a demo roll from one RAW-FABRID roll, play it in the Roll stream page, and compare the final points and grade with the result JSON.
 5. Wrong-fabric test: the unknown-fabric warning must appear on images from another roll and must not appear on normal images of the right roll. If it misfires, adjust the three `UNKNOWN_*` constants in `app/streamlit_app.py` and record a decision.
-6. Add three to five RAW-FABRID images (CC BY 4.0, with credit) to `assets/samples/` with entries in `samples.json`, then deploy a Streamlit Space on the free CPU tier using `deploy/requirements.txt` and `deploy/README_space.md`. Record the Space URL.
+6. Add three to five RAW-FABRID images (CC BY 4.0, with credit) to `assets/samples/` with entries in `samples.json`, then deploy to the existing Streamlit Space `https://huggingface.co/spaces/Zain-1389/loomguard` (free CPU tier, the owner creates the access for you) using `deploy/requirements.txt` and `deploy/README_space.md`. Record the Space URL.
 
 **Commit:** `phase 6: results`.
 
