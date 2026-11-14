@@ -84,7 +84,7 @@ def evaluate_profile(cfg, name, prows, device) -> dict:
            "aupro_30": counts.aupro(0.3), "pixel_auroc": counts.auroc(), "pixel_ap": counts.ap(),
            f"ms_per_tile_{device.type}": 1000 * timing[0] / len(test), "peak_vram_gb": fit["peak_vram_gb"],
            "peak_ram_gb": fit["peak_ram_gb"], "fit_minutes": fit["fit_minutes"], "bundle_mb": fit["bundle_mb"],
-           **{k: fit[k] for k in METHOD_KEYS[cfg["method"]]}, "hist_bins": cfg["hist_bins"], "device": device.type}
+           **{k: fit.get(k) for k in METHOD_KEYS[cfg["method"]]}, "hist_bins": cfg["hist_bins"], "device": device.type}
     res = {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in res.items()}
     p = result_path(cfg, name)
     p.parent.mkdir(parents=True, exist_ok=True)

@@ -314,7 +314,7 @@ Nothing in this spec depends on an item under "Open" in `DECISIONS.md` (O-01, O-
 | Spec commit | a135b2f `phase 3: spec` |
 | Implementation commit | da985c6 `phase 3: implementation` |
 | Review commit | `phase 3: review fixes and doc sync` (the last commit of the phase) |
-| Review rounds and verdict | see PROGRESS_LOG.md |
+| Review rounds and verdict | 2 rounds; round 1 CHANGES REQUIRED (fixed), round 2 PASS. See PROGRESS_LOG.md |
 | Tests | `pytest -q`: 79 passed, 0 failed, 1 deselected (`slow` overfit test), no dataset present |
 | Results commit (training PC) | pending: runbook, then `phase 3: results` |
 | Decisions made | A-10 to A-14 (Awaiting confirmation) |
