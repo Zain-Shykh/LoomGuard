@@ -256,7 +256,7 @@ Open decisions O-01 and O-02 in `DECISIONS.md` are settled here.
 |---|---|---|---|
 | ZJU-Leaper Google Drive quota blocks the download | Medium | Phase 5 delayed | Retry off-peak with `gdown`; try the authors' second host; RAW-FABRID alone still supports Q2 and Q4 |
 | Our numbers miss the MVTec targets | Medium | Cannot trust later results | Upgrade the documented simplifications one at a time (1,024-d pooling, re-weighted score, centre crop) |
-| RD4AD exceeds 12 GB VRAM | Low | Training blocked | Mixed precision is already on; lower the batch size to 8 |
+| RD4AD exceeds the 11 GB bar (the card has 16 GB) | Low | Training blocked or not portable to a 12 GB card | Mixed precision is already on; lower the batch size to 8 only with the owner's agreement, since batch size is a fixed setting (D-24) |
 | RAW-FABRID rolls turn out to be the same fabric | Medium | Leave-one-roll-out is not an unseen-fabric test | Use ZJU-Leaper held-out patterns for Q4 only |
 | PatchCore too slow on the laptop CPU | Medium | Demo feels sluggish | 1 percent coreset; then FAISS; then a smaller bank |
 | Too few validation tiles make `tau` unstable (AITEX, roll 3) | High | False-alarm rate off target | Already flagged as low-confidence; report it as a finding |

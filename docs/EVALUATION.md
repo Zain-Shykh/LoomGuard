@@ -186,4 +186,4 @@ The zeros are placeholders for the format. Phase 5 adds `tag`, `image_auroc` and
 | RD4AD group and unified fits | 5 at 10k, 2 at 20k iterations | 40 to 80 minutes | about 6 hours |
 | Held-out and ablation runs | about 25 | about 20 minutes | about 8 hours |
 
-These assume roughly 4 iterations per second at batch 16 with mixed precision. Phase 3 measures the real speed and updates this table.
+These assume roughly 4 iterations per second at batch 16 with mixed precision. Phase 3 measures the real speed and updates this table. The estimates were made before the training PC was known to be an RTX 5060 Ti (16 GB, decision D-59), which is probably about a third slower than an RTX 5070; treat the totals as a lower bound until the measured speed replaces them.

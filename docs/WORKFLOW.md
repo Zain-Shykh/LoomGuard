@@ -18,7 +18,7 @@ How the project is built, phase by phase. This file is the process; [IMPLEMENTAT
 | Orchestrator | Main interactive Claude session | Fable 5.2 | Prepares the environment, launches the developer session with the prompt, verifies its report, pushes, keeps DECISIONS.md current | Write specs or phase code |
 | Developer session | Headless Claude session, new for every phase | Sonnet 5.5, medium effort | Writes the spec, plans, implements, writes tests, runs the review loop, updates docs, commits locally | Push, change the architecture, decide open questions, download data, train models |
 | Reviewer agent | `phase-reviewer` subagent spawned by the developer session | Sonnet 5.5, medium effort | Reviews and tests the phase against the plan, its spec and the docs; returns a verdict | Edit files |
-| Training-PC operator | Teammate with the RTX 5070 | | Runs the spec's training-PC runbook, records results | |
+| Training-PC operator | Teammate with the RTX 5060 Ti (16 GB) | | Runs the spec's training-PC runbook, records results | |
 
 ## 3. Phase lifecycle
 

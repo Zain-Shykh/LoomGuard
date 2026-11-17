@@ -17,6 +17,16 @@ Entry template:
 ---
 
 
+
+## 2026-11-17: Training PC is an RTX 5060 Ti with 16 GB
+
+- **Phase:** between 6 and 7
+- **Who / where:** Zain, laptop
+- **Done:** the teammate's GPU is an RTX 5060 Ti with 16 GB VRAM, not an RTX 5070 with 12 GB. Updated `CLAUDE.md`, `README.md`, `docs/ARCHITECTURE.md`, `docs/WORKFLOW.md`, `docs/TRAINING_PC_RUNBOOK.md`, `docs/IMPLEMENTATION_PLAN.md` (risk row), `docs/EVALUATION.md` (compute note) and `docs/DECISIONS.md`.
+- **Evidence:** none to measure on the laptop. Same Blackwell generation, so the `sm_120` check and the CUDA 12.8 wheels still apply.
+- **Decisions:** D-59 supersedes the hardware in D-03. No setting changes: batch 16 and the 11 GB peak-VRAM bar stay, so results hold on a 12 GB card too. The extra memory is headroom only.
+- **Problems / next:** the compute estimates (about 38 h RD4AD) assumed a faster card. Expect about 50 h until Phase 3 measures the real speed.
+
 ## 2026-11-14: Decisions confirmed, training-PC runbook written
 
 - **Phase:** between 6 and 7

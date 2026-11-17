@@ -22,7 +22,7 @@ The design is fixed in `docs/`. Read the relevant document before writing code, 
 ## Two machines, different jobs
 
 - **Laptop (no GPU, almost no free disk):** code, docs, CPU unit tests on synthetic data. **Never download a dataset or train a model here.** Verify remote data with HEAD/range requests instead.
-- **Training PC (RTX 5070, 12 GB VRAM):** datasets, fitting, evaluation. Needs PyTorch 2.7 or newer with CUDA 12.8 wheels (`torch.cuda.get_arch_list()` must contain `sm_120`).
+- **Training PC (RTX 5060 Ti, 16 GB VRAM):** datasets, fitting, evaluation. Needs PyTorch 2.7 or newer with CUDA 12.8 wheels (`torch.cuda.get_arch_list()` must contain `sm_120`).
 
 If a task needs a GPU or a dataset and you are on the laptop, write the code and the test, then record the run as a training-PC task in `docs/PROGRESS_LOG.md`.
 
@@ -33,7 +33,7 @@ Install PyTorch first, from the index that fits the machine. `pip install -e .` 
 ```bash
 # laptop (CPU)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-# training PC (RTX 5070)
+# training PC (RTX 5060 Ti)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
 pip install -e ".[dev,app]"   # app = Streamlit (Phase 6, needed by tests/test_app.py); the training PC can use ".[dev]"

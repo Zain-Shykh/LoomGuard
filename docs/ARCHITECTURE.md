@@ -44,7 +44,7 @@ Training and evaluation run on the training PC. The laptop is for code, document
 
 ```mermaid
 flowchart LR
-  subgraph PC["Training PC: RTX 5070, 12 GB VRAM"]
+  subgraph PC["Training PC: RTX 5060 Ti, 16 GB VRAM"]
     DS[("Datasets<br/>about 30 GB extracted")]:::data --> MAN["Manifest builder<br/>split by parent image,<br/>then list tiles"]
     MAN --> FIT["Fit model per fabric<br/>PatchCore: build bank<br/>RD4AD: train student"]:::train
     FIT --> CAL["Calibrate threshold<br/>on held-out normal tiles"]:::store
@@ -291,14 +291,14 @@ Loss for one image, following the official implementation: at each scale `k`, fl
 | Batch size | 16 | Paper |
 | Input | 256 x 256 | Paper |
 | Length | **5,000 iterations** per fabric profile, 10,000 per group, 20,000 unified | Ours. The paper's 200 epochs on MVTec is about 3,500 iterations. |
-| Mixed precision | `torch.autocast` with bfloat16 on CUDA only (no loss scaler; the loss itself is float32); off on CPU | Ours, for 12 GB VRAM headroom (decision A-10) |
+| Mixed precision | `torch.autocast` with bfloat16 on CUDA only (no loss scaler; the loss itself is float32); off on CPU | Ours, for VRAM headroom (decision A-10) |
 | Crops | Random 256 x 256 window of a random train parent image, no flips or rotations (MVTec: the whole resized image) | D-22, decision A-11 |
 | Checkpoint choice | Last checkpoint | Ours, see below |
 | Seed | Fixed, recorded in the config | Ours |
 
 **No test-set peeking.** The official RD4AD code evaluates on the test set during training and reports the best epoch. That leaks test data into model selection. LoomGuard trains for a fixed budget and takes the last checkpoint. Validation loss on held-out normal tiles is logged only to spot divergence.
 
-Expected VRAM at batch 16 is well under 12 GB. Phase 3 measures and records the real peak.
+Expected VRAM at batch 16 is well under the 11 GB bar (the bar was set for a 12 GB card and is kept, so the result also holds on one; the training PC has 16 GB). Phase 3 measures and records the real peak.
 
 ### 6.3 Scoring a tile
 
@@ -346,7 +346,7 @@ flowchart LR
   classDef data fill:#e5e7eb,stroke:#374151,color:#111
 ```
 
-ViT-Small (37 M parameters) is the 12 GB-safe choice. The paper reports 99.3 image AUROC on multi-class MVTec AD for ViT-Small against 99.6 for ViT-Base.
+ViT-Small (37 M parameters) is the choice that also fits a 12 GB card (the training PC has 16 GB). The paper reports 99.3 image AUROC on multi-class MVTec AD for ViT-Small against 99.6 for ViT-Base.
 
 ## 8. Calibration
 
@@ -490,7 +490,7 @@ The Inspector is the single code path for evaluation and for the app. The app ne
 sequenceDiagram
   participant L as Laptop (no GPU, 3.6 GB free)
   participant G as GitHub repo
-  participant P as Training PC (RTX 5070)
+  participant P as Training PC (RTX 5060 Ti)
   participant H as Weights host
   L->>G: code, configs, docs, CPU tests
   G->>P: git pull

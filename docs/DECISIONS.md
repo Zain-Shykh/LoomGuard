@@ -17,7 +17,7 @@ How to use this file:
 |---|---|---|---|---|
 | D-01 | 2026-11-12 | Two core methods: PatchCore and Reverse Distillation (RD4AD), compared on the same data | One stores normal patches, one learns them; the comparison is the research result | ARCHITECTURE 1 |
 | D-02 | 2026-11-12 | Implement both methods ourselves from the papers. No anomaly-detection library. | Learning is the project goal | ARCHITECTURE 14 |
-| D-03 | 2026-11-12 | PyTorch. Training on one RTX 5070 (12 GB VRAM) with PyTorch 2.7 or newer and CUDA 12.8 wheels | The only GPU available; older builds do not support the RTX 50 series | ARCHITECTURE 13 |
+| D-03 | 2026-11-12 | PyTorch. Training on one RTX 5070 (12 GB VRAM) with PyTorch 2.7 or newer (hardware superseded by D-59: RTX 5060 Ti, 16 GB) and CUDA 12.8 wheels | The only GPU available; older builds do not support the RTX 50 series | ARCHITECTURE 13 |
 | D-04 | 2026-11-12 | The laptop does code, docs and CPU tests only. No dataset downloads, no training. | No GPU and about 3.6 GB of free disk | ARCHITECTURE 13 |
 | D-05 | 2026-11-12 | Front end is Streamlit | Course requirement | ARCHITECTURE 11 |
 | D-06 | 2026-11-12 | Deploy the app on Hugging Face Spaces, free CPU tier. Any free host is acceptable if that fails. | Free, and enough memory for PyTorch on CPU | ARCHITECTURE 11 |
@@ -79,6 +79,7 @@ How to use this file:
 | D-56 | 2026-11-12 | Each phase is done by a fresh headless Claude session (Sonnet 5.5, medium effort): spec, plan, implementation, then a review loop against a reviewer agent that also checks the spec against the plan | A clean context per phase; independent check against drift and stale docs | WORKFLOW |
 | D-57 | 2026-11-12, revised 2026-11-13 | The main session (Fable 5.2) is the orchestrator: launches sessions with the prompt, verifies their reports, pushes. It does not write specs or phase code. Three commits per phase (spec, implementation, review), made locally by the developer session and pushed by the orchestrator after verification. | High-level control stays in one place | WORKFLOW |
 | D-58 | 2026-11-13 | All laptop work of every phase is done first, phase after phase, with the training-PC runbooks queued. The training-PC operator then runs all runbooks in phase order. A phase is `Code complete` until its runbook has been run. | The owner wants the implementation finished on the laptop before the teammate's GPU time is needed. The cost is that integration bugs with real data appear late, so every phase must carry synthetic end-to-end tests and a runbook the operator can follow without the developer. | WORKFLOW |
+| D-59 | 2026-11-17 | The training PC is an RTX 5060 Ti with 16 GB VRAM, not an RTX 5070 with 12 GB. Supersedes the hardware in D-03; the rest of D-03 holds (PyTorch 2.7 or newer, CUDA 12.8 wheels, `sm_120`, since it is the same Blackwell generation). All fixed settings stay unchanged, including batch 16 and the 11 GB peak-VRAM bar, which was set for a 12 GB card and is kept so results stay portable. Run times in the docs were estimated for a faster card: expect the card to be roughly a third slower (fewer cores, lower memory bandwidth; not measured), so replace the estimates with measured speeds. | The owner's teammate has this card | README, CLAUDE.md |
 
 ### Made by developer sessions, confirmed by the owner on 2026-11-14
 
@@ -134,7 +135,7 @@ Decisions made by a developer session during a phase. A-01 to A-29 were confirme
 - **What it produces:** the same outputs as the other methods, a score per tile and a 256x256 heatmap. It plugs into the existing threshold, grading and app as a third model choice.
 - **Value:** it is designed for one model covering many classes, which is the unified cross-fabric regime where RD4AD is expected to degrade. It also uses a self-supervised transformer, so the study can separate the effect of the method from the effect of the backbone. The paper reports 99.3 image AUROC on multi-class MVTec AD with ViT-Small.
 - **Workload (estimates, not measured):** 300 to 400 lines of new code (DINOv2 encoder wrapper, MLP bottleneck, 8-layer transformer decoder with linear attention, loss, optimiser with warm-up). 1 to 1.5 weeks of developer time. About 25 GPU hours for the full study, or a few hours if run only in the unified and per-group regimes.
-- **Fit on 12 GB:** very likely. 37 M parameters in total against 84 M trainable for RD4AD. The paper gives no memory figure, so the first run must measure it.
+- **Fit on 12 GB and on the 16 GB card:** very likely. 37 M parameters in total against 84 M trainable for RD4AD. The paper gives no memory figure, so the first run must measure it.
 - **Risks:** a 20x20 feature grid per tile may localize thin defects worse than RD4AD's 64x64 finest scale. It is the largest single scope addition.
 - **Current recommendation:** decide after the two-method study. If RD4AD clearly drops in the unified regime, add Dinomaly for the unified and per-group runs only.
 - EfficientAD remains an option but is not recommended: it needs an ImageNet image stream during training, has no official code, and its strength (latency) is not our bottleneck.

@@ -1,6 +1,6 @@
 # LoomGuard: Training-PC Runbook
 
-One ordered checklist for the person with the RTX 5070 (12 GB VRAM). It collects the training-PC steps of the six phase specs (`docs/specs/phase-N-*.md`, section 8) in the order they should be run, with stop points. If this file and a spec disagree, the spec's section 8 is the detail and this file is the order. Report disagreements to the project owner.
+One ordered checklist for the person with the RTX 5060 Ti (16 GB VRAM). It collects the training-PC steps of the six phase specs (`docs/specs/phase-N-*.md`, section 8) in the order they should be run, with stop points. If this file and a spec disagree, the spec's section 8 is the detail and this file is the order. Report disagreements to the project owner.
 
 All code was written and tested on a laptop with no GPU and no data. **None of it has seen real data yet.** Expect small fixes on the first runs, mostly in the dataset adapters (`loomguard/data/manifest.py`) because the column names and folder layouts were taken from documentation, not from the files. Fix them, keep the tests passing, and record every fix in `docs/PROGRESS_LOG.md`.
 
@@ -23,7 +23,7 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available(), tor
 pytest -q          # about 7 minutes; must pass with no dataset
 ```
 
-Expected: `torch.cuda.is_available()` is `True` and the architecture list contains `sm_120`. If not, the PyTorch build is too old for the RTX 5070 (need 2.7 or newer with CUDA 12.8 wheels). Stop here until it is fixed.
+Expected: `torch.cuda.is_available()` is `True` and the architecture list contains `sm_120`. If not, the PyTorch build is too old for the RTX 50 series (the RTX 5060 Ti is Blackwell like the RTX 5070 and uses the same `sm_120` wheels; need 2.7 or newer with CUDA 12.8 wheels). Stop here until it is fixed.
 
 Also run the slow overfit test once on the GPU (8 tiles, loss below 0.05 in 300 iterations): `pytest -m slow tests/test_rd4ad.py`.
 
@@ -144,7 +144,7 @@ Notes:
 - ZLEval (the dataset's official evaluation tool): set `dump_predictions: true` in a tagged copy of a ZJU config, run `evaluate.py`, and feed `artifacts/predictions/zju_leaper/...` to the dataset's ZLEval. The input format was not verified, so the glue code is not written; record pixel, region and sample F1 per pattern. Skip this if it takes more than a few hours; note that you skipped it.
 - Commit only RAW-FABRID failure-case panels (CC BY). Do not commit MVTec images (non-commercial licence).
 - Write `docs/FINDINGS.md`: answer Q2, Q3, Q4 and Q7 with numbers from `results/report/`, say where each method fails, and include at least three failure-case images per method.
-- GPU time estimate with the Phase 5 spec numbers: PatchCore about 100 bundles, 6 to 8 hours; RD4AD about 38 hours in total (ZJU per pattern 6.6 h, per group 3.5 h, unified 1.4 h, ZJU held-out 3.5 h, RAW per roll 2.4 h, RAW unified 3 seeds 4.2 h, RAW held-out 9.7 h, AITEX 2.4 h, ablations 4.6 h). Replace these with your measured speed from Part 2. The largest single item is the RAW-FABRID held-out RD4AD at 20,000 iterations (decision A-22); the owner accepted it. If time is short, ask before reducing it.
+- GPU time estimate with the Phase 5 spec numbers: PatchCore about 100 bundles, 6 to 8 hours; RD4AD about 38 hours in total (ZJU per pattern 6.6 h, per group 3.5 h, unified 1.4 h, ZJU held-out 3.5 h, RAW per roll 2.4 h, RAW unified 3 seeds 4.2 h, RAW held-out 9.7 h, AITEX 2.4 h, ablations 4.6 h). Replace these with your measured speed from Part 2. They were estimated for a faster card; the RTX 5060 Ti is probably about a third slower, so plan for roughly 50 hours of RD4AD and 8 to 10 hours of PatchCore until you have the measured speed. The largest single item is the RAW-FABRID held-out RD4AD at 20,000 iterations (decision A-22); the owner accepted it. If time is short, ask before reducing it.
 
 **Commit:** `phase 5: results` with `results/**`, `results/report/**`, `docs/FINDINGS.md`.
 
@@ -179,7 +179,7 @@ When all parts are done:
 | Phase 2 | coreset for 600 tiles under 10 minutes; RAM and VRAM recorded | 3 |
 | Phase 2 | RAW-FABRID unified PatchCore result committed and summarised | 3 |
 | Phase 3 | RD4AD MVTec textures 98.5 / 96.7 / 92.0 | 2 |
-| Phase 3 | peak VRAM under 11 GB at batch 16; speed recorded; compute table updated | 2 |
+| Phase 3 | peak VRAM under 11 GB at batch 16 (bar kept from the 12 GB design; the card has 16 GB); speed recorded; compute table updated | 2 |
 | Phase 3 | RAW-FABRID unified RD4AD, 3 seeds, mean and spread | 3 |
 | Phase 4 | false alarms 5 to 20 per 1,000 for both methods | 3 |
 | Phase 4 | per-roll grading predicted against ground truth for 7 rolls | 3 |

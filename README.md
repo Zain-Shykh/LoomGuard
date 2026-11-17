@@ -37,7 +37,7 @@ Diagrams are Mermaid. In VS Code press `Ctrl+Shift+V` (needs the `bierner.markdo
 | Cross-fabric benchmark | ZJU-Leaper (5.8 GB, 19 patterns in 5 groups, masks) |
 | Sanity check | MVTec AD textures against published numbers |
 | Main metrics | AUROC for detection, AUPRO for localization, false alarms per 1,000 tiles at the calibrated threshold |
-| Hardware | Training on one RTX 5070 (12 GB). Demo runs on CPU. |
+| Hardware | Training on one RTX 5060 Ti (16 GB). Demo runs on CPU. |
 
 ## What changed from the starter file
 
@@ -78,7 +78,7 @@ Install PyTorch first, from the index that fits the machine. `pip install -e .` 
 ```bash
 # laptop (CPU only)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-# training PC (RTX 5070): needs PyTorch 2.7 or newer with CUDA 12.8 wheels
+# training PC (RTX 5060 Ti): needs PyTorch 2.7 or newer with CUDA 12.8 wheels
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
 pip install -e ".[dev,app]"   # app = Streamlit (Phase 6, needed by tests/test_app.py); the training PC can use ".[dev]"
@@ -107,5 +107,5 @@ python scripts/summarize.py                                  # tables, CSV and S
 ## Team workflow
 
 - Laptop: code, documentation, CPU unit tests on synthetic data. No datasets, no training.
-- Training PC (RTX 5070, 12 GB): datasets, fitting, evaluation.
+- Training PC (RTX 5060 Ti, 16 GB): datasets, fitting, evaluation.
 - Results (`results/*.json`) are committed. Datasets and model bundles are never committed.
