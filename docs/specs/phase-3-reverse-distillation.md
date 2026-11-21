@@ -90,7 +90,7 @@ class RD4AD:
     def fit(self, batches: Iterable[Tensor], iterations: int, lr: float = 0.005, betas: tuple[float, float] = (0.5, 0.999),
             val: Sequence[Tensor] = (), val_every: int = 500, log_every: int = 100) -> dict:
         """Exactly `iterations` Adam steps on `batches` (B x 3 x 256 x 256 normal crops), student parameters only; the last state is kept.
-        bfloat16 autocast on CUDA only. `val`: list of normal-tile batches; their loss (student in eval()) is logged every `val_every`
+        fp16 autocast with GradScaler on CUDA only (D-60, was bfloat16). `val`: list of normal-tile batches; their loss (student in eval()) is logged every `val_every`
         steps and at the end, only to spot divergence. Raises ValueError if `batches` has fewer than `iterations` items; extra items
         are never consumed. Returns {iterations, seconds, iters_per_second, final_train_loss, final_val_loss | None,
         loss_curve: [[iteration, mean train loss since the last log, val loss | None], ...]}."""

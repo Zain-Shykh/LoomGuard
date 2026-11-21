@@ -291,7 +291,7 @@ Loss for one image, following the official implementation: at each scale `k`, fl
 | Batch size | 16 | Paper |
 | Input | 256 x 256 | Paper |
 | Length | **5,000 iterations** per fabric profile, 10,000 per group, 20,000 unified | Ours. The paper's 200 epochs on MVTec is about 3,500 iterations. |
-| Mixed precision | `torch.autocast` with bfloat16 on CUDA only (no loss scaler; the loss itself is float32); off on CPU | Ours, for VRAM headroom (decision A-10) |
+| Mixed precision | `torch.autocast` with float16 plus `GradScaler` on CUDA only (the loss itself is float32); off on CPU | Ours, for speed and VRAM on every GPU incl. Kaggle T4 (decision D-60, replaces A-10) |
 | Crops | Random 256 x 256 window of a random train parent image, no flips or rotations (MVTec: the whole resized image) | D-22, decision A-11 |
 | Checkpoint choice | Last checkpoint | Ours, see below |
 | Seed | Fixed, recorded in the config | Ours |

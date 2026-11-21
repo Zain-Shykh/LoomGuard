@@ -114,7 +114,7 @@ def hardware(owner):
         ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"], text=True).splitlines()[0].strip()
     return {"machine": platform.node(), "platform": platform.platform(), "python": platform.python_version(),
             "gpu": torch.cuda.get_device_name(), "driver": driver, "torch": str(torch.__version__), "cuda": torch.version.cuda,
-            "native_bf16": torch.cuda.is_bf16_supported(including_emulation=False),
+            "fp16_tensor_cores": torch.cuda.get_device_capability() >= (7, 0),
             "packages": {name: importlib.metadata.version(name) for name in ("torchvision", "numpy", "pillow", "pyyaml")}}
 
 
@@ -294,8 +294,8 @@ def run_profile(run, pin, location, machine, prerequisite):
                 raise ValueError(f"{status}: staged result has conflicting provenance. Review before retrying.")
             if run.bundle.exists() or run.bundle.is_symlink():
                 raise ValueError(f"{run.bundle} contains an unverified bundle. Review before retrying.")
-            if run.cfg["method"] == "rd4ad" and not machine["native_bf16"]:
-                raise ValueError("this accelerator lacks native CUDA bfloat16 support for the fixed RD4AD training mode")
+            if run.cfg["method"] == "rd4ad" and not machine["fp16_tensor_cores"]:
+                raise ValueError("RD4AD fp16 training (D-60) needs a GPU with tensor cores (compute capability 7.0 or newer)")
             phase = "failed"
             attempts.mkdir(parents=True, exist_ok=True)
             attempt = Path(tempfile.mkdtemp(prefix="attempt-", dir=attempts))

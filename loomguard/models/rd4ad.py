@@ -102,7 +102,7 @@ class RD4AD:
         self.student = Student().to(self.device)
 
     def _loss(self, x: Tensor, amp: bool) -> Tensor:
-        with torch.autocast(self.device.type, dtype=torch.bfloat16, enabled=amp):  # AMP on CUDA only
+        with torch.autocast(self.device.type, dtype=torch.float16, enabled=amp):  # fp16 AMP on CUDA only (D-60)
             enc = self.backbone(x.to(self.device))  # no gradients (Backbone.forward is no_grad)
             dec = self.student(*enc)
         return cosine_loss(enc, dec)
@@ -122,6 +122,7 @@ class RD4AD:
         divergence. Returns {iterations, seconds, iters_per_second, final_train_loss, final_val_loss, loss_curve}."""
         amp = self.device.type == "cuda"
         opt = torch.optim.Adam(self.student.parameters(), lr=lr, betas=betas)  # student only: the teacher is not in it
+        scaler = torch.amp.GradScaler(self.device.type, enabled=amp)  # fp16 needs loss scaling (D-60); a no-op off CUDA
         self.student.train()
         curve, window, spent, n = [], [], 0.0, 0
         for x in itertools.islice(batches, iterations):
@@ -129,8 +130,9 @@ class RD4AD:
             self.backbone.eval()
             loss = self._loss(x, amp)
             opt.zero_grad(set_to_none=True)
-            loss.backward()
-            opt.step()
+            scaler.scale(loss).backward()
+            scaler.step(opt)
+            scaler.update()
             window.append(float(loss.detach()))  # float() syncs the device, so the timing below is honest
             spent += time.perf_counter() - t0
             n += 1

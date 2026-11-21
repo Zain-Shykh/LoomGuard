@@ -173,7 +173,7 @@ def pin_for(jobs):
             "manifests": {j.config: "c" * 64 for j in jobs}}
 
 
-MACHINE = {"machine": "cpu-test", "gpu": "simulated", "driver": "test", "torch": "test", "cuda": "test", "native_bf16": True}
+MACHINE = {"machine": "cpu-test", "gpu": "simulated", "driver": "test", "torch": "test", "cuda": "test", "fp16_tensor_cores": True}
 
 
 def fake_job_outputs(run, root, manifest):

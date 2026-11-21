@@ -18,12 +18,17 @@ Entry template:
 
 
 
+## 2026-11-21: RD4AD precision changed to fp16 + GradScaler (D-60)
+
+- Kaggle T4 benchmark (`scripts/bench_rd4ad_precision.py`, random input, no result): emulated bf16 0.78 it/s, fp16 + GradScaler 3.47 it/s, fp32 1.30 it/s; all losses finite, peak VRAM 3.2 / 3.2 / 4.2 GB. T4 reports `native_bf16: false` (sm_75, torch 2.11.0+cu130). Emulated bf16 would make a 20,000-iteration fit about 7 h.
+- Owner approved fp16 autocast + `torch.amp.GradScaler` for all RD4AD runs on all machines. `loomguard/models/rd4ad.py` and the runner's hardware check (`fp16_tensor_cores`, compute capability 7.0+) were changed. No RD4AD had been trained, so nothing is rerun. Whether fp16 costs accuracy is shown by the MVTec RD4AD gate.
+
 ## 2026-11-21: Three-person training workflow implemented
 
 - Added the proposed assignment ledger, complete-profile selection, and an execution runner with staged outputs, per-profile status and retry, data and source fingerprints, and shared MVTec and ZJU-mini approvals.
 - The three dry runs validated 33 configs and 185 unique canonical output paths. Member A has 22 profiles, B has 119 plus 14 conditional AITEX profiles, and C has 30. The original experiment YAMLs, study lists, adapters, scoring and grading code were verified against the source commit.
 - The CPU suite passed 177 tests with one slow test deselected. The 27 focused tests covered checkpoint sequencing, sharding, retry and integration, as well as the existing path helpers. The synthetic full matrix passed `summarize.py --check` and generated the reports. The suite also exercised the original fit, evaluate, study and Streamlit paths.
-- The operating schedule and AITEX inclusion await recorded team approval. The next measurement is the paired MVTec gate after dataset verification and environment setup. The Kaggle RD4AD queues require a compatible accelerator with native CUDA bfloat16.
+- The operating schedule and AITEX inclusion await recorded team approval. The next measurement is the paired MVTec gate after dataset verification and environment setup. The Kaggle RD4AD queues need tensor cores (T4 qualifies); the bfloat16 requirement was replaced by fp16 plus GradScaler, see D-60 and the 2026-11-21 precision entry.
 
 ## 2026-11-17: Training PC is an RTX 5060 Ti with 16 GB
 
