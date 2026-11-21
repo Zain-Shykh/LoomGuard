@@ -29,16 +29,16 @@ def jobs():
 def test_initial_assignment_and_complete_canonical_coverage(jobs):
     ownership = {
         "A": """mvtec_rd4ad raw_fabrid_per_fabric_rd4ad raw_fabrid_rd4ad_s0 raw_fabrid_rd4ad_s1
-                raw_fabrid_rd4ad_s2 raw_fabrid_held_out_rd4ad""",
+                raw_fabrid_rd4ad_s2 raw_fabrid_held_out_rd4ad raw_fabrid_per_fabric_rd4ad_it1k
+                raw_fabrid_per_fabric_rd4ad_ov32""",
         "B": """mvtec_patchcore zju_per_fabric_mini_patchcore raw_fabrid_per_fabric_patchcore raw_fabrid_patchcore
                 raw_fabrid_held_out_patchcore zju_per_fabric_rest_patchcore zju_per_group_patchcore zju_unified_patchcore
                 zju_held_out_patchcore aitex_per_fabric_patchcore aitex_per_fabric_rd4ad zju_mini_patchcore_cr1
                 zju_mini_patchcore_cr25 zju_res256_patchcore raw_fabrid_per_fabric_patchcore_cr1
                 raw_fabrid_per_fabric_patchcore_cr25 raw_fabrid_per_fabric_patchcore_n50
                 raw_fabrid_per_fabric_patchcore_n200 raw_fabrid_per_fabric_patchcore_ov32
-                zju_per_fabric_mini_rd4ad zju_per_fabric_rest_rd4ad""",
-        "C": """zju_per_group_rd4ad zju_unified_rd4ad zju_held_out_rd4ad raw_fabrid_per_fabric_rd4ad_it1k
-                raw_fabrid_per_fabric_rd4ad_ov32 zju_res256_rd4ad""",
+                zju_per_fabric_mini_rd4ad zju_per_fabric_rest_rd4ad zju_res256_rd4ad""",
+        "C": """zju_per_group_rd4ad zju_unified_rd4ad zju_held_out_rd4ad""",
     }
     for owner, names in ownership.items():
         assert {j.job_id for j in jobs if j.owner == owner} == set(names.split())

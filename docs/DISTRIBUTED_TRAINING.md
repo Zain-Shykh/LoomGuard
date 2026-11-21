@@ -1,14 +1,14 @@
 # Three-person training runbook
 
-The [proposal](THREE_PERSON_PARALLEL_TRAINING_PROPOSAL.md) and [assignment ledger](../configs/studies/distributed/assignments.yaml) describe the proposed execution schedule. Obtain team approval for the operational plan before launching it. [Evaluation](EVALUATION.md), [accepted decisions](DECISIONS.md), and the [single-machine runbook](TRAINING_PC_RUNBOOK.md) govern the experiments and acceptance criteria.
+The [proposal](THREE_PERSON_PARALLEL_TRAINING_PROPOSAL.md) and [assignment ledger](../configs/studies/distributed/assignments.yaml) describe the execution schedule, approved by the owner on 2026-11-21 (D-61). [Evaluation](EVALUATION.md), [accepted decisions](DECISIONS.md), and the [single-machine runbook](TRAINING_PC_RUNBOOK.md) govern the experiments and acceptance criteria.
 
 | Member | Environment | Config-level assignment | Profile results |
 |---|---|---|---:|
-| A | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | MVTec RD4AD. RAW-FABRID RD4AD per-roll, unified seeds 0–2, and leave-one-roll-out. RD4AD false-alarm and grading evidence. | 22 |
-| B | Kaggle GPU 1 | MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. | 119 + 14 conditional AITEX |
-| C | Kaggle GPU 2 | ZJU RD4AD groups, unified and held-out. RAW-FABRID RD4AD 1k-iteration and 32 px overlap ablations. ZJU RD4AD resolution ablation. | 30 |
+| A | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | MVTec RD4AD. RAW-FABRID RD4AD per-roll, unified seeds 0–2, and leave-one-roll-out. RD4AD false-alarm and grading evidence. RAW-FABRID RD4AD 1k-iteration and 32 px overlap ablations (moved from C by D-61, so each ablation sits on its baseline's machine). | 36 |
+| B | Kaggle GPU 1 | MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. ZJU RD4AD resolution ablation (moved from C by D-61). | 138 (+14 AITEX profiles, not run: excluded by D-61) |
+| C | Kaggle GPU 2 | ZJU RD4AD groups, unified and held-out. | 11 |
 
-Member B owns both AITEX methods, one model per fabric for seven fabrics per method. The scheduler activates these 14 profiles only when the shared dataset pin contains a recorded AITEX inclusion decision. **The accepted full-study coverage still includes AITEX and all ZJU regimes.** Until the team records any reduced-scope decision, treat outstanding cells as incomplete. Continue using the original full-study check even if an approved reduced-scope report is produced.
+Member B owns both AITEX methods, one model per fabric for seven fabrics per method. D-61 (2026-11-21) excludes AITEX: do not pass `--aitex-approval`, so these 14 profiles stay inactive. Keep using the original full-study check; its only expected failure is the missing AITEX cells, to be reported as intentional. ZJU: run ZJU-mini first; the full-ZJU queues start only after the owner records the go-ahead (D-61).
 
 ## Checkpoint 0. Prepare and verify
 

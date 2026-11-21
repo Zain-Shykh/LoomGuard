@@ -362,7 +362,7 @@ jobs:
       - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo6A.json
       - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo7A.json
   - job_id: raw_fabrid_per_fabric_rd4ad_it1k
-    owner: C
+    owner: A
     config: configs/raw_fabrid_per_fabric_rd4ad_it1k.yaml
     profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
     stage: ablation
@@ -376,7 +376,7 @@ jobs:
       - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo6A.json
       - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo7A.json
   - job_id: raw_fabrid_per_fabric_rd4ad_ov32
-    owner: C
+    owner: A
     config: configs/raw_fabrid_per_fabric_rd4ad_ov32.yaml
     profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
     stage: ablation
@@ -390,7 +390,7 @@ jobs:
       - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo6A.json
       - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo7A.json
   - job_id: zju_res256_rd4ad
-    owner: C
+    owner: B
     config: configs/zju_res256_rd4ad.yaml
     profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
     stage: ablation

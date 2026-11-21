@@ -18,6 +18,11 @@ Entry template:
 
 
 
+## 2026-11-21: D-61, three-person workflow approved with terms
+
+- Owner approved the workflow. AITEX excluded; ZJU-mini first, full ZJU on a later go-ahead; each ablation on its baseline's machine (RAW-FABRID RD4AD `it1k`, `ov32` moved C to A; ZJU RD4AD `res256` moved C to B). Test expectation updated; dry runs: A 36, B 138 (+14 inactive AITEX), C 11 profiles; 23 runner tests pass.
+- Load after the move (RD4AD iterations): A 302k, B 120k plus all PatchCore, C 120k. A is the longest queue; rebalance whole unstarted profiles after the first speed measurements.
+
 ## 2026-11-21: RD4AD precision changed to fp16 + GradScaler (D-60)
 
 - Kaggle T4 benchmark (`scripts/bench_rd4ad_precision.py`, random input, no result): emulated bf16 0.78 it/s, fp16 + GradScaler 3.47 it/s, fp32 1.30 it/s; all losses finite, peak VRAM 3.2 / 3.2 / 4.2 GB. T4 reports `native_bf16: false` (sm_75, torch 2.11.0+cu130). Emulated bf16 would make a 20,000-iteration fit about 7 h.
