@@ -153,6 +153,8 @@ All CPU, synthetic.
 
 ## 8. Training-PC runbook
 
+For the proposed three-person schedule, see the [distributed training runbook](../DISTRIBUTED_TRAINING.md). It selects complete profiles from these configurations, gates larger ZJU work on both ZJU-mini methods and retains the full-study coverage check.
+
 ```bash
 git pull && pip install -e ".[dev]" && pytest -q
 # 0. layouts: read the output, compare with DATASETS.md, record mismatches in PROGRESS_LOG, adapt the adapters if needed

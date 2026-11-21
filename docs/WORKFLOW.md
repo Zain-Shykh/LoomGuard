@@ -2,6 +2,10 @@
 
 How the project is built, phase by phase. This file is the process; [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) is the roadmap; [DECISIONS.md](DECISIONS.md) is the record of what was agreed.
 
+## Parallel training handoff
+
+The [proposed distributed runbook](DISTRIBUTED_TRAINING.md) specifies the three member branches, data and source pin, shared approvals, canonical result exports and integration. Keep the training source pinned through a queue. Review small result JSONs and progress notes on the members' result branches, and transfer bundles through durable model storage. Record team approval before starting or reassigning work.
+
 ## 1. The idea
 
 1. **A fresh session per phase.** Each phase is done from start to finish by a new headless Claude session with an empty context. It learns everything from the repository, not from an earlier chat.

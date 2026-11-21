@@ -401,6 +401,7 @@ artifacts/<dataset>/<fabric>/<method>/
 - Bundles are shared through a Hugging Face Hub model repository. The app downloads the ones it needs on first use.
 - Bundles are loaded with `torch.load(..., weights_only=True)`, which refuses pickled code.
 - `results/` holds small JSON and CSV metric files and is committed, so results are visible without a GPU.
+- The distributed runner adds a `provenance.json` sidecar containing the source, config, dataset and manifest fingerprints, hardware and bundle file hashes. The canonical folder layout and the files loaded by `Inspector` stay the same.
 
 ## 11. Streamlit application
 

@@ -123,6 +123,8 @@ Decisions made by a developer session during a phase. A-01 to A-29 were confirme
 |---|---|---|---|---|---|
 | | | | | | |
 
+The three-person training workflow and its initial ownership ledger are [proposed operational changes](DISTRIBUTED_TRAINING.md). The existing scientific decisions and full-study coverage govern the runs. Record team approval of the workflow, any reassignment, and the AITEX inclusion decision before using them. Any reduction to the accepted full-study scope requires a separate team decision.
+
 ## Open
 
 | ID | Question | Options | Decide by | Notes |

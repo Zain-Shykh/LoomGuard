@@ -18,6 +18,7 @@ Two methods are implemented from their papers in PyTorch and compared on the sam
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Every agreed decision, the open ones, and what was dropped |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | How each phase is built: spec, headless developer session, review loop, commits |
 | [docs/TRAINING_PC_RUNBOOK.md](docs/TRAINING_PC_RUNBOOK.md) | Ordered checklist for the machine with the GPU: setup, datasets, runs, what to record |
+| [docs/DISTRIBUTED_TRAINING.md](docs/DISTRIBUTED_TRAINING.md) | Proposed three-person queues, shared checkpoints, Kaggle setup and result integration |
 | [docs/specs/](docs/specs/) | One spec per phase, written from `TEMPLATE.md` by that phase's developer session before it codes |
 | [LoomGuard Project Starter.md](LoomGuard%20Project%20Starter.md) | The original idea. Where it disagrees with `docs/`, `docs/` wins. |
 
@@ -103,6 +104,8 @@ python scripts/study.py configs/studies/01_zju_mini.txt      # then 02 to 05, se
 python scripts/summarize.py --check                          # which cells of EVALUATION 4.3 are still missing
 python scripts/summarize.py                                  # tables, CSV and SVG plots in results/report/
 ```
+
+The proposed three-machine workflow uses the same configs, profiles and result paths. Preview the assigned queues with `python scripts/distributed_study.py --owner A --dry-run` (also `B` or `C`). See the [three-person training runbook](docs/DISTRIBUTED_TRAINING.md) for approvals and execution.
 
 ## Team workflow
 

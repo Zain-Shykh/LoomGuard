@@ -4,6 +4,8 @@ One ordered checklist for the person with the RTX 5060 Ti (16 GB VRAM). It colle
 
 All code was written and tested on a laptop with no GPU and no data. **None of it has seen real data yet.** Expect small fixes on the first runs, mostly in the dataset adapters (`loomguard/data/manifest.py`) because the column names and folder layouts were taken from documentation, not from the files. Fix them, keep the tests passing, and record every fix in `docs/PROGRESS_LOG.md`.
 
+For the proposed three-person execution schedule, see the [distributed training runbook](DISTRIBUTED_TRAINING.md). This runbook supplies its dataset, benchmark, grading and CPU app acceptance criteria and remains the single-machine procedure.
+
 ## Rules for the whole runbook
 
 1. Do not tune anything on test results. Headline settings (iteration budgets, coreset ratios, thresholds) are fixed in advance (decision D-35). If a pass criterion is missed, log the miss, do not change a setting to fix it, and tell the project owner. A fix of a bug is fine; a change of a hyperparameter is a decision.

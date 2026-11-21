@@ -34,11 +34,11 @@ def test_profiles_and_paths(raw_root):
     assert set(per) == {"RolloA", "RolloB"} and all(r.fabric == k for k, v in per.items() for r in v)
     uni = profiles(rows, {**cfg, "regime": "unified"})
     assert list(uni) == ["unified"] and len(uni["unified"]) == len(rows)
-    assert str(bundle_dir(cfg, "RolloA")) == "A/raw_fabrid/RolloA/patchcore"
-    assert str(result_path(cfg, "RolloA")) == "R/raw_fabrid/per_fabric/patchcore/RolloA.json"
+    assert bundle_dir(cfg, "RolloA").as_posix() == "A/raw_fabrid/RolloA/patchcore"
+    assert result_path(cfg, "RolloA").as_posix() == "R/raw_fabrid/per_fabric/patchcore/RolloA.json"
     tagged = {**cfg, "method": "rd4ad", "tag": "s1"}  # runs of one method (seeds) get separate directories
-    assert str(bundle_dir(tagged, "RolloA")) == "A/raw_fabrid/RolloA/rd4ad_s1"
-    assert str(result_path(tagged, "RolloA")) == "R/raw_fabrid/per_fabric/rd4ad_s1/RolloA.json"
+    assert bundle_dir(tagged, "RolloA").as_posix() == "A/raw_fabrid/RolloA/rd4ad_s1"
+    assert result_path(tagged, "RolloA").as_posix() == "R/raw_fabrid/per_fabric/rd4ad_s1/RolloA.json"
 
 
 def test_load_config(tmp_path):

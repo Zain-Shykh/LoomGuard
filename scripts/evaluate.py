@@ -20,12 +20,12 @@ import numpy as np
 from PIL import Image
 
 from loomguard.data.dataset import load_mask
-from loomguard.data.manifest import select
+from loomguard.data.manifest import MVTEC_TEXTURES, select
 from loomguard.eval.metrics import ScoreCounts, average_precision, quantize, roc_auc
 from loomguard.inspection.grading import grade_roll
 from loomguard.models.backbone import Backbone
 from loomguard.pipeline import Inspector
-from loomguard.runs import build_rows, bundle_dir, git_commit, load_config, pick_device, predictions_dir, profiles, result_path
+from loomguard.runs import bundle_dir, git_commit, pick_device, predictions_dir, result_path, run_inputs
 
 KEYS = ("tile_auroc", "tile_ap", "aupro_30", "pixel_auroc", "pixel_ap")
 METHOD_KEYS = {"patchcore": ("coreset_ratio", "bank_size", "coreset_seconds"),
@@ -192,16 +192,16 @@ def evaluate_profile(cfg, name, prows, device) -> dict:
 
 def main(argv: list[str] | None = None) -> dict[str, dict]:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--config", required=True)
-    cfg = load_config(ap.parse_args(argv).config)
+    _, cfg, _, selected, selection = run_inputs(ap, argv)
     device, results = pick_device(cfg), {}
-    for name, prows in profiles(build_rows(cfg), cfg).items():
+    for name, prows in selected.items():
         results[name] = evaluate_profile(cfg, name, prows, device)
         print(name, " ".join(f"{k}={results[name][k]:.4f}" for k in KEYS if results[name][k] is not None))
     if len(results) > 1:
         mean = {k: float(np.mean([r[k] for r in results.values() if r[k] is not None] or [np.nan])) for k in KEYS}
         print("mean over", len(results), "profiles:", " ".join(f"{k}={v:.4f}" for k, v in mean.items()))
-        for k, target in (cfg["targets"] or {}).items():  # reported only, never used for a decision
+        complete = selection is None and (cfg["dataset"] != "mvtec" or set(results) == set(MVTEC_TEXTURES))
+        for k, target in ((cfg["targets"] or {}) if complete else {}).items():
             print(f"  {k}: {100 * mean[k]:.2f} vs target {target}: {'PASS' if 100 * mean[k] >= target else 'FAIL'}")
     return results
 

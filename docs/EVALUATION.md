@@ -85,6 +85,8 @@ Pass criteria for our implementations (mean over the five textures):
 | Pixel AUROC | 96.6 or more | 96.7 or more |
 | AUPRO | 90.7 or more | 92.0 or more |
 
+For the [distributed runbook](DISTRIBUTED_TRAINING.md), the shared checkpoint verifies both methods across the complete five-texture inventory before main training. MVTec has one tile per image. The shared gate reads `image_auroc` and applies the same thresholds. Selected-profile evaluations report their metrics without a benchmark verdict.
+
 The margins are 1.0 point for AUROC and 3.0 points for AUPRO. Known protocol differences: PatchCore's paper crops the centre 224x224 and uses a 1,024-d embedding; we use the full 256x256 and 1,536-d. RD4AD's paper selects the best epoch on the test set; we do not.
 
 Other reference points: the Lusitano paper reports RD4AD image AUC 0.886 at 256x256 on shrunken images. Dinomaly reports 99.3 (ViT-Small) and 99.6 (ViT-Base) image AUROC on multi-class MVTec AD.
@@ -176,6 +178,8 @@ One JSON per run under `results/<dataset>/<regime>/<method>/<fabric>.json` (`<me
 ```
 
 The zeros are placeholders for the format. Phase 5 adds `tag`, `image_auroc` and `image_ap` (parent score = maximum over its tiles; the detection metric of ZJU-Leaper; null where every test image is defective, as in RAW-FABRID and AITEX) and, for bundles covering several fabrics, `by_fabric` (the same metrics per fabric, so per-fabric, per-group, unified and held-out models can be compared on one fabric). Phase 2's `scripts/evaluate.py` writes the keys up to `pixel_ap` plus `ms_per_tile_<cuda|cpu>`, `peak_vram_gb`, `peak_ram_gb`, `fit_minutes`, `bundle_mb`, `hist_bins` and `device`, plus per method `coreset_seconds`, `coreset_ratio` and `bank_size` (PatchCore) or `iterations`, `iters_per_second`, `final_train_loss` and `final_val_loss` (RD4AD); Phase 4 adds `tau`, `false_alarms_per_1000`, `tile_recall`, `dice` and `iou` (null when undefined) and, when the config sets `grade_rolls` (RAW-FABRID), `rolls` (per fabric: `frames`, `defects_pred`, `defects_gt`, `points_pred`, `points_gt`, `points_per_100_pred`, `points_per_100_gt`, `grade_pred`, `grade_gt`), `grade_agreement`, `points_error_mean` and `defect_count_error_mean`. The operating tile score is the heatmap maximum for both methods (A-15); `tile_auroc` and `tile_ap` still use the model's published tile score. RAW-FABRID's test pool contains only defective images, so its "rolls" are the test frames of each roll, not complete rolls (A-17). Metrics are fractions in [0, 1]. A script builds the summary tables for the report and the Results page of the app from these files.
+
+Distributed evaluation preserves these keys and adds a `distributed` provenance object. It records the assigned job/profile and owner, full commit, resolved config/data/split hashes, fit seed and split seed, hardware, and the matching bundle location and file hashes. `summarize.py --check` keeps the complete headline coverage requirement for RAW-FABRID, ZJU-Leaper and AITEX. The integration checker also verifies every assigned profile, including ablations, and rejects duplicate result exports.
 
 ## 6. Compute budget (estimates, to be replaced by measurements)
 

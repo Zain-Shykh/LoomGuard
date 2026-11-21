@@ -5,7 +5,7 @@
 """
 import argparse
 import json
-import resource
+import sys
 import time
 from pathlib import Path
 
@@ -19,7 +19,18 @@ from loomguard.eval.calibrate import calibrate, val_peaks
 from loomguard.models.backbone import Backbone
 from loomguard.models.patchcore import PatchCore
 from loomguard.models.rd4ad import RD4AD
-from loomguard.runs import build_rows, bundle_dir, git_commit, load_config, pick_device, profiles, subsample
+from loomguard.runs import bundle_dir, git_commit, pick_device, run_inputs, subsample
+
+
+def peak_ram_gb() -> float:
+    if sys.platform == "win32":
+        import psutil
+
+        return psutil.Process().memory_info().peak_wset / 2**30
+    import resource
+
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return rss / (2**30 if sys.platform == "darwin" else 2**20)
 
 
 def fit_patchcore(cfg, prows, device):
@@ -54,15 +65,13 @@ def fit_rd4ad(cfg, prows, device):
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--config", required=True)
-    cfg = load_config(ap.parse_args(argv).config)
+    canonical, cfg, rows, selected, _ = run_inputs(ap, argv)
     device = pick_device(cfg)
-    rows = build_rows(cfg)
     manifests = Path(cfg["artifacts"]) / "manifests"
     manifests.mkdir(parents=True, exist_ok=True)
     tag = f"_{cfg['tag']}" if cfg["tag"] else ""  # ablations with overlap or resize change the manifest
     write_manifest(rows, manifests / f"{cfg['dataset']}{tag}.csv")
-    for name, prows in profiles(rows, cfg).items():
+    for name, prows in selected.items():
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats()
         t0 = time.perf_counter()
@@ -75,11 +84,11 @@ def main(argv: list[str] | None = None) -> None:
                         cfg["target_far"])
         (out / "calibration.json").write_text(json.dumps(cal, indent=2))
         with open(out / "config.yaml", "w") as f:
-            yaml.safe_dump({**cfg, "profile": name, "git_commit": git_commit(), "tile_size": 256,
+            yaml.safe_dump({**canonical, "profile": name, "git_commit": git_commit(), "tile_size": 256,
                             "layers": ["layer2", "layer3"] if cfg["method"] == "patchcore" else ["layer1", "layer2", "layer3"]}, f)
         metrics = {**stats, "fit_minutes": (time.perf_counter() - t0) / 60,
                    "peak_vram_gb": torch.cuda.max_memory_allocated() / 2**30 if device.type == "cuda" else 0.0,
-                   "peak_ram_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20,  # KiB on Linux
+                   "peak_ram_gb": peak_ram_gb(),
                    "bundle_mb": (out / "model.pt").stat().st_size / 2**20}
         (out / "metrics.json").write_text(json.dumps(metrics, indent=2))
         print(f"{name}: {stats['n_train_tiles']} train tiles, {line}, peak RAM {metrics['peak_ram_gb']:.1f} GB, "

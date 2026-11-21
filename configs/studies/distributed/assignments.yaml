@@ -1,0 +1,419 @@
+# Initial proposed ownership. Each profile can be scheduled and retried independently.
+version: 1
+jobs:
+  - job_id: mvtec_rd4ad
+    owner: A
+    config: configs/mvtec_rd4ad.yaml
+    profiles: [carpet, grid, leather, tile, wood]
+    stage: gate
+    queue: gate
+    expected_result_paths:
+      - results/mvtec/per_fabric/rd4ad/carpet.json
+      - results/mvtec/per_fabric/rd4ad/grid.json
+      - results/mvtec/per_fabric/rd4ad/leather.json
+      - results/mvtec/per_fabric/rd4ad/tile.json
+      - results/mvtec/per_fabric/rd4ad/wood.json
+  - job_id: mvtec_patchcore
+    owner: B
+    config: configs/mvtec_patchcore.yaml
+    profiles: [carpet, grid, leather, tile, wood]
+    stage: gate
+    queue: gate
+    expected_result_paths:
+      - results/mvtec/per_fabric/patchcore/carpet.json
+      - results/mvtec/per_fabric/patchcore/grid.json
+      - results/mvtec/per_fabric/patchcore/leather.json
+      - results/mvtec/per_fabric/patchcore/tile.json
+      - results/mvtec/per_fabric/patchcore/wood.json
+  - job_id: zju_per_fabric_mini_patchcore
+    owner: B
+    config: configs/zju_per_fabric_mini_patchcore.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: study
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/patchcore/pattern1.json
+      - results/zju_leaper/per_fabric/patchcore/pattern4.json
+      - results/zju_leaper/per_fabric/patchcore/pattern8.json
+      - results/zju_leaper/per_fabric/patchcore/pattern13.json
+      - results/zju_leaper/per_fabric/patchcore/pattern16.json
+  - job_id: zju_per_fabric_mini_rd4ad
+    owner: B
+    config: configs/zju_per_fabric_mini_rd4ad.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: study
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/rd4ad/pattern1.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern4.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern8.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern13.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern16.json
+  - job_id: raw_fabrid_per_fabric_patchcore
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore/Rollo7A.json
+  - job_id: raw_fabrid_patchcore
+    owner: B
+    config: configs/raw_fabrid_patchcore.yaml
+    profiles: [unified]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/unified/patchcore/unified.json
+  - job_id: raw_fabrid_held_out_patchcore
+    owner: B
+    config: configs/raw_fabrid_held_out_patchcore.yaml
+    profiles: [Rollo1A_held_out, Rollo2A_held_out, Rollo3A_held_out, Rollo4A_held_out, Rollo5A_held_out, Rollo6A_held_out, Rollo7A_held_out]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/held_out/patchcore/Rollo1A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo2A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo3A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo4A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo5A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo6A_held_out.json
+      - results/raw_fabrid/held_out/patchcore/Rollo7A_held_out.json
+  - job_id: raw_fabrid_per_fabric_rd4ad
+    owner: A
+    config: configs/raw_fabrid_per_fabric_rd4ad.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo1A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo2A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo3A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo4A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo5A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo6A.json
+      - results/raw_fabrid/per_fabric/rd4ad/Rollo7A.json
+  - job_id: raw_fabrid_rd4ad_s0
+    owner: A
+    config: configs/raw_fabrid_rd4ad_s0.yaml
+    profiles: [unified]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/unified/rd4ad_s0/unified.json
+  - job_id: raw_fabrid_held_out_rd4ad
+    owner: A
+    config: configs/raw_fabrid_held_out_rd4ad.yaml
+    profiles: [Rollo1A_held_out, Rollo2A_held_out, Rollo3A_held_out, Rollo4A_held_out, Rollo5A_held_out, Rollo6A_held_out, Rollo7A_held_out]
+    stage: study
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/held_out/rd4ad/Rollo1A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo2A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo3A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo4A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo5A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo6A_held_out.json
+      - results/raw_fabrid/held_out/rd4ad/Rollo7A_held_out.json
+  - job_id: aitex_per_fabric_patchcore
+    owner: B
+    config: configs/aitex_per_fabric_patchcore.yaml
+    profiles: [fabric00, fabric01, fabric02, fabric03, fabric04, fabric05, fabric06]
+    stage: study
+    queue: aitex
+    expected_result_paths:
+      - results/aitex/per_fabric/patchcore/fabric00.json
+      - results/aitex/per_fabric/patchcore/fabric01.json
+      - results/aitex/per_fabric/patchcore/fabric02.json
+      - results/aitex/per_fabric/patchcore/fabric03.json
+      - results/aitex/per_fabric/patchcore/fabric04.json
+      - results/aitex/per_fabric/patchcore/fabric05.json
+      - results/aitex/per_fabric/patchcore/fabric06.json
+  - job_id: aitex_per_fabric_rd4ad
+    owner: B
+    config: configs/aitex_per_fabric_rd4ad.yaml
+    profiles: [fabric00, fabric01, fabric02, fabric03, fabric04, fabric05, fabric06]
+    stage: study
+    queue: aitex
+    expected_result_paths:
+      - results/aitex/per_fabric/rd4ad/fabric00.json
+      - results/aitex/per_fabric/rd4ad/fabric01.json
+      - results/aitex/per_fabric/rd4ad/fabric02.json
+      - results/aitex/per_fabric/rd4ad/fabric03.json
+      - results/aitex/per_fabric/rd4ad/fabric04.json
+      - results/aitex/per_fabric/rd4ad/fabric05.json
+      - results/aitex/per_fabric/rd4ad/fabric06.json
+  - job_id: zju_per_fabric_rest_patchcore
+    owner: B
+    config: configs/zju_per_fabric_rest_patchcore.yaml
+    profiles: [pattern2, pattern3, pattern5, pattern6, pattern7, pattern9, pattern10, pattern11, pattern12, pattern14, pattern15, pattern17, pattern18, pattern19]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/patchcore/pattern2.json
+      - results/zju_leaper/per_fabric/patchcore/pattern3.json
+      - results/zju_leaper/per_fabric/patchcore/pattern5.json
+      - results/zju_leaper/per_fabric/patchcore/pattern6.json
+      - results/zju_leaper/per_fabric/patchcore/pattern7.json
+      - results/zju_leaper/per_fabric/patchcore/pattern9.json
+      - results/zju_leaper/per_fabric/patchcore/pattern10.json
+      - results/zju_leaper/per_fabric/patchcore/pattern11.json
+      - results/zju_leaper/per_fabric/patchcore/pattern12.json
+      - results/zju_leaper/per_fabric/patchcore/pattern14.json
+      - results/zju_leaper/per_fabric/patchcore/pattern15.json
+      - results/zju_leaper/per_fabric/patchcore/pattern17.json
+      - results/zju_leaper/per_fabric/patchcore/pattern18.json
+      - results/zju_leaper/per_fabric/patchcore/pattern19.json
+  - job_id: zju_per_group_patchcore
+    owner: B
+    config: configs/zju_per_group_patchcore.yaml
+    profiles: [group1, group2, group3, group4, group5]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/per_group/patchcore/group1.json
+      - results/zju_leaper/per_group/patchcore/group2.json
+      - results/zju_leaper/per_group/patchcore/group3.json
+      - results/zju_leaper/per_group/patchcore/group4.json
+      - results/zju_leaper/per_group/patchcore/group5.json
+  - job_id: zju_unified_patchcore
+    owner: B
+    config: configs/zju_unified_patchcore.yaml
+    profiles: [unified]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/unified/patchcore/unified.json
+  - job_id: zju_held_out_patchcore
+    owner: B
+    config: configs/zju_held_out_patchcore.yaml
+    profiles: [pattern3_held_out, pattern7_held_out, pattern12_held_out, pattern15_held_out, pattern19_held_out]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/held_out/patchcore/pattern3_held_out.json
+      - results/zju_leaper/held_out/patchcore/pattern7_held_out.json
+      - results/zju_leaper/held_out/patchcore/pattern12_held_out.json
+      - results/zju_leaper/held_out/patchcore/pattern15_held_out.json
+      - results/zju_leaper/held_out/patchcore/pattern19_held_out.json
+  - job_id: zju_per_fabric_rest_rd4ad
+    owner: B
+    config: configs/zju_per_fabric_rest_rd4ad.yaml
+    profiles: [pattern2, pattern3, pattern5, pattern6, pattern7, pattern9, pattern10, pattern11, pattern12, pattern14, pattern15, pattern17, pattern18, pattern19]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/rd4ad/pattern2.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern3.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern5.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern6.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern7.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern9.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern10.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern11.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern12.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern14.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern15.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern17.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern18.json
+      - results/zju_leaper/per_fabric/rd4ad/pattern19.json
+  - job_id: zju_per_group_rd4ad
+    owner: C
+    config: configs/zju_per_group_rd4ad.yaml
+    profiles: [group1, group2, group3, group4, group5]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/per_group/rd4ad/group1.json
+      - results/zju_leaper/per_group/rd4ad/group2.json
+      - results/zju_leaper/per_group/rd4ad/group3.json
+      - results/zju_leaper/per_group/rd4ad/group4.json
+      - results/zju_leaper/per_group/rd4ad/group5.json
+  - job_id: zju_unified_rd4ad
+    owner: C
+    config: configs/zju_unified_rd4ad.yaml
+    profiles: [unified]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/unified/rd4ad/unified.json
+  - job_id: zju_held_out_rd4ad
+    owner: C
+    config: configs/zju_held_out_rd4ad.yaml
+    profiles: [pattern3_held_out, pattern7_held_out, pattern12_held_out, pattern15_held_out, pattern19_held_out]
+    stage: study
+    queue: zju_full
+    expected_result_paths:
+      - results/zju_leaper/held_out/rd4ad/pattern3_held_out.json
+      - results/zju_leaper/held_out/rd4ad/pattern7_held_out.json
+      - results/zju_leaper/held_out/rd4ad/pattern12_held_out.json
+      - results/zju_leaper/held_out/rd4ad/pattern15_held_out.json
+      - results/zju_leaper/held_out/rd4ad/pattern19_held_out.json
+  - job_id: zju_mini_patchcore_cr1
+    owner: B
+    config: configs/zju_mini_patchcore_cr1.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: ablation
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/patchcore_cr1/pattern1.json
+      - results/zju_leaper/per_fabric/patchcore_cr1/pattern4.json
+      - results/zju_leaper/per_fabric/patchcore_cr1/pattern8.json
+      - results/zju_leaper/per_fabric/patchcore_cr1/pattern13.json
+      - results/zju_leaper/per_fabric/patchcore_cr1/pattern16.json
+  - job_id: zju_mini_patchcore_cr25
+    owner: B
+    config: configs/zju_mini_patchcore_cr25.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: ablation
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/patchcore_cr25/pattern1.json
+      - results/zju_leaper/per_fabric/patchcore_cr25/pattern4.json
+      - results/zju_leaper/per_fabric/patchcore_cr25/pattern8.json
+      - results/zju_leaper/per_fabric/patchcore_cr25/pattern13.json
+      - results/zju_leaper/per_fabric/patchcore_cr25/pattern16.json
+  - job_id: zju_res256_patchcore
+    owner: B
+    config: configs/zju_res256_patchcore.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: ablation
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/patchcore_res256/pattern1.json
+      - results/zju_leaper/per_fabric/patchcore_res256/pattern4.json
+      - results/zju_leaper/per_fabric/patchcore_res256/pattern8.json
+      - results/zju_leaper/per_fabric/patchcore_res256/pattern13.json
+      - results/zju_leaper/per_fabric/patchcore_res256/pattern16.json
+  - job_id: raw_fabrid_per_fabric_patchcore_cr1
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore_cr1.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr1/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_patchcore_cr25
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore_cr25.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore_cr25/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_patchcore_n50
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore_n50.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore_n50/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_patchcore_n200
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore_n200.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore_n200/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_patchcore_ov32
+    owner: B
+    config: configs/raw_fabrid_per_fabric_patchcore_ov32.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo1A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo2A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo3A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo4A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo5A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo6A.json
+      - results/raw_fabrid/per_fabric/patchcore_ov32/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_rd4ad_it1k
+    owner: C
+    config: configs/raw_fabrid_per_fabric_rd4ad_it1k.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo1A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo2A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo3A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo4A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo5A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo6A.json
+      - results/raw_fabrid/per_fabric/rd4ad_it1k/Rollo7A.json
+  - job_id: raw_fabrid_per_fabric_rd4ad_ov32
+    owner: C
+    config: configs/raw_fabrid_per_fabric_rd4ad_ov32.yaml
+    profiles: [Rollo1A, Rollo2A, Rollo3A, Rollo4A, Rollo5A, Rollo6A, Rollo7A]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo1A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo2A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo3A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo4A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo5A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo6A.json
+      - results/raw_fabrid/per_fabric/rd4ad_ov32/Rollo7A.json
+  - job_id: zju_res256_rd4ad
+    owner: C
+    config: configs/zju_res256_rd4ad.yaml
+    profiles: [pattern1, pattern4, pattern8, pattern13, pattern16]
+    stage: ablation
+    queue: mini
+    expected_result_paths:
+      - results/zju_leaper/per_fabric/rd4ad_res256/pattern1.json
+      - results/zju_leaper/per_fabric/rd4ad_res256/pattern4.json
+      - results/zju_leaper/per_fabric/rd4ad_res256/pattern8.json
+      - results/zju_leaper/per_fabric/rd4ad_res256/pattern13.json
+      - results/zju_leaper/per_fabric/rd4ad_res256/pattern16.json
+  - job_id: raw_fabrid_rd4ad_s1
+    owner: A
+    config: configs/raw_fabrid_rd4ad_s1.yaml
+    profiles: [unified]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/unified/rd4ad_s1/unified.json
+  - job_id: raw_fabrid_rd4ad_s2
+    owner: A
+    config: configs/raw_fabrid_rd4ad_s2.yaml
+    profiles: [unified]
+    stage: ablation
+    queue: standard
+    expected_result_paths:
+      - results/raw_fabrid/unified/rd4ad_s2/unified.json

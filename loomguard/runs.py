@@ -1,4 +1,7 @@
 """Plumbing shared by scripts/fit.py and scripts/evaluate.py: config, manifests, fabric profiles, tile cap, paths."""
+import argparse
+import hashlib
+import json
 import random
 import subprocess
 from collections import defaultdict
@@ -7,7 +10,7 @@ from pathlib import Path
 import torch
 import yaml
 
-from loomguard.data.manifest import (MVTEC_TEXTURES, TileRow, build_aitex, build_mvtec, build_raw_fabrid, build_zju,
+from loomguard.data.manifest import (FIELDS, MVTEC_TEXTURES, TileRow, build_aitex, build_mvtec, build_raw_fabrid, build_zju,
                                      zju_group)
 
 DEFAULTS = {"seed": 0, "backbone_weights": "IMAGENET1K_V1", "device": "auto", "num_workers": 0, "hist_bins": 10_000,
@@ -92,6 +95,49 @@ def profiles(rows: list[TileRow], cfg: dict) -> dict[str, list[TileRow]]:
     for r in rows:
         out[zju_group(r.fabric) if regime == "per_group" else r.fabric].append(r)
     return dict(out)
+
+
+def selected_profiles(rows: list[TileRow], cfg: dict, selection: str | None) -> dict[str, list[TileRow]]:
+    available = profiles(rows, cfg)
+    if selection is None:
+        return available
+    names = [s.strip() for s in selection.split(",")]
+    if not all(names) or len(set(names)) != len(names):
+        raise ValueError("--profiles requires distinct, nonempty profile names")
+    unknown = set(names) - available.keys()
+    if unknown:
+        raise ValueError(f"unknown profiles {sorted(unknown)}; available: {sorted(available)}")
+    return {name: available[name] for name in names}
+
+
+def manifest_digest(rows: list[TileRow]) -> str:
+    """Fingerprint ordered tile rows, including splits, independent of dataset location and OS."""
+    digest = hashlib.sha256()
+    for row in rows:
+        digest.update((json.dumps([getattr(row, k) for k in FIELDS], separators=(",", ":")) + "\n").encode())
+    return digest.hexdigest()
+
+
+def run_inputs(ap, argv):
+    """Load unchanged scientific inputs and optionally route writes to a runner's staging directory."""
+    ap.add_argument("--config", required=True)
+    ap.add_argument("--profiles", help="comma-separated exact names of complete model profiles")
+    ap.add_argument("--output-root", type=Path, help=argparse.SUPPRESS)
+    ap.add_argument("--manifest-sha256", help=argparse.SUPPRESS)
+    args = ap.parse_args(argv)
+    canonical = load_config(args.config)
+    rows = build_rows(canonical)
+    if args.manifest_sha256 and manifest_digest(rows) != args.manifest_sha256:
+        raise ValueError(f"{args.config}: manifest differs from checkpoint 0")
+    selected = selected_profiles(rows, canonical, args.profiles)
+    cfg = canonical.copy()
+    if args.output_root is not None:
+        for key in ("artifacts", "results"):
+            path = Path(cfg[key])
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError(f"cannot stage non-relative {key}: {path}")
+            cfg[key] = str(args.output_root / path)
+    return canonical, cfg, rows, selected, args.profiles
 
 
 def predictions_dir(cfg: dict, profile: str) -> Path:
