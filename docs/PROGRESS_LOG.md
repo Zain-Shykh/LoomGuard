@@ -18,6 +18,13 @@ Entry template:
 
 
 
+## 2026-11-21: Three-person training workflow implemented
+
+- Added the proposed assignment ledger, complete-profile selection, and an execution runner with staged outputs, per-profile status and retry, data and source fingerprints, and shared MVTec and ZJU-mini approvals.
+- The three dry runs validated 33 configs and 185 unique canonical output paths. Member A has 22 profiles, B has 119 plus 14 conditional AITEX profiles, and C has 30. The original experiment YAMLs, study lists, adapters, scoring and grading code were verified against the source commit.
+- The CPU suite passed 177 tests with one slow test deselected. The 27 focused tests covered checkpoint sequencing, sharding, retry and integration, as well as the existing path helpers. The synthetic full matrix passed `summarize.py --check` and generated the reports. The suite also exercised the original fit, evaluate, study and Streamlit paths.
+- The operating schedule and AITEX inclusion await recorded team approval. The next measurement is the paired MVTec gate after dataset verification and environment setup. The Kaggle RD4AD queues require a compatible accelerator with native CUDA bfloat16.
+
 ## 2026-11-17: Training PC is an RTX 5060 Ti with 16 GB
 
 - **Phase:** between 6 and 7

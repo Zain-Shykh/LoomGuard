@@ -26,6 +26,8 @@ The design is fixed in `docs/`. Read the relevant document before writing code, 
 
 If a task needs a GPU or a dataset and you are on the laptop, write the code and the test, then record the run as a training-PC task in `docs/PROGRESS_LOG.md`.
 
+The [proposed distributed training runbook](docs/DISTRIBUTED_TRAINING.md) adds independent execution queues for the existing study. Follow its shared approvals and result ownership when the team adopts it. The original training-PC instructions remain available.
+
 ## Setup
 
 Install PyTorch first, from the index that fits the machine. `pip install -e .` does not pull it in.
@@ -50,7 +52,7 @@ loomguard/
   inspection/  postprocess, grading
   pipeline.py  Inspector: the single path used by evaluation and by the app
   runs.py      config, manifest dispatch, paths (incl. run tag) and model loading shared by scripts/fit.py and scripts/evaluate.py
-scripts/       verify_datasets.py, fit.py, evaluate.py, study.py, summarize.py, failure_cases.py
+scripts/       verify_datasets.py, fit.py, evaluate.py, study.py, distributed_study.py, summarize.py, failure_cases.py
 app/           streamlit_app.py (thin UI over Inspector: upload validation, bundle download, three pages)
 assets/        samples/ (images + samples.json attribution), rolls/<name>/roll.json demo rolls, profiles.json bundle registry
 deploy/        requirements.txt and README_space.md for the Hugging Face Space
