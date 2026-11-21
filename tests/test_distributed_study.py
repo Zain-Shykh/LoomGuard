@@ -373,3 +373,32 @@ def test_consolidation_reports_missing_and_duplicate_results(tmp_path, monkeypat
     assert runner.check_integration(jobs, jobs, pin, tmp_path, [tmp_path]) == 0
     assert summarize.main(["--check"]) == 0
     assert summarize.main([]) == 0 and (tmp_path / "results/report/all_results.csv").is_file()
+
+
+def test_digest_tree_follows_linked_subdirectories(tmp_path):
+    real = tmp_path / "real" / "carpet"
+    real.mkdir(parents=True)
+    (real / "a.png").write_bytes(b"x")
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / "carpet").symlink_to(real, target_is_directory=True)
+    assert digest_tree(root) == digest_tree(tmp_path / "real")
+
+
+def test_integration_with_aitex_excluded_still_checks_coverage(tmp_path, monkeypatch, jobs, capsys):
+    monkeypatch.chdir(tmp_path)
+    pin = pin_for(jobs)
+    monkeypatch.setattr(runner, "train_and_evaluate", fake_job_outputs)
+    active = [j for j in jobs if j.queue != "aitex"]
+    for queue in ("gate", "mini"):
+        for run in runner.checkpoint_runs(active, queue):
+            runner.run_profile(run, pin, "private://store", MACHINE, no_prerequisites)
+        runner.approve(active, pin, tmp_path, queue, "team decision")
+    for job in active:
+        for run in job.runs():
+            if not run.result.exists():
+                runner.run_profile(run, pin, "private://store", MACHINE, no_prerequisites)
+    assert runner.check_integration(jobs, active, pin, tmp_path, [tmp_path]) == 0
+    assert "intentional omission" in capsys.readouterr().out
+    next(next(j for j in active if j.job_id == "zju_unified_rd4ad").runs()).result.unlink()
+    assert runner.check_integration(jobs, active, pin, tmp_path, [tmp_path]) == 1

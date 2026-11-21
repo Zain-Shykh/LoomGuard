@@ -13,7 +13,7 @@ Member B owns both AITEX methods, one model per fabric for seven fabrics per met
 ## Checkpoint 0. Prepare and verify
 
 1. Agree on one source commit containing the reviewed plan, code, and unchanged configs. Work at the repository root. Start the three work branches at that commit, for example `git switch -c run/local-rd4ad <source-commit>`, `run/kaggle-patchcore`, and `run/kaggle-rd4ad`. Keep training checkouts pinned. Use a separate results checkout or worktree if committing results before the queue finishes.
-2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU/AITEX adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C needs RAW-FABRID and ZJU. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
+2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU/AITEX adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C needs RAW-FABRID and ZJU. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
 3. From a coordinator checkout with the active datasets, create and distribute the shared metadata directory. Add `--aitex-approval "<team decision reference>"` to the pin command if the team includes AITEX. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
 
 ```bash
@@ -92,7 +92,6 @@ python scripts/distributed_study.py --owner B --stage study --queue standard
 python scripts/distributed_study.py --owner B --stage ablation --queue standard
 
 # C
-python scripts/distributed_study.py --owner C --stage ablation --queue standard
 ```
 
 The coordinator verifies the ten ZJU-mini bundles and results, reviews the adapter and split evidence and records the team's approval.
@@ -101,7 +100,7 @@ The coordinator verifies the ten ZJU-mini bundles and results, reviews the adapt
 python scripts/distributed_study.py --approve-mini --review "<recorded ZJU-mini verification>"
 ```
 
-Distribute `mini.json` before launching the larger ZJU work and the ZJU ablations.
+Distribute `mini.json` before launching the larger ZJU work and the ZJU ablations. The `--review` text of `--approve-mini` is the owner's recorded go-ahead for full ZJU (D-61): state in it that the Part 1 roll check and the first RAW-FABRID results were reviewed.
 
 ```bash
 # B
@@ -111,7 +110,6 @@ python scripts/distributed_study.py --owner B --queue aitex  # only with a recor
 
 # C
 python scripts/distributed_study.py --owner C --queue zju_full
-python scripts/distributed_study.py --owner C --stage ablation --queue mini
 ```
 
 For a timed session, select one complete profile by job ID and name.

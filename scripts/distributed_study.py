@@ -69,6 +69,8 @@ def inspected_manifest(cfg):
     for name, selected in complete.items():
         if {r.split for r in selected} != {"train", "val", "test"}:
             raise ValueError(f"{cfg['config']} {name}: train, validation and test pools must be present")
+        if {r.label for r in selected if r.split == "test"} != {0, 1}:  # headline metrics are undefined otherwise
+            raise ValueError(f"{cfg['config']} {name}: the test pool needs both normal and defective tiles")
     return manifest_digest(rows)
 
 
@@ -166,7 +168,7 @@ def gate_passes(means):
         for metric, target in targets.items():
             key = "image_auroc" if metric == "tile_auroc" else metric
             value = means[method][key]
-            if not finite(value, target / 100, 1):
+            if not finite(value, target / 100 - 1e-9, 1):  # tolerance for float rounding on the line
                 raise ValueError(f"STOP: {method} MVTec {key} mean {100 * value:.4f}% missed {target:.1f}%.")
 
 
@@ -286,11 +288,13 @@ def run_profile(run, pin, location, machine, prerequisite):
                 old = previous["attempt"]
                 if not isinstance(old, str) or Path(old).name != old or not old.startswith("attempt-"):
                     raise ValueError(f"{status}: invalid staged attempt")
-                state.update(attempt=old, ready_to_publish=True)
-                publish(run, attempts / old, pin)
-                record("passed", message="published staged outputs")
-                return "recovered publication"
-            if previous.get("ready_to_publish"):
+                if (attempts / old).is_dir():
+                    state.update(attempt=old, ready_to_publish=True)
+                    publish(run, attempts / old, pin)
+                    record("passed", message="published staged outputs")
+                    return "recovered publication"
+                print(f"{run.result}: staged attempt {old} is missing (status restored without attempts); retraining")
+            elif previous.get("ready_to_publish"):
                 raise ValueError(f"{status}: staged result has conflicting provenance. Review before retrying.")
             if run.bundle.exists() or run.bundle.is_symlink():
                 raise ValueError(f"{run.bundle} contains an unverified bundle. Review before retrying.")
@@ -355,21 +359,21 @@ def check_integration(all_jobs, active, pin, shared, roots):
                 issues.append(str(exc))
     missing = expected.keys() - seen.keys()
     issues.extend(f"missing {path.as_posix()}" for path in sorted(missing))
-    # The accepted full-study acceptance criteria still include AITEX.
     omitted = [r.result for job in all_jobs if job not in active for r in job.runs()]
     if omitted:
-        issues.append(f"full-study completion pending: {len(omitted)} AITEX results await team scope approval")
+        print(f"note: {len(omitted)} inactive-job results (AITEX, excluded by D-61) are an intentional omission")
     if issues:
         print("\n".join(issues), file=sys.stderr)
         return 1
     merged = {}
     for root in roots:
         merged.update(load_results(root / "results"))
-    coverage = missing_cells(merged)
+    coverage = [c for c in missing_cells(merged) if not (omitted and c.startswith("aitex/"))]
     if coverage:
         print("\n".join(coverage), file=sys.stderr)
         return 1
-    print(f"Verified {len(seen)} canonical results with their bundles and full-study coverage")
+    print(f"Verified {len(seen)} canonical results with their bundles and the study coverage"
+          + (" (AITEX omitted by D-61)" if omitted else ""))
     return 0
 
 

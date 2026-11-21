@@ -231,7 +231,8 @@ def digest_file(path):
 
 def digest_tree(root):
     root = Path(root)
-    files = sorted((p for p in root.rglob("*") if p.is_file()), key=lambda p: p.relative_to(root).as_posix())
+    files = [Path(d) / n for d, _, names in os.walk(root, followlinks=True) for n in names]  # rglob skips linked subdirectories
+    files.sort(key=lambda p: p.relative_to(root).as_posix())
     if not files:
         raise ValueError(f"{root}: dataset directory is empty or missing")
     return digest_obj([(p.relative_to(root).as_posix(), digest_file(p)) for p in files])

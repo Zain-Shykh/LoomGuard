@@ -18,6 +18,10 @@ Entry template:
 
 
 
+## 2026-11-21: Independent review of the distributed runner
+
+- Reviewer verdict CHANGES REQUIRED, no blocker: sharding does not change the science, the gate cannot pass on a partial set, publish and resume are atomic, full suite 177 passed. Fixed: dataset hashing follows linked subdirectories; a missing staged attempt now retrains instead of blocking forever; `--pin-datasets` rejects a profile whose test pool lacks normal or defective tiles; `check_integration` reports AITEX as an intentional omission (D-61) and still checks the other cells; gate threshold gets a 1e-9 rounding tolerance; runbook lists no C ablation commands and says the `--approve-mini` review text is the full-ZJU go-ahead. Two tests added (25 pass). Not done (nits): clear error for a torch build without sm_75 kernels, no private path or host in committed results (use unsigned storage paths), cached dataset hash per start.
+
 ## 2026-11-21: D-61, three-person workflow approved with terms
 
 - Owner approved the workflow. AITEX excluded; ZJU-mini first, full ZJU on a later go-ahead; each ablation on its baseline's machine (RAW-FABRID RD4AD `it1k`, `ov32` moved C to A; ZJU RD4AD `res256` moved C to B). Test expectation updated; dry runs: A 36, B 138 (+14 inactive AITEX), C 11 profiles; 23 runner tests pass.
