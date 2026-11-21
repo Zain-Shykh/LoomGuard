@@ -60,7 +60,7 @@ def fit_rd4ad(cfg, prows, device):
         print(f"  iter {it}: train loss {tr:.4f}" + (f", val loss {va:.4f}" if va is not None else ""))
     keep = ("iterations", "iters_per_second", "final_train_loss", "final_val_loss", "loss_curve")
     return rd, {"n_train_tiles": len(train), **{k: stats[k] for k in keep}}, \
-        f"{stats['iterations']} iterations at {stats['iters_per_second']:.2f}/s, final train loss {stats['final_train_loss']:.4f}"
+        f"{stats['iterations']} iterations at {stats['iters_per_second']:.2f}/s, final train loss {stats['final_train_loss']:.4f}, {stats['skipped_steps']} fp16-overflow steps skipped"
 
 
 def main(argv: list[str] | None = None) -> None:

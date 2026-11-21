@@ -119,20 +119,23 @@ class RD4AD:
             val: Sequence[Tensor] = (), val_every: int = 500, log_every: int = 100) -> dict:
         """Fixed budget of `iterations` Adam steps on batches (B x 3 x 256 x 256 normal crops); the last state is kept.
         `val` (optional) is a list of normal-tile batches whose loss is logged every `val_every` steps, only to spot
-        divergence. Returns {iterations, seconds, iters_per_second, final_train_loss, final_val_loss, loss_curve}."""
+        divergence. Returns {iterations, seconds, iters_per_second, final_train_loss, final_val_loss, loss_curve, skipped_steps}.
+        skipped_steps counts fp16 overflow steps the GradScaler skipped; they still count toward `iterations` (D-60)."""
         amp = self.device.type == "cuda"
         opt = torch.optim.Adam(self.student.parameters(), lr=lr, betas=betas)  # student only: the teacher is not in it
         scaler = torch.amp.GradScaler(self.device.type, enabled=amp)  # fp16 needs loss scaling (D-60); a no-op off CUDA
         self.student.train()
-        curve, window, spent, n = [], [], 0.0, 0
+        curve, window, spent, n, skipped = [], [], 0.0, 0, 0
         for x in itertools.islice(batches, iterations):
             t0 = time.perf_counter()
             self.backbone.eval()
             loss = self._loss(x, amp)
             opt.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
+            scale = scaler.get_scale()
             scaler.step(opt)
             scaler.update()
+            skipped += scaler.get_scale() < scale  # scale shrinks only when inf/NaN grads made the scaler skip opt.step()
             window.append(float(loss.detach()))  # float() syncs the device, so the timing below is honest
             spent += time.perf_counter() - t0
             n += 1
@@ -145,7 +148,7 @@ class RD4AD:
         self.student.eval()
         vals = [c[2] for c in curve if c[2] is not None]
         return {"iterations": n, "seconds": spent, "iters_per_second": n / spent, "final_train_loss": curve[-1][1],
-                "final_val_loss": vals[-1] if vals else None, "loss_curve": curve}
+                "final_val_loss": vals[-1] if vals else None, "loss_curve": curve, "skipped_steps": int(skipped)}
 
     @torch.no_grad()
     def score(self, x: Tensor) -> tuple[Tensor, Tensor]:

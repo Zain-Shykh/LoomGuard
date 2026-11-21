@@ -18,6 +18,14 @@ Entry template:
 
 
 
+## 2026-11-22: RD4AD counts skipped fp16 steps; gate prep on laptop
+- Phase: distributed MVTec gate preparation
+- Who / where: laptop (CPU only)
+- Done: `RD4AD.fit` returns `skipped_steps` (GradScaler overflow steps) and `scripts/fit.py` prints it. Skipped steps still count toward the fixed iteration budget (D-60); result JSON schema unchanged.
+- Evidence: `--validate` gives 33 jobs, 185 canonical paths; gate dry-run selects the right five textures for A (RD4AD) and B (PatchCore); `test_rd4ad`, `test_fit_evaluate`, `test_distributed_study` give 39 passed.
+- Not verified: CUDA/sm_120, overflow counter on a real GPU, GPU overfit test, MVTec gate results, VRAM. All are training-PC / Kaggle tasks.
+- Next: A runs the RD4AD gate, B the PatchCore gate, then `--approve-gate`.
+
 ## 2026-11-21: Independent review of the distributed runner
 
 - Reviewer verdict CHANGES REQUIRED, no blocker: sharding does not change the science, the gate cannot pass on a partial set, publish and resume are atomic, full suite 177 passed. Fixed: dataset hashing follows linked subdirectories; a missing staged attempt now retrains instead of blocking forever; `--pin-datasets` rejects a profile whose test pool lacks normal or defective tiles; `check_integration` reports AITEX as an intentional omission (D-61) and still checks the other cells; gate threshold gets a 1e-9 rounding tolerance; runbook lists no C ablation commands and says the `--approve-mini` review text is the full-ZJU go-ahead. Two tests added (25 pass). Not done (nits): clear error for a torch build without sm_75 kernels, no private path or host in committed results (use unsigned storage paths), cached dataset hash per start.

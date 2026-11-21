@@ -100,6 +100,7 @@ def test_fit_budget_and_logging():
     assert [c[0] for c in out["loss_curve"]] == [2, 4] and all(c[2] is not None for c in out["loss_curve"])
     assert out["final_train_loss"] == out["loss_curve"][-1][1] and out["final_val_loss"] == out["loss_curve"][-1][2]
     assert out["iters_per_second"] > 0 and not rd.student.training  # eval mode afterwards, last state kept
+    assert out["skipped_steps"] == 0  # CPU: scaler disabled, no step is ever skipped
     with pytest.raises(ValueError):
         rd.fit(stream(1), 2)
     # no validation tiles: nothing is logged for them
@@ -157,3 +158,4 @@ def test_save_load_float16(tmp_path):
     s1, h1 = rd.score(x)
     s2, h2 = rd2.score(x)
     assert torch.allclose(h1, h2, atol=1e-5) and torch.allclose(s1, s2, atol=1e-5)
+
