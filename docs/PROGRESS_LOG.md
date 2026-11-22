@@ -18,6 +18,11 @@ Entry template:
 
 
 
+## 2026-11-22: D-62 approves scoped RD4AD teacher precision for real-data validation
+
+- Member B tested commit `f7330a75201388a5600e425237fbd49b933c2d3c` on the Kaggle T4. All 14 targeted tests passed. Two runs of the original synthetic overfit test finished at 0.04159279 with zero skipped updates and 2,415.6 MiB peak allocated VRAM. [Kaggle T4 regression results](LoomGuard_Member_B_RD4AD_T4_Regression_Results.md)
+- With both the RTX 5060 Ti and T4 synthetic regressions passing, the team approved the D-60 precision amendment as D-62 for real-data validation. The MVTec accuracy gate is still pending and uses the existing pass criteria. [Decision D-62](DECISIONS.md)
+
 ## 2026-11-22: Scoped RD4AD teacher precision candidate
 
 - CUDA training, validation and scoring share an FP32 frozen teacher forward with cuDNN TF32 disabled for that call. The prior setting is restored before the student forward. CUDA student training retains FP16 autocast and GradScaler. The cosine loss remains FP32. A-30 proposes an amendment to D-60 for team review.
