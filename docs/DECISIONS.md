@@ -123,7 +123,7 @@ Decisions made by a developer session during a phase. A-01 to A-29 were confirme
 
 | ID | Date | Phase | Decision | Reason | Status |
 |---|---|---|---|---|---|
-| | | | | | |
+| A-30 | 2026-11-22 | RD4AD precision review | Proposed amendment to D-60. On CUDA, use FP32 for the frozen teacher with cuDNN TF32 disabled during its forward pass in training, validation, and inference. Restore the previous cuDNN setting before the student runs. Keep FP16 autocast and GradScaler for CUDA student training, the FP32 cosine loss, and the existing student validation and inference precision. | The candidate passed the fixed synthetic overfit gate twice on the RTX 5060 Ti at 0.04184032, with zero skipped updates in both runs. The reported scoped diagnostic reached 0.03414. See PROGRESS_LOG 2026-11-22. | Candidate for team review. D-60 remains the accepted protocol pending approval. |
 
 The three-person training workflow and its initial ownership ledger are [proposed operational changes](DISTRIBUTED_TRAINING.md). The existing scientific decisions and full-study coverage govern the runs. Record team approval of the workflow, any reassignment, and the AITEX inclusion decision before using them. Any reduction to the accepted full-study scope requires a separate team decision.
 
