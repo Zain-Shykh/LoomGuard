@@ -1,5 +1,7 @@
-"""RD4AD on CPU with random-weight teachers. The 84 M-parameter Adam step costs about a second per iteration even on tiny
-inputs, so the default suite runs few iterations; the 300-iteration overfit test (256 x 256) is marked slow (pytest -m slow)."""
+"""RD4AD with random-weight teachers. CUDA precision tests run when a GPU is available.
+
+The 300-iteration overfit test (256 x 256) is marked slow (pytest -m slow).
+"""
 import copy
 import math
 
@@ -8,6 +10,9 @@ import torch
 
 from loomguard.models.backbone import Backbone
 from loomguard.models.rd4ad import RD4AD, Student, anomaly_map, cosine_loss
+
+
+requires_cuda = pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA")
 
 
 def tiles(n, size=256, seed=0):
@@ -48,6 +53,63 @@ def test_teacher_frozen_through_training():
     assert not any(p.requires_grad for p in rd.backbone.parameters())
     assert all(torch.equal(v, before_t[k]) for k, v in rd.backbone.state_dict().items())  # weights and BN statistics
     assert any(not torch.equal(v, before_s[k]) for k, v in rd.student.state_dict().items())
+
+
+@pytest.mark.parametrize("device, allow_tf32", [
+    ("cpu", True),
+    pytest.param("cuda", True, marks=requires_cuda),
+    pytest.param("cuda", False, marks=requires_cuda),
+])
+def test_teacher_and_student_precision(device, allow_tf32):
+    rd = RD4AD(Backbone(None), device)
+    x = tiles(2, 32)
+    teacher_features, student_dtypes = [], []
+    cuda = device == "cuda"
+
+    def record_teacher(module, args, features):
+        assert not torch.is_autocast_enabled(device)
+        assert torch.backends.cudnn.allow_tf32 == (allow_tf32 and not cuda)
+        assert args[0].dtype == next(module.parameters()).dtype == torch.float32
+        assert all(f.dtype == torch.float32 and not f.requires_grad for f in features)
+        teacher_features.append(features)
+
+    def record_student(module, args, features):
+        assert torch.backends.cudnn.allow_tf32 == allow_tf32
+        assert torch.is_autocast_enabled(device) == (cuda and module.training)
+        student_dtypes.append(tuple(f.dtype for f in features))
+
+    rd.backbone.register_forward_hook(record_teacher)
+    rd.student.register_forward_hook(record_student)
+    with torch.backends.cudnn.flags(enabled=True, allow_tf32=allow_tf32):
+        with torch.autocast(device, dtype=torch.float16 if cuda else torch.bfloat16):
+            loss = rd._loss(x, amp=cuda)
+            assert torch.is_autocast_enabled(device)
+        assert loss.dtype == torch.float32 and torch.isfinite(loss)
+        scores, heat = rd.score(x)
+        assert torch.backends.cudnn.allow_tf32 == allow_tf32
+
+    assert student_dtypes == [(torch.float16 if cuda else torch.float32,) * 3, (torch.float32,) * 3]
+    assert len(teacher_features) == 2
+    for train_feature, score_feature in zip(*teacher_features):
+        torch.testing.assert_close(train_feature, score_feature)
+    assert scores.shape == (2,) and heat.shape == (2, 1, 32, 32)
+    assert scores.dtype == heat.dtype == torch.float32
+    torch.testing.assert_close(scores, heat.amax((1, 2, 3)))
+
+
+@requires_cuda
+def test_teacher_restores_tf32_after_error():
+    rd = RD4AD(Backbone(None), "cuda")
+
+    def fail_forward(*args):
+        assert not torch.backends.cudnn.allow_tf32
+        raise RuntimeError("test teacher failure")
+
+    rd.backbone.register_forward_pre_hook(fail_forward)
+    with torch.backends.cudnn.flags(enabled=True, allow_tf32=True):
+        with pytest.raises(RuntimeError, match="test teacher failure"):
+            rd.score(tiles(1, 32))
+        assert torch.backends.cudnn.allow_tf32
 
 
 def test_cosine_loss_hand_values():
@@ -115,6 +177,26 @@ def test_loss_falls_quickly():
     assert out["final_train_loss"] < 0.5 * first
 
 
+@requires_cuda
+def test_fp16_grad_scaler_skips_overflow_and_recovers():
+    torch.manual_seed(0)
+    rd = RD4AD(Backbone(None), "cuda")
+    param = next(rd.student.parameters())
+    initial = param.detach().clone()
+    x = weave(8, 256)  # the overfit fixture has finite scaled gradients without the injected overflow
+
+    def batches():
+        with param.register_hook(lambda grad: torch.full_like(grad, float("inf"))):
+            yield x
+        torch.testing.assert_close(param, initial, rtol=0, atol=0)
+        yield x
+
+    out = rd.fit(batches(), 2, log_every=1)
+    assert out["iterations"] == 2 and out["skipped_steps"] == 1
+    assert all(math.isfinite(loss) for _, loss, _ in out["loss_curve"])
+    assert torch.isfinite(param).all() and not torch.equal(param, initial)
+
+
 def weave(n, size, seed=0):
     """Fabric-like normal tiles: a 4-pixel weave with random phases, a slow drift and light noise."""
     g = torch.Generator().manual_seed(seed)
@@ -132,14 +214,23 @@ def weave(n, size, seed=0):
 def test_overfit_eight_tiles():
     """A3. About 40 minutes on the laptop CPU (loss 0.048 at iteration 250, 0.037 at 300); seconds on the GPU."""
     torch.manual_seed(0)
-    rd = RD4AD(Backbone(None), "cuda" if torch.cuda.is_available() else "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+    rd = RD4AD(Backbone(None), device)
     out = rd.fit(iter([weave(8, 256)] * 300), 300, log_every=25)
     print([round(c[1], 4) for c in out["loss_curve"]])
+    print(f'final_train_loss={out["final_train_loss"]:.8f}, skipped_steps={out["skipped_steps"]}, '
+          f'iters_per_second={out["iters_per_second"]:.2f}')
+    if device == "cuda":
+        print(f'peak_allocated_mib={torch.cuda.max_memory_allocated() / 2**20:.1f}, '
+              f'peak_reserved_mib={torch.cuda.max_memory_reserved() / 2**20:.1f}')
     assert out["final_train_loss"] < 0.05
 
 
-def test_save_load_float16(tmp_path):
-    rd = RD4AD(Backbone(None), seed=3)
+@pytest.mark.parametrize("device", ["cpu", pytest.param("cuda", marks=requires_cuda)])
+def test_save_load_float16(tmp_path, device):
+    rd = RD4AD(Backbone(None), device, seed=3)
     rd.fit(iter([tiles(2, 32)] * 2), 2, log_every=2)  # moves BN running statistics away from their initial values
     p = tmp_path / "model.pt"
     rd.save(p)
@@ -147,7 +238,7 @@ def test_save_load_float16(tmp_path):
     assert set(sd) == set(rd.student.state_dict())
     assert all(v.dtype == torch.float16 for v in sd.values() if v.is_floating_point())
     assert any(v.dtype == torch.int64 for v in sd.values())  # num_batches_tracked is kept as an integer
-    rd2 = RD4AD.load(p, rd.backbone)  # same teacher: random-weight backbones differ between calls
+    rd2 = RD4AD.load(p, rd.backbone, device)  # same teacher: random-weight backbones differ between calls
     assert not rd2.student.training and all(q.dtype == torch.float32 for q in rd2.student.parameters())
     for q in rd.student.parameters():  # the reference: the same student rounded to float16 and back
         q.data = q.data.half().float()

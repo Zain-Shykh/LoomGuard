@@ -97,13 +97,26 @@ def anomaly_map(enc: Sequence[Tensor], dec: Sequence[Tensor], size: int = 256) -
 class RD4AD:
     def __init__(self, backbone: Backbone, device: str | torch.device = "cpu", seed: int = 0):
         self.device = torch.device(device)
-        self.backbone = backbone.to(self.device).eval()  # teacher: frozen, eval() always (CLAUDE.md rule 4)
+        self.backbone = backbone.to(device=self.device, dtype=torch.float32).eval()  # frozen teacher, always in eval()
         torch.manual_seed(seed)
         self.student = Student().to(self.device)
 
+    def _teacher_features(self, x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+        x = x.to(device=self.device, dtype=torch.float32)
+        with torch.autocast(self.device.type, enabled=False):
+            if self.device.type != "cuda":
+                return self.backbone(x)
+            # Avoid TF32 rounding of the frozen targets while preserving the caller's cuDNN settings.
+            previous_tf32 = torch.backends.cudnn.allow_tf32
+            torch.backends.cudnn.allow_tf32 = False
+            try:
+                return self.backbone(x)
+            finally:
+                torch.backends.cudnn.allow_tf32 = previous_tf32
+
     def _loss(self, x: Tensor, amp: bool) -> Tensor:
-        with torch.autocast(self.device.type, dtype=torch.float16, enabled=amp):  # fp16 AMP on CUDA only (D-60)
-            enc = self.backbone(x.to(self.device))  # no gradients (Backbone.forward is no_grad)
+        enc = self._teacher_features(x)
+        with torch.autocast(self.device.type, dtype=torch.float16, enabled=amp):  # student AMP on CUDA (D-60)
             dec = self.student(*enc)
         return cosine_loss(enc, dec)
 
@@ -154,7 +167,7 @@ class RD4AD:
     def score(self, x: Tensor) -> tuple[Tensor, Tensor]:
         """x: B x 3 x 256 x 256. Returns (tile score B = max of the heatmap, heatmap B x 1 x 256 x 256), float32."""
         self.student.eval()
-        enc = self.backbone(x.to(self.device))
+        enc = self._teacher_features(x)
         heat = anomaly_map(enc, self.student(*enc), x.shape[-1])
         return heat.amax((1, 2, 3)), heat
 

@@ -18,6 +18,21 @@ Entry template:
 
 
 
+## 2026-11-22: Scoped RD4AD teacher precision candidate
+
+- CUDA training, validation and scoring share an FP32 frozen teacher forward with cuDNN TF32 disabled for that call. The prior setting is restored before the student forward. CUDA student training retains FP16 autocast and GradScaler. The cosine loss remains FP32. A-30 proposes an amendment to D-60 for team review.
+- Two fresh processes on the RTX 5060 Ti ran the original slow test with PyTorch 2.11.0+cu128 and cuDNN 9.19.0. Both ran the actual implementation for 300 iterations on eight synthetic 256 × 256 weave tiles with seed 0. Only metric logging was added to the test.
+
+| Run | Final loss (last 25 iterations) | Skipped updates | Iterations/s | Peak CUDA allocated (MiB) | Peak CUDA reserved (MiB) |
+|---|---:|---:|---:|---:|---:|
+| 1 | 0.04184032 | 0 | 10.14 | 2411.6 | 2486.0 |
+| 2 | 0.04184032 | 0 | 10.57 | 2411.6 | 2486.0 |
+
+- Both runs passed the 0.05 convergence gate and logged the same finite loss windows to the displayed precision. A final-review replay of the candidate matched all 12 saved windows from the earlier FP32-teacher/FP16-student control exactly (final loss 0.04184031814336777).
+- An in-memory replay using `torch.backends.cudnn.flags(allow_tf32=False)` for the teacher alone matched all 12 windows of the earlier scoped diagnostic exactly (final loss 0.03414286583662033). In PyTorch 2.11.0+cu128 that context also defaults to `enabled=False`, so the teacher runs with cuDNN disabled. Both replays used the same seeded model initialization, synthetic inputs and production training loop. The original temporary code was unavailable. The exact replay identifies the backend difference, and the candidate retains cuDNN for the teacher.
+- The targeted non-slow suite passed 31 tests with 1 deselected. It covered teacher-feature agreement, precision and TF32 restoration, GradScaler overflow recovery, checkpoint round trips and synthetic fit/evaluate integration. With CUDA hidden, the focused CPU check passed 3 tests with 3 CUDA cases skipped.
+- The full non-slow suite finished with 184 passed, 1 failed and 1 deselected. The Streamlit test `test_sensitivity_slider_does_not_rerun_model` also failed on clean main. At sensitivity 0.5, the app displays 78.507 after scaling the full-precision threshold. The test scales the rounded display value from sensitivity 1.0 and expects 78.506. The app and slider test were left as found.
+
 ## 2026-11-22: RD4AD counts skipped fp16 steps; gate prep on laptop
 - Phase: distributed MVTec gate preparation
 - Who / where: laptop (CPU only)
