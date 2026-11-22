@@ -325,3 +325,20 @@ Follow-up to the gap in 9.6, run as described in `docs/LoomGuard_Member_B_Next_S
 **Not claimed:** no MVTec accuracy, no real training time, no gate result. This verdict covers feasibility only.
 
 **Next for Member B:** hold GPU work until Member C finishes the verified dataset handoff and the team pins the source commit. Then run the five-texture PatchCore gate from the prepared checklist. The shared gate is approved only after Member A's RD4AD results and Member B's PatchCore results both pass and are integrated.
+
+---
+
+## 12. Download-and-hash verification of the saved outputs (2026-11-22)
+
+Closes open item 1 of section 11 (the literal download check).
+
+| File | Fetched from | Bytes | Result |
+|---|---|---|---|
+| `loomguard-export-test/marker.txt` | The saved version's storage link (Output tab, Download button), outside the live notebook session | 42 | Content `LOOMGUARD_MEMBER_B_EXPORT_TEST_2026_11_22` plus newline. SHA-256 computed on the fetched bytes equals the hash in `manifest.json` (`8214aa99…b200de`): **true** |
+| `loomguard-export-test/manifest.json` | Same | 240 | Parsed as JSON with keys `purpose`, `created_utc`, `filename`, `sha256`. Its `sha256` equals the expected marker hash: **true** |
+
+**Result: PASS.** The bytes were retrieved from the saved Kaggle version and the manifest hash matches the retrieved marker file.
+
+**How it was done, and the one remaining difference:** the browser Download button opened the signed storage link in a new tab instead of saving a file. I fetched the bytes in that tab, hashed them with the browser's SHA-256, and compared them with the manifest. The files were **not written to this computer's disk** (the Downloads folder holds no copy). The step-5 Python snippet in the next-steps file was not run for that reason. The byte-for-byte check it performs was done in the browser instead. The signed link is temporary and is not recorded here.
+
+The earlier gap in 9.6 item 1 and 10.1 (deviation) is therefore closed, except that the check ran in the browser, not on a local file.
