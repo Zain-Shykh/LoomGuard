@@ -74,17 +74,26 @@ def inspected_manifest(cfg):
     return manifest_digest(rows)
 
 
-def pin_datasets(jobs, source, review, aitex_approval, path):
+def pinned_jobs(jobs, scope, aitex_approval):
+    if scope == "gate" and not aitex_approval:
+        return [job for job in jobs if job.queue == "gate"]
+    if scope == "full":
+        return [job for job in jobs if job.queue != "aitex" or aitex_approval]
+    raise ValueError("invalid dataset pin scope or AITEX approval")
+
+
+def pin_datasets(jobs, source, review, aitex_approval, path, scope="full"):
     if path.exists():
         raise ValueError(f"{path} already exists. Use a new shared directory for a revised dataset pin.")
-    active = [j for j in jobs if j.queue != "aitex" or aitex_approval]
+    active = pinned_jobs(jobs, scope, aitex_approval)
     datasets = dataset_hashes(active)
     manifests = {}
     configs = configs_for(active)
     for name, cfg in configs.items():
         print(f"Verifying split manifest for {name}", flush=True)
         manifests[name] = inspected_manifest(cfg)
-    write_json(path, {"version": 1, "source_commit": source, "verification_review": review,
+    scope_fields = {"scope": "gate"} if scope == "gate" else {}
+    write_json(path, {**scope_fields, "version": 1, "source_commit": source, "verification_review": review,
                       "aitex_approval": aitex_approval, "datasets": datasets, "manifests": manifests,
                       "configs": {name: digest_obj(cfg) for name, cfg in configs.items()}})
 
@@ -95,7 +104,7 @@ def load_pin(jobs, shared):
     if (pin["version"] != 1 or not pin["verification_review"] or not re.fullmatch(r"[0-9a-f]{40}", source)
             or git("rev-parse", "--verify", f"{source}^{{commit}}") != source):
         raise ValueError("invalid checkpoint 0 dataset pin")
-    active = [j for j in jobs if j.queue != "aitex" or pin.get("aitex_approval")]
+    active = pinned_jobs(jobs, pin.get("scope", "full"), pin.get("aitex_approval"))
     configs = configs_for(active)
     if (set(pin["datasets"]) != set(dataset_roots(active)) or set(pin["manifests"]) != set(configs)
             or pin["configs"] != {name: digest_obj(cfg) for name, cfg in configs.items()}):
@@ -138,6 +147,7 @@ def prepare(jobs, pin, plan, owner, review, location):
         if inspected_manifest(cfg) != pin["manifests"][name]:
             raise ValueError(f"{name}: split manifest differs from checkpoint 0")
     ready = ready_context(pin, plan, owner, machine) | {"environment_review": review, "bundle_location": location.rstrip("/")}
+    ready.update(version=2, verified_configs=sorted(configs_for(jobs)))
     write_json(WORK / f"ready-{owner}.json", ready, replace=True)
     print(f"Checkpoint 0 verified for member {owner} on {machine['gpu']}")
 
@@ -389,8 +399,8 @@ def parse_args(argv):
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="validate the entire plan and show selected outputs")
     mode.add_argument("--validate", action="store_true", help="validate the entire plan without datasets")
-    mode.add_argument("--pin-datasets", action="store_true", help="create the shared checkpoint 0 dataset pin")
-    mode.add_argument("--prepare", action="store_true", help="verify this member's checkpoint 0")
+    mode.add_argument("--pin-datasets", action="store_true", help="pin the full study or use --queue gate for MVTec only")
+    mode.add_argument("--prepare", action="store_true", help="verify this member's inputs, optionally limited to --queue")
     mode.add_argument("--approve-gate", action="store_true", help="verify and approve both complete MVTec benchmarks")
     mode.add_argument("--approve-mini", action="store_true", help="verify and approve both complete ZJU-mini headline runs")
     mode.add_argument("--check-integration", action="store_true", help="check all canonical results and their model bundles")
@@ -399,6 +409,10 @@ def parse_args(argv):
     parser.add_argument("--bundle-location", help="private durable storage prefix for this member's model bundles")
     parser.add_argument("--incoming", action="append", type=Path, help="isolated export root for integration, repeat for each member")
     args = parser.parse_args(argv)
+    if (args.pin_datasets or args.prepare) and (args.stage or args.job or args.profile):
+        parser.error("pinning and preparation accept queue scope only")
+    if args.pin_datasets and (args.owner or args.queue not in (None, "gate")):
+        parser.error("--pin-datasets covers all owners and permits only --queue gate")
     if args.profile and not args.job:
         parser.error("--profile requires --job")
     if args.aitex_approval and not args.pin_datasets:
@@ -435,9 +449,13 @@ def dispatch(args):
         print(f"{len(runs)} profiles selected, {sum(r.job.queue == 'aitex' for r in runs)} conditional")
         return 0
     if args.pin_datasets:
-        pin_datasets(jobs, training_commit(), args.review, args.aitex_approval, args.shared / "datasets.json")
+        pin_datasets(jobs, training_commit(), args.review, args.aitex_approval, args.shared / "datasets.json",
+                     scope=args.queue or "full")
         return 0
     pin, active = load_pin(jobs, args.shared)
+    gate_only = pin.get("scope") == "gate"
+    if gate_only and (args.approve_mini or args.check_integration):
+        raise ValueError("this operation requires a full-study dataset pin")
     if args.approve_gate or args.approve_mini:
         approve(active, pin, args.shared, "gate" if args.approve_gate else "mini", args.review)
         return 0
@@ -448,10 +466,17 @@ def dispatch(args):
     if training_commit() != pin["source_commit"]:
         raise ValueError("checkout differs from checkpoint 0's pinned source commit")
     if args.prepare:
-        prepare([j for j in active if j.owner == args.owner], pin, args.plan, args.owner, args.review, args.bundle_location)
+        if gate_only and args.queue != "gate":
+            raise ValueError("a gate-only pin requires --prepare --queue gate")
+        selected = [j for j in active if j.owner == args.owner and (not args.queue or j.queue == args.queue)]
+        if not selected:
+            raise ValueError("no active assignments for this owner and queue")
+        prepare(selected, pin, args.plan, args.owner, args.review, args.bundle_location)
         return 0
     runs = selected_runs(active, args)
     if not runs:
+        if gate_only:
+            raise ValueError("a gate-only pin permits assigned MVTec gate profiles only")
         if args.queue == "aitex" and not pin.get("aitex_approval"):
             print("AITEX is pending a recorded team inclusion decision")
         else:
@@ -462,6 +487,12 @@ def dispatch(args):
     if (any(ready.get(k) != v for k, v in ready_context(pin, args.plan, args.owner, machine).items())
             or not ready.get("environment_review") or not ready.get("bundle_location")):
         raise ValueError("checkpoint 0 readiness is incomplete or stale. Rerun --prepare for this member.")
+    # Original full-pin receipts verified every config owned by the member.
+    if "version" in ready or "verified_configs" in ready or gate_only:
+        verified = ready.get("verified_configs")
+        if (ready.get("version") != 2 or not isinstance(verified, list)
+                or not all(run.job.config in verified for run in runs)):
+            raise ValueError("checkpoint 0 readiness does not cover this selection. Rerun --prepare.")
     check_inputs([r.job for r in runs], pin)
     failed = False
     for run in runs:

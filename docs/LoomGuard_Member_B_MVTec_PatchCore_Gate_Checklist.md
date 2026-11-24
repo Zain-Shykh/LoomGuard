@@ -2,7 +2,7 @@
 
 **Status:** prepared on 2026-11-22, reviewed against the code the same day (see section 10). **Nothing in sections 3 to 7 has been run.** Every real-data command is marked `DO NOT RUN UNTIL HANDOFF`.
 
-**Read section 10 first.** The code review found that `--prepare` is not MVTec-only: it checks every dataset that Member B's whole job list uses. This decides whether B can start the PatchCore gate on MVTec alone, and the team has to settle it before handoff.
+**Historical checklist for the full-pin runner on 22 November.** For the gate-only feature candidate, use the [current pin, preparation, execution and promotion commands](LoomGuard_Team_Decisions_Needed.md#command-sequence-for-preparation). Sections 3–5 below use the original full-pin mode, which requires all B datasets. The operational and licensing decisions are tracked in the updated team plan.
 
 **Sources read for this checklist:** `docs/DISTRIBUTED_TRAINING.md` (Checkpoints 0 and 1, "Members B and C setup", "Export, retry and rebalance"), `configs/mvtec_patchcore.yaml`, `docs/DATASETS.md` (MVTec section), `scripts/distributed_study.py --help`, and `configs/studies/distributed/assignments.yaml`. Argument names below are the ones the script defines. Where the repo does not say something, this file says so.
 

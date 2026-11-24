@@ -27,6 +27,7 @@ def jobs():
 
 
 def test_initial_assignment_and_complete_canonical_coverage(jobs):
+    assert len(jobs) == 33
     ownership = {
         "A": """mvtec_rd4ad raw_fabrid_per_fabric_rd4ad raw_fabrid_rd4ad_s0 raw_fabrid_rd4ad_s1
                 raw_fabrid_rd4ad_s2 raw_fabrid_held_out_rd4ad raw_fabrid_per_fabric_rd4ad_it1k
@@ -402,3 +403,115 @@ def test_integration_with_aitex_excluded_still_checks_coverage(tmp_path, monkeyp
     assert "intentional omission" in capsys.readouterr().out
     next(next(j for j in active if j.job_id == "zju_unified_rd4ad").runs()).result.unlink()
     assert runner.check_integration(jobs, active, pin, tmp_path, [tmp_path]) == 1
+
+
+@pytest.fixture
+def gate_checkout(tmp_path, mvtec_root, monkeypatch):
+    """Use the real ledger and config paths in a disposable synthetic checkout."""
+    monkeypatch.chdir(tmp_path)
+    Path("configs").symlink_to(ROOT / "configs", target_is_directory=True)
+    Path("data").mkdir()
+    Path("data/mvtec_ad").symlink_to(mvtec_root, target_is_directory=True)
+    monkeypatch.setattr(runner, "training_commit", lambda: "a" * 40)
+    monkeypatch.setattr(runner, "git", lambda *args: "a" * 40)
+    monkeypatch.setattr(runner, "hardware", lambda owner: MACHINE)
+    monkeypatch.setattr(runner, "train_and_evaluate", fake_job_outputs)
+    args = ["--shared", "gate-shared"]
+    assert runner.main([*args, "--pin-datasets", "--queue", "gate", "--review", "synthetic fixture"]) == 0
+    return args
+
+
+def prepare_args(owner):
+    return ["--owner", owner, "--prepare", "--review", "synthetic test", "--bundle-location", "private://test"]
+
+
+def test_gate_only_preparation_and_execution(gate_checkout, monkeypatch, capsys):
+    args = gate_checkout
+    pin = read_json(Path("gate-shared/datasets.json"))
+    assert pin["scope"] == "gate" and set(pin["datasets"]) == {"mvtec"}
+    assert set(pin["configs"]) == set(pin["manifests"]) == {"configs/mvtec_rd4ad.yaml", "configs/mvtec_patchcore.yaml"}
+    assert runner.main([*args, "--owner", "B", "--stage", "gate"]) == 1
+    assert "ready-B.json" in capsys.readouterr().err
+    for owner, method in (("B", "patchcore"), ("A", "rd4ad")):
+        assert runner.main([*args, *prepare_args(owner), "--queue", "gate"]) == 0
+        receipt = read_json(runner.WORK / f"ready-{owner}.json")
+        assert receipt["verified_configs"] == [f"configs/mvtec_{method}.yaml"]
+        assert runner.main([*args, "--owner", owner, "--stage", "gate"]) == 0
+        results = list(Path("results").rglob(f"{method}/*.json"))
+        assert {p.stem for p in results} == set(runner.FABRICS["mvtec"])
+        assert all(read_json(p)["distributed"]["owner"] == owner for p in results)
+    assert len(list(Path("results").rglob("*.json"))) == 10
+    assert runner.main([*args, *prepare_args("C"), "--queue", "gate"]) == 1
+    assert runner.main([*args, *prepare_args("B")]) == 1
+    for action in (["--owner", "B", "--stage", "study"], ["--approve-mini", "--review", "fixture"],
+                   ["--check-integration"]):
+        assert runner.main([*args, *action]) == 1
+
+    monkeypatch.setattr(runner, "hardware", lambda owner: {**MACHINE, "machine": "new-session"})
+    assert runner.main([*args, "--owner", "B", "--stage", "gate"]) == 1
+    assert "stale" in capsys.readouterr().err
+
+
+def test_gate_rejects_source_data_and_pin_mismatches(gate_checkout, monkeypatch, capsys):
+    prepare = [*gate_checkout, *prepare_args("A"), "--queue", "gate"]
+    with monkeypatch.context() as ctx:
+        ctx.setattr(runner, "training_commit", lambda: "d" * 40)
+        assert runner.main(prepare) == 1
+        assert "pinned source commit" in capsys.readouterr().err
+    pin_path = Path("gate-shared/datasets.json")
+    original = read_json(pin_path)
+    for field, replacement, error in (
+        ("datasets", {"mvtec": "0" * 64}, "dataset contents differ"),
+        ("manifests", dict.fromkeys(original["configs"], "0" * 64), "split manifest differs"),
+        ("manifests", {}, "active plan"),
+        ("scope", "full", "active plan"),
+        ("scope", "mini", "invalid dataset pin scope"),
+        ("aitex_approval", "fixture", "invalid dataset pin scope"),
+    ):
+        write_json(pin_path, {**original, field: replacement}, replace=True)
+        assert runner.main(prepare) == 1
+        assert error in capsys.readouterr().err
+    assert not (runner.WORK / "ready-A.json").exists()
+
+
+def test_promote_gate_outputs_to_full_study(gate_checkout, request, monkeypatch, capsys):
+    import conftest
+
+    gate = gate_checkout
+    for owner in ("A", "B"):
+        assert runner.main([*gate, *prepare_args(owner), "--queue", "gate"]) == 0
+        assert runner.main([*gate, "--owner", owner, "--stage", "gate"]) == 0
+    approve = ["--approve-gate", "--review", "synthetic checkpoint test"]
+    assert runner.main([*gate, *approve]) == 0
+    evidence = read_json(Path("gate-shared/gate.json"))
+    full_pin = ["--pin-datasets", "--review", "synthetic full study"]
+    assert runner.main(full_pin) == 1
+    assert not (runner.WORK / "shared/datasets.json").exists()
+
+    # Expand the miniature fixtures to cover every canonical fabric in the full ledger.
+    monkeypatch.setattr(conftest, "RAW_LAYOUT", {f"Rollo{i}A": (6, [(5, 9, 10, 14)]) for i in range(1, 8)})
+    monkeypatch.setattr(conftest, "ZJU_PATTERNS", {i: conftest.ZJU_PATTERNS[1] for i in range(1, 20)})
+    for fixture, folder in (("raw_root", "RAW_FABRID"), ("zju_root", "ZJU-Leaper")):
+        (Path("data") / folder).symlink_to(request.getfixturevalue(fixture), target_is_directory=True)
+    assert runner.main(full_pin) == 0
+    assert runner.main(["--owner", "B", "--stage", "gate"]) == 1
+    assert "stale" in capsys.readouterr().err
+    assert runner.main([*prepare_args("B"), "--queue", "gate"]) == 0
+    standard = ["--owner", "B", "--job", "raw_fabrid_patchcore"]
+    assert runner.main(standard) == 1
+    assert "does not cover" in capsys.readouterr().err
+    assert runner.main(prepare_args("B")) == 0
+    assert runner.main(standard) == 1
+    assert "waiting for shared checkpoint approval" in capsys.readouterr().err
+
+    monkeypatch.setattr(runner, "train_and_evaluate", lambda *args: pytest.fail("unexpected retraining"))
+    assert runner.main(["--owner", "B", "--stage", "gate"]) == 0
+    receipt_path = runner.WORK / "ready-B.json"
+    receipt = read_json(receipt_path)
+    del receipt["version"], receipt["verified_configs"]  # legacy receipt from full-owner preparation
+    write_json(receipt_path, receipt, replace=True)
+    assert runner.main(["--owner", "B", "--stage", "gate"]) == 0
+    assert runner.main(approve) == 0
+    assert read_json(runner.WORK / "shared/gate.json") == evidence
+    assert all(digest_file(path) == expected for path, expected in evidence["result_sha256"].items())
+    assert runner.main(approve) == 1  # checkpoint files are write-once
