@@ -16,6 +16,14 @@ Entry template:
 
 ---
 
+## 2026-11-26: B3 full dataset pin created; Kaggle metadata set
+- **Phase:** 5 (study preparation), Member B task B3
+- **Who / where:** Zain (Member B), laptop, frozen worktree at `67fb7f6`
+- **Done:** Created the full-study dataset pin (MVTec, RAW-FABRID, ZJU-Leaper; AITEX excluded by D-61, `aitex_approval` null) into the new shared directory `artifacts/distributed/full-shared/`. The gate pin was not touched. Uploaded the file as the private Kaggle dataset `loomguard-pin-full` (1 file). Set descriptions and licences on the private datasets `loomguard-mvtec-gate` (CC BY-NC-SA 4.0) and `loomguard-raw-fabrid` (CC BY 4.0, DOI 10.17632/db6g85xsyg.1); no new versions, still private.
+- **Evidence:** `datasets.json` SHA-256 `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`. `--validate`: 33 jobs, 185 paths. Dry runs: standard 81, mini 30, zju_full 50 profiles, 0 conditional. `load_pin` accepts the pin (31 configs and manifests). Tree digests: mvtec `f1842104...7920` (equals the gate pin), raw_fabrid `ce7cc3bf...ce9e`, zju_leaper `c2d7b294...95d0`. Source commit `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`. Kaggle: https://www.kaggle.com/datasets/muhammadzain1x0/loomguard-pin-full
+- **Decisions:** none. The `--review` text records the gate approval as reported by the owner. No approval file was written or run by B.
+- **Problems / next:** `datasets.json` is not committed. Send it and its hash to A and C. C cross-checks the RAW-FABRID and ZJU tree digests. A runs the second `--approve-gate` against the full pin. B then runs `--prepare --queue standard` (needs the RAW-FABRID dataset and this pin on Kaggle).
+
 ## 2026-11-26: B2 MVTec PatchCore gate, five textures run on Kaggle T4
 - **Phase:** 2 (MVTec PatchCore gate), Member B step B2
 - **Who / where:** Zain (Member B), Kaggle T4 (private notebook `loomguard-gate-patchcore`, versions 1 to 3), driven from the laptop browser
