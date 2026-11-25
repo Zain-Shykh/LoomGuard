@@ -16,6 +16,14 @@ Entry template:
 
 ---
 
+## 2026-11-26: B2 MVTec PatchCore gate, five textures run on Kaggle T4
+- **Phase:** 2 (MVTec PatchCore gate), Member B step B2
+- **Who / where:** Zain (Member B), Kaggle T4 (private notebook `loomguard-gate-patchcore`, versions 1 to 3), driven from the laptop browser
+- **Done:** Ran PatchCore on carpet, grid, leather, tile, wood at SHA `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`, pin `702a0913...981a0`. `--prepare` passed in the first session (it checks the MVTec tree hash against the pin; 2,173 files seen), then `--validate` (33 jobs, 185 paths) and dry run (5 profiles) passed. All five `status.json` say `passed`, every bundle has five non-empty files. Exports downloaded from the saved versions' Output tab and every file matched `MANIFEST.sha256` (14, 26 and 26 files checked, 0 mismatches). Result JSONs are on the laptop under `results/mvtec/per_fabric/patchcore/` (uncommitted); bundles stay in `~/Downloads/loomguard_exports/`.
+- **Evidence:** image AUROC / pixel AUROC / AUPRO@0.3 per texture: carpet 98.80 / 99.02 / 94.65, grid 98.33 / 97.90 / 89.50, leather 100.00 / 99.27 / 96.93, tile 100.00 / 96.10 / 86.15, wood 98.77 / 93.89 / 87.21. **Mean 99.18 / 97.24 / 90.88** against the bars 97.9 / 96.6 / 90.7: all three met (AUPRO margin only 0.18). Tile and wood are below the bars alone. Fit 0.51 to 0.70 min, evaluate and export about 0.5 min, coreset 14 to 20 s (207 to 252 training tiles per texture, not 600), peak VRAM 0.8 GB, peak RAM 2.4 to 2.6 GB, bundle 62 to 76 MB. Session wall time 886 s (with pytest 425 s and prepare 315 s), 412 s (grid, leather), 301 s (tile, wood); about 27 GPU minutes of the 30 h weekly quota. Pytest on Kaggle: 187 passed, 1 failed (`tests/test_app.py::test_sensitivity_slider_does_not_rerun_model`, 78.511 vs 78.51 +- 5e-4, the known slider rounding issue). Kaggle environment was torch 2.11.0+cu130, Python 3.13, driver 580.178.04, `sm_120` in the arch list, T4 reports `sm_75`.
+- **Decisions:** none. No code, config, seed, pin or SHA was changed. `--approve-gate` was not run; it waits for A's RD4AD half.
+- **Problems / next:** (1) The "600-tile fit under 10 minutes" criterion was measured on 207 to 252 tiles (coreset at most 20.4 s); A to confirm that is acceptable. (2) The stated environment (PyTorch 2.7 to 2.x with cu128) differs from Kaggle's torch 2.11 cu130; A to confirm results are accepted. (3) Hand the five exports to A for hash verification and the paired review; fix the slider test before release.
+
 ## 2026-11-25: B1 Kaggle prep: MVTec dataset uploaded, export test passed
 - **Phase:** 5 (study preparation), Member B step B1
 - **Who / where:** Zain (Member B), laptop and Kaggle (CPU session, no GPU hours)
