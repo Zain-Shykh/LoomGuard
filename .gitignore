@@ -29,3 +29,6 @@ dist/
 
 # Dataset handoff (large data, never commit)
 LoomGuard_dataset_handoff/
+
+# Private plan of Member B
+docs/MEMBER_B_IMPLEMENTATION_PLAN.md
