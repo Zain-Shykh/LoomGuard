@@ -390,7 +390,7 @@ def test_sensitivity_slider_does_not_rerun_model(tmp_path, monkeypatch, trained)
     for s in (0.5, 1.0, 2.0):
         at.sidebar.slider(key="sens").set_value(s).run()
         m = {x.label: x.value for x in at.metric}
-        assert float(m["Threshold"]) == pytest.approx(tau / s, abs=5e-4)
+        assert float(m["Threshold"]) == pytest.approx(tau / s, abs=5e-4 * (1 + 1 / s))  # tau is read back rounded to 3 dp, so its error is scaled by 1/s
         flagged[s] = int(m["Tiles flagged"].split()[0])
     assert len(calls) == 1 and flagged[0.5] <= flagged[1.0] <= flagged[2.0]
 
