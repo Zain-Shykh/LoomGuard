@@ -16,6 +16,15 @@ Entry template:
 
 ---
 
+## 2026-11-25: Open team decisions resolved provisionally; work plan written
+- **Phase:** 5 (study preparation)
+- **Who / where:** Zain (Member B), laptop, on the owner's instruction; Members A and C to confirm
+- **Done:** Resolved the five open questions of `LoomGuard_Team_Decisions_Needed.md` with the recommended options and recorded them in `LoomGuard_Decision_Resolutions.md`. Wrote `LoomGuard_Team_Work_Plan.md` (per-member training queues, non-training work, gates, rebalancing rule). Moved the handoff `data/` and `artifacts/` to the repository root (git-ignored).
+- **Evidence:** the two documents; `main` at `67fb7f6` is the proposed freeze SHA.
+- **Decisions:** R1 to R8 in the resolutions file (all provisional, reversible by A or C before the first real run). No scientific setting, ledger entry, pin or approval was changed.
+- **Pin:** B created the MVTec gate-only pin on 2026-11-25 in a worktree at `67fb7f6` (validate: 33 jobs, 185 paths; gate dry runs A 5, B 5, C 0). `datasets.json` SHA-256 `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`, scope gate, MVTec tree is exactly the five textures (2,173 files). The file is not committed.
+- **Problems / next:** C cross-checks the tree hash, A confirms the SHA, B uploads the private MVTec Kaggle Dataset and runs the CPU export test, then the MVTec gate runs. No real training has started.
+
 
 
 ## 2026-11-22: D-62 approves scoped RD4AD teacher precision for real-data validation
