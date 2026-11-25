@@ -16,6 +16,14 @@ Entry template:
 
 ---
 
+## 2026-11-26: B4 attempt 1: standard-queue prepare passes on Kaggle, run blocked by missing gate.json
+- **Phase:** 2 to 4 (RAW-FABRID PatchCore), Member B step B4
+- **Who / where:** Zain (Member B), Kaggle T4 (private notebook `loomguard-standard-patchcore`, version 1), driven from the laptop browser
+- **Done:** Created the private notebook (local copy `artifacts/kaggle_upload/standard_raw_fabrid_patchcore.ipynb`, inputs `loomguard-raw-fabrid` and `loomguard-pin-full`, GPU T4 x2, internet on). Save & Run All with `RUN_REAL=True`, profile `raw_fabrid_patchcore/unified`. The notebook checked the pin SHA-256, the RAW_FABRID file count (21,457), the commit (`67fb7f6`), `--validate` (33 jobs, 185 paths) and the dry run (15 profiles). `--prepare --queue standard` passed ("Checkpoint 0 verified", 8 split manifests match). The profile run then stopped before fitting.
+- **Evidence:** log line `raw_fabrid_patchcore/unified: waiting for shared checkpoint approval artifacts/distributed/full-shared/gate.json`. Version failed after 1,198 s (prepare alone 1,127.7 s). Environment as in B2 (torch 2.11.0+cu130, sm_120 in arch list). Weekly quota shown before the run: 29 h; about 20 min used, so about 28.6 h left (computed).
+- **Decisions:** none. Nothing was changed; `--approve-gate` was not run (A's step).
+- **Problems / next:** No `gate.json` exists for the full pin: A must run the second `--approve-gate` against `datasets.json` `144a80d3...`. Then `gate.json` goes into the Kaggle dataset `loomguard-pin-full` as a new version (beside `datasets.json`, which stays untouched); the notebook already copies it if present. `--prepare` costs about 19 min of GPU per session (readiness is stale each session), so group profiles per session. No results, no bundles, nothing to download yet. B4 acceptance boxes stay open.
+
 ## 2026-11-26: B3 full dataset pin created; Kaggle metadata set
 - **Phase:** 5 (study preparation), Member B task B3
 - **Who / where:** Zain (Member B), laptop, frozen worktree at `67fb7f6`
