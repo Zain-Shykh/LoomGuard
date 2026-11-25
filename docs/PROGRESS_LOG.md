@@ -16,6 +16,14 @@ Entry template:
 
 ---
 
+## 2026-11-25: B1 Kaggle prep: MVTec dataset uploaded, export test passed
+- **Phase:** 5 (study preparation), Member B step B1
+- **Who / where:** Zain (Member B), laptop and Kaggle (CPU session, no GPU hours)
+- **Done:** Uploaded the private Kaggle Dataset `loomguard-mvtec-gate` (five MVTec textures, 2,173 files, plus the gate `datasets.json` beside `mvtec_ad/`; v1 shows 2,174 files, 2.28 GB). Ran the export test: a CPU notebook wrote a 314,572,800-byte file, Save & Run All finished in 26 s, the file was downloaded from the saved version and its SHA-256 matched the notebook's printout. Wrote the private gate notebook (not run on real data).
+- **Evidence:** export file SHA-256 `1f12f20b06c3c8eb4951a4a6b978fa330ab6b58856414eff79700259a59e81d7` (both sides). Dataset is Private. The tree-hash match against the pin is only proven by the first `--prepare` on Kaggle.
+- **Decisions:** none. The upload was a single zip because Kaggle's folder drag did not work for the owner; Kaggle extracted it.
+- **Problems / next:** Send the pin and SHA to A and C; C's tree-hash cross-check; set the dataset description and licence; import the gate notebook, read the weekly quota, then run `carpet` (B2) with `RUN_REAL=True`.
+
 ## 2026-11-25: Open team decisions resolved provisionally; work plan written
 - **Phase:** 5 (study preparation)
 - **Who / where:** Zain (Member B), laptop, on the owner's instruction; Members A and C to confirm
