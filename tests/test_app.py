@@ -385,12 +385,13 @@ def test_sensitivity_slider_does_not_rerun_model(tmp_path, monkeypatch, trained)
     monkeypatch.setattr(Inspector, "score_image", lambda self, img: calls.append(1) or real(self, img))
     at = run_app(monkeypatch, trained.bundles, assets_with(tmp_path, trained))
     at.sidebar.selectbox(key="pick").select("RolloA_d000.png").run()
-    tau = float(next(m.value for m in at.metric if m.label == "Threshold"))
+    calibration = trained.bundles / "raw_fabrid" / "RolloA" / "patchcore" / "calibration.json"
+    tau = json.loads(calibration.read_text())["tau"]
     flagged = {}
     for s in (0.5, 1.0, 2.0):
         at.sidebar.slider(key="sens").set_value(s).run()
         m = {x.label: x.value for x in at.metric}
-        assert float(m["Threshold"]) == pytest.approx(tau / s, abs=5e-4 * (1 + 1 / s))  # tau is read back rounded to 3 dp, so its error is scaled by 1/s
+        assert m["Threshold"] == f"{tau / s:.3f}"
         flagged[s] = int(m["Tiles flagged"].split()[0])
     assert len(calls) == 1 and flagged[0.5] <= flagged[1.0] <= flagged[2.0]
 
