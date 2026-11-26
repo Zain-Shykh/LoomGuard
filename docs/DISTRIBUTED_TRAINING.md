@@ -5,7 +5,7 @@ The [proposal](THREE_PERSON_PARALLEL_TRAINING_PROPOSAL.md) and [assignment ledge
 | Member | Environment | Config-level assignment | Profile results |
 |---|---|---|---:|
 | A | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | MVTec RD4AD. RAW-FABRID RD4AD per-roll, unified seeds 0–2, and leave-one-roll-out. RD4AD false-alarm and grading evidence. RAW-FABRID RD4AD 1k-iteration and 32 px overlap ablations (moved from C by D-61, so each ablation sits on its baseline's machine). | 36 |
-| B | Kaggle GPU 1 | MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. ZJU RD4AD resolution ablation (moved from C by D-61). | 124 active (+14 inactive AITEX) |
+| B | Kaggle GPU 1 | Dataset preparation and verification. MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. ZJU RD4AD resolution ablation (moved from C by D-61). | 124 active (+14 inactive AITEX) |
 | C | Kaggle GPU 2 | ZJU RD4AD groups, unified and held-out. | 11 |
 
 Member B owns both AITEX methods, one model per fabric for seven fabrics per method. D-61 (2026-11-21) excludes AITEX: do not pass `--aitex-approval`, so these 14 profiles stay inactive. Keep using the original full-study check; its only expected failure is the missing AITEX cells, to be reported as intentional. ZJU: run ZJU-mini first; the full-ZJU queues start only after the owner records the go-ahead (D-61).
@@ -14,23 +14,21 @@ Member B owns both AITEX methods, one model per fabric for seven fabrics per met
 
 ### Independent MVTec gate
 
-On a release containing the reviewed gate-only feature, C pins the five verified textures on CPU. A and B each mount that tree at `data/mvtec_ad` on their approved machine and receive C's `datasets.json` in `artifacts/distributed/gate-shared/`. Verify the release SHA, authorized data access and export destination first. Each review variable refers to the actual evidence for that operation.
+B reports creating the original gate pin. B supplies it and A checks it against the five verified textures using the [local handoff](TEAM_TASKS_MEMBER_A.md). A and B each mount the verified tree at `data/mvtec_ad` and use the original `datasets.json` at `artifacts/distributed/gate-shared/`. Verify the release SHA, authorized data access and export destination first. Each review variable refers to the actual evidence for that operation.
 
 ```bash
-# C
-python scripts/distributed_study.py --shared artifacts/distributed/gate-shared --pin-datasets --queue gate --review "$DATASET_REVIEW_REF"
 # Each trainer sets OWNER to A (RD4AD) or B (PatchCore)
 python scripts/distributed_study.py --shared artifacts/distributed/gate-shared --owner "$OWNER" --prepare --queue gate --review "$ENV_REVIEW_REF" --bundle-location "$BUNDLE_ROOT"
 python scripts/distributed_study.py --shared artifacts/distributed/gate-shared --owner "$OWNER" --stage gate
 ```
 
-A verifies all ten exported result/bundle pairs and uses the gate shared directory for checkpoint 1. When all active data is ready, C creates the ordinary full pin below on the same SHA. A re-verifies the ten outputs and compares the approval files before distributing the full pin and checkpoint. The full-study path also supports beginning with all active datasets. [Exact transition commands](LoomGuard_Team_Decisions_Needed.md#advance-to-the-full-study)
+A verifies all ten exported result/bundle pairs and uses the gate shared directory for checkpoint 1. When all active data is ready, A checks B's original full pin against B's verified dataset evidence on the same SHA. A re-verifies the ten outputs and compares the approval files before distributing the full pin and checkpoint. The full-study path also supports beginning with all active datasets. [Exact transition commands](LoomGuard_Team_Decisions_Needed.md#advance-to-the-full-study)
 
 ### Full-study pin
 
-1. Agree on one source commit containing the reviewed plan, code, and unchanged configs. Work at the repository root. Start the three work branches at that commit, for example `git switch -c run/local-rd4ad <source-commit>`, `run/kaggle-patchcore`, and `run/kaggle-rd4ad`. Keep training checkouts pinned. Use a separate results checkout or worktree if committing results before the queue finishes.
-2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU/AITEX adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C's training assignments need only ZJU. C needs all three active datasets when creating the shared full pin. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
-3. From a coordinator checkout with the active datasets, create and distribute the shared metadata directory. Add `--aitex-approval "<team decision reference>"` to the pin command if the team includes AITEX. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
+1. Agree on one source commit containing the reviewed plan, code, and unchanged configs. Work at the repository root. Start the three work branches at that commit, for example `git switch -c run/local-rd4ad "$SOURCE_COMMIT"`, `run/kaggle-patchcore`, and `run/kaggle-rd4ad`. Keep training checkouts pinned. Use a separate results checkout or worktree if committing results before the queue finishes.
+2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C's training assignments need only ZJU. B keeps the original full pin and verification evidence for all three active datasets. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
+3. Preserve and distribute the existing full pin. For a future study with new verified inputs, create the new pin from the coordinator checkout. AITEX is excluded under D-61. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
 
 ```bash
 python scripts/distributed_study.py --validate
@@ -43,11 +41,11 @@ Use [Part 0 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-0-environmen
 
 ### Members B and C setup
 
-Create separate private Kaggle notebooks/sessions and enable an accelerator in **Settings → Accelerator**. Keep each checkout, its logs and output under `/kaggle/working`. Keep the datasets in private versioned inputs under `/kaggle/input` where their terms allow it, then link or copy their verified trees to the configured relative paths. Run setup commands like these from the pinned checkout inside the notebook.
+Create separate private Kaggle notebooks/sessions and enable an accelerator in **Settings → Accelerator**. Use a writable session scratch checkout. Put the curated export under `/kaggle/working` for the saved version. Keep the datasets in private versioned inputs under `/kaggle/input` where their terms allow it, then link or copy their verified trees to the configured relative paths. Set `RAW_FABRID_INPUT` to the authorized mounted tree for this example.
 
 ```bash
 mkdir -p data
-ln -s /kaggle/input/<private-input>/RAW_FABRID data/RAW_FABRID
+ln -s "$RAW_FABRID_INPUT" data/RAW_FABRID
 python -m pip install -e '.[dev,app]'
 nvidia-smi
 CUDA_VISIBLE_DEVICES=0 python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(), torch.cuda.get_arch_list(), torch.cuda.get_device_capability())"
@@ -59,7 +57,7 @@ Use the remaining session time and account quota displayed by Kaggle when schedu
 
 ### Readiness on each machine
 
-For the full pin, copy `datasets.json` into `artifacts/distributed/shared/`. Run `python -m pytest -q`, record the test and environment evidence, then use your member letter in the commands below. The review value points to that evidence. Use a durable bundle location prefix that contains no credentials. You can set `--shared <directory>` consistently to use a different checkpoint metadata directory.
+For the B3 full pin, use `artifacts/distributed/full-shared/` for `datasets.json` and pass `--shared artifacts/distributed/full-shared` consistently on preparation, execution, approval and integration commands. The generic examples below assume the CLI default `artifacts/distributed/shared/`. Run `python -m pytest -q`, record the test and environment evidence, then use your member letter in the commands below. The review value points to that evidence. Use a durable bundle location prefix that contains no credentials. You can set `--shared <directory>` consistently to use a different checkpoint metadata directory.
 
 ```bash
 python scripts/distributed_study.py --owner A --dry-run
@@ -75,7 +73,7 @@ For full-pin queue preparation, append `--queue standard`, `--queue mini` or `--
 
 ## Checkpoint 1. Run both MVTec benchmarks
 
-The commands below use the default full pin. When using the gate-only pin, add `--shared artifacts/distributed/gate-shared` to each execution and approval command. A and B can run concurrently. C continues setup and nontraining validation.
+The commands below use the default full pin. When using the gate-only pin, add `--shared artifacts/distributed/gate-shared` to each execution and approval command. B has completed its PatchCore profiles. A runs RD4AD after original-pin readiness. C prepares for its assigned ZJU work.
 
 ```bash
 # A
@@ -94,7 +92,7 @@ The approval verifies ten results and their bundles, averages all five categorie
 
 ## Checkpoint 2. Run the independent queues
 
-After the gate, A runs RAW-FABRID and B runs both ZJU-mini headline jobs with PatchCore first. B can run RAW-FABRID while ZJU-mini is being reviewed. C prepares for its ZJU queue.
+After the gate, A runs RAW-FABRID. B runs RAW-FABRID and, once the ZJU execution route is authorized, both ZJU-mini headline jobs with PatchCore first. B can run RAW-FABRID while ZJU-mini is being reviewed. C prepares for its ZJU queue.
 
 ```bash
 # A
@@ -122,7 +120,6 @@ Distribute `mini.json` before launching the larger ZJU work and the ZJU ablation
 # B
 python scripts/distributed_study.py --owner B --queue zju_full
 python scripts/distributed_study.py --owner B --stage ablation --queue mini
-python scripts/distributed_study.py --owner B --queue aitex  # only with a recorded inclusion decision in datasets.json
 
 # C
 python scripts/distributed_study.py --owner C --queue zju_full
@@ -143,12 +140,31 @@ A records the three RAW-FABRID unified RD4AD seeds' mean and spread, seed 0 fals
 - You can monitor the current attempt log with `tail -f` or PowerShell `Get-Content -Wait`. If an attempt fails, check GPU capability, memory, data paths and remaining quota. Wait for any prior child process to exit, then rerun the same profile. Its attempt has a fresh staging directory. An interrupted training or evaluation attempt restarts the profile from the beginning. If both stages completed and only publishing was interrupted, the runner can finish publishing the verified outputs. A restored valid bundle and result skip training. Existing incomplete or conflicting canonical outputs block the profile until the team reviews and reconciles them.
 - Record RD4AD iterations per second, PatchCore minutes per profile, evaluation/export time, VRAM/RAM, and quota time. Estimate the remaining duration on each eligible machine. If balancing would reduce the longest queue, obtain team approval and move only unstarted complete profiles or jobs. Keep every completed or running profile's job ID, owner and result path. Create a new job ID for a moved shard. Share the reviewed revised plan separately from the pinned source checkout (for example under `artifacts/distributed/shared/`) and pass `--plan` on all invocations. Revalidate and repeat readiness using that plan. The original config and its full training populations stay fixed. Confirm the destination has the verified dataset and compatible hardware.
 
-## Checkpoint 3. Integrate results and validate the CPU app
-
-1. Make one isolated export root per member, each with their canonical `results/` and `artifacts/` hierarchies. Run the verifier before copying or merging results. It flags duplicate paths even if their contents match, checks output provenance and bundle hashes, checks the approved gate and mini results, and reports missing paths. Take incremental inventory as exports arrive. A full integration check is expected to fail on a partial matrix.
+For a completed MVTec profile, set `METHOD` to `rd4ad` or `patchcore`, `TEXTURE` to its texture and `EXPORT_ROOT` to a new private directory. On Kaggle choose a directory under `/kaggle/working`, run inside the saved private version, then download that version's output. Check from the download root before handing it to A.
 
 ```bash
-python scripts/distributed_study.py --check-integration --incoming <export-A> --incoming <export-B> --incoming <export-C>
+status="artifacts/distributed/profiles/mvtec/per_fabric/$METHOD/$TEXTURE/status.json"
+attempt="$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["attempt"])' "$status")"
+logs="artifacts/distributed/attempts/$attempt"
+mkdir -p "$EXPORT_ROOT"
+cp -a --parents "results/mvtec/per_fabric/$METHOD/$TEXTURE.json" \
+  "artifacts/mvtec/$TEXTURE/$METHOD" "$status" "$logs/fit.log" "$logs/evaluate.log" \
+  "$logs/artifacts/manifests/mvtec.csv" "$EXPORT_ROOT/"
+(
+  cd "$EXPORT_ROOT" || exit
+  find results artifacts -type f -print0 | sort -z | xargs -0 sha256sum > MANIFEST.sha256
+  sha256sum --check --strict MANIFEST.sha256
+)
+```
+
+Use the original attempt logs for a restored profile whose local status lacks an attempt ID. Keep any original saved-version checksum manifest. A verifies the download checksum and the runner verifies the bundle file hashes against the result provenance. The app uses `LOOMGUARD_BUNDLES` to read pre-staged bundles locally on the CPU laptop.
+
+## Checkpoint 3. Integrate results and validate the CPU app
+
+1. Make one isolated export root per member, each with their canonical `results/` and `artifacts/` hierarchies. Take incremental inventory and check transfer hashes as exports arrive. Once both checkpoint files exist, run the verifier before copying or merging results. It flags duplicate paths, checks output provenance and bundle hashes, compares approved result checksums and reports missing paths. A full integration check is expected to fail on a partial matrix. Set `EXPORT_A`, `EXPORT_B` and `EXPORT_C` to the isolated export roots.
+
+```bash
+python scripts/distributed_study.py --check-integration --incoming "$EXPORT_A" --incoming "$EXPORT_B" --incoming "$EXPORT_C"
 ```
 
 2. On the separate results branches, stage only each member's assigned JSONs and relevant progress notes. Merge through reviewed PRs. When merging log entries, keep everyone’s entries with newest first. Keep datasets, model bundles, and private logs outside Git. Restore the verified bundles to their original paths from durable storage. Run the checks on the consolidated checkout using the same shared checkpoint metadata.

@@ -2,8 +2,10 @@
 
 **Date:** 22 November 2026  
 **Scope:** Member B, Kaggle Free; **no real datasets or training yet**.  
-**Reference:** `LoomGuard_Member_B_Kaggle_Feasibility_Checklist (1).md`, Section 9.  
+**Reference:** [Kaggle feasibility checklist](LoomGuard_Member_B_Kaggle_Feasibility_Checklist.md), section 9.
 **Project:** https://github.com/Zain-Shykh/LoomGuard
+
+**26 November update.** B reports finishing all five PatchCore gate runs. Use the [current gate and export checklist](LoomGuard_Member_B_MVTec_PatchCore_Gate_Checklist.md#26-november-handoff) for the handoff and the original notes below for historical evidence.
 
 ## 1. Current position — do not repeat completed tests
 

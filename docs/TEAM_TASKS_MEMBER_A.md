@@ -1,38 +1,90 @@
-# Tasks for Member A (Hosama): unblock Member B
+# Member A local RD4AD handoff
 
-Member B has finished B1 (MVTec on Kaggle), B2 (MVTec PatchCore gate) and B3 (full pin). B4 (RAW-FABRID PatchCore) and everything after it are blocked on items below. Do them in order. Items 1 to 4 are the real blockers.
+A approved the common experimental source `67fb7f6ca2dec0365b63a7454ffb57b3138b6875` subject to verification of the original pins. B has completed the five PatchCore gate profiles. The five RD4AD profiles and paired checkpoint are pending.
 
-Reference values
-- Training SHA: `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`
-- Full pin `datasets.json` SHA-256: `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`
-- Gate pin `datasets.json` SHA-256: `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`
-- Decisions are in `docs/LoomGuard_Decision_Resolutions.md` (R1 to R8, D-61 and D-62 approved).
+## Verify the original gate pin and prepare
 
-## 1. Confirm the SHA
-Check out `67fb7f6...` and confirm it is the frozen training SHA. If you want a different SHA, tell B now: B2 would have to be rerun.
+Use the detached local training checkout and its activation helper. The helper activates the existing environment, resolves imports from that checkout and selects the local verified ImageNet cache.
 
-## 2. Get B's five PatchCore gate results and bundles
-B sends them privately (not in Git): `results/mvtec/per_fabric/patchcore/{carpet,grid,leather,tile,wood}.json` are already in the repo (commit `85da445`). The five bundles come from B's export folders. Put them at the canonical paths on your checkout. Check each `MANIFEST.sha256`.
-B's means against the bars (image AUROC / pixel AUROC / AUPRO at FPR 0.3): 99.18 / 97.24 / 90.88 against 97.9 / 96.6 / 90.7. All met.
-
-## 3. Accept two deviations (reply to B in chat, or note in the review text)
-- Coreset time was measured on 207 to 252 tiles per texture, not 600. Largest coreset time was 20.4 s, so the "600-tile fit under 10 min" bar is met with a wide margin.
-- Kaggle ran torch 2.11.0+cu130 on Python 3.13, not the documented 2.7+ with cu128. Results are valid for the gate.
-
-## 4. Run the second `--approve-gate` against the full pin (the blocker)
-B cannot run this. Place the full pin `datasets.json` at `artifacts/distributed/full-shared/datasets.json` (B sends the file; check the SHA-256 above). Then, on a clean checkout at the training SHA:
 ```bash
-python scripts/distributed_study.py --approve-gate --review "<recorded team benchmark approval>"
+source "$HOME/projects/LoomGuard/artifacts/private-training-archive/tools/activate-rd4ad.sh"
+git rev-parse HEAD
+git status --short
+python scripts/distributed_study.py --owner A --stage gate --dry-run
 ```
-It verifies ten results and bundles, averages per method and enforces PatchCore 97.9 / 96.6 / 90.7 and RD4AD 98.5 / 96.7 / 92.0 plus RD4AD peak VRAM under 11 GB. Send the resulting `artifacts/distributed/full-shared/gate.json` to B. B puts it beside `datasets.json` in a private Kaggle dataset. Without this file the standard queue stops at "waiting for shared checkpoint approval".
-If any bar is missed, do not force it: tell B and the team.
 
-## 5. Later: ZJU-mini approval
-After B finishes both ZJU-mini jobs (PatchCore first), B hands you the ten bundles and results. You run:
+B sends the original gate file privately. Place the received bytes at `$LOOMGUARD_ARCHIVE/incoming/member-b/pins/gate/datasets.json`. The reported file SHA-256 is `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`. The helper checks the file checksum, source, config digests, local tree, both canonical gate manifests and the five tracked PatchCore results. It installs the original bytes at `artifacts/distributed/gate-shared/datasets.json` under the training checkout and checks existing bytes before reuse. Stop on any mismatch.
+
 ```bash
-python scripts/distributed_study.py --approve-mini --review "<recorded ZJU-mini verification>"
+python "$LOOMGUARD_ARCHIVE/tools/receive_pin.py" gate &&
+  python scripts/distributed_study.py --shared artifacts/distributed/gate-shared \
+    --owner A --prepare --queue gate --review "$LOOMGUARD_ARCHIVE/logs/frozen-environment.txt" \
+    --bundle-location "$LOOMGUARD_ARCHIVE/verified/member-a"
 ```
-The review text is the owner's go-ahead for full ZJU (D-61): state that the Part 1 roll check and the first RAW-FABRID results were reviewed. Send `mini.json` to B and C.
 
-## 6. Your own queue
-Your 36 profiles (RD4AD and integration) follow the same gate. Tell B when your RAW-FABRID RD4AD results are committed so B can run the combined study checks.
+The comparison receipt is historical evidence. The command above creates the fresh `artifacts/distributed/ready-A.json` for the original pin. Run it again after an environment or hardware change. The experimental SHA predates the Streamlit test-only fix. Development main carries the passing non-slow test evidence.
+
+## Launch one profile at a time after readiness
+
+Set `TEXTURE` to `carpet`, `grid`, `leather`, `tile` or `wood`. One profile uses 5,000 iterations, batch 16, and the approved D-60/D-62 precision settings. The measured local synthetic rate of 10.1 to 10.6 iterations/s gives about 39 to 41 minutes of fit compute over all five. Budget 60 to 90 minutes total for actual fitting, evaluation, model writes and export. Record real time on the first profile.
+
+```bash
+TEXTURE=carpet
+LOG_STEM="$LOOMGUARD_ARCHIVE/logs/${TEXTURE}-$(date +%Y%m%dT%H%M%S)"
+(
+  set -o pipefail
+  nvidia-smi --query-gpu=timestamp,memory.used,memory.total,utilization.gpu --format=csv -l 2 \
+    > "$LOG_STEM.gpu.csv" &
+  gpu_monitor=$!
+  trap 'kill "$gpu_monitor" 2>/dev/null || true' EXIT
+  free -h > "$LOG_STEM.memory.txt"
+  /usr/bin/time -v python scripts/distributed_study.py --shared artifacts/distributed/gate-shared \
+    --owner A --stage gate --job mvtec_rd4ad --profile "$TEXTURE" 2>&1 | tee "$LOG_STEM.run.log"
+)
+```
+
+Review fit and evaluation logs for loss traces, skipped updates, throughput and resource usage. The gate uses the recorded RD4AD peak VRAM below 11 GB. GPU monitoring shows device-wide consumption and can include other workloads. Keep one runner at a time. After an interruption, wait for the old worker to stop and repeat the same command. The runner verifies and skips existing complete pairs and can finish interrupted publication from the staged attempt. Incomplete fit or evaluation starts a fresh attempt. Preserve conflicting outputs for review.
+
+## Export after each successful profile
+
+From the training checkout, copy the result, bundle and matching attempt logs into the private A archive with the canonical layout. Use the original attempt logs if a restored status lacks an attempt ID. Record the launch-time resource logs separately under `$LOOMGUARD_ARCHIVE/logs/`.
+
+```bash
+(
+  set -euo pipefail
+  dest="$LOOMGUARD_ARCHIVE/verified/member-a"
+  status="artifacts/distributed/profiles/mvtec/per_fabric/rd4ad/$TEXTURE/status.json"
+  attempt=$(python -c 'import json, sys; entry=json.load(open(sys.argv[1])); assert entry["state"]=="passed"; print(entry["attempt"])' "$status")
+  [[ "$attempt" == attempt-* && "$attempt" != */* ]]
+  logs="artifacts/distributed/attempts/$attempt"
+  result="results/mvtec/per_fabric/rd4ad/$TEXTURE.json"
+  bundle="artifacts/mvtec/$TEXTURE/rd4ad"
+  files=("$result" "$bundle/"{config.yaml,calibration.json,metrics.json,model.pt,provenance.json}
+    "$status" "$logs/fit.log" "$logs/evaluate.log" "$logs/artifacts/manifests/mvtec.csv")
+  mkdir -p "$dest/checksums"
+  cp -a --no-clobber --parents "${files[@]}" "$dest/"
+  sum="$dest/checksums/$TEXTURE.sha256"
+  if [[ ! -e "$sum" ]]; then (set -o noclobber; sha256sum "${files[@]}" > "$sum"); fi
+  sha256sum --check --strict "$sum"
+  (cd "$dest" && sha256sum --check --strict "$sum")
+)
+```
+
+## Verify both methods and promote the checkpoint
+
+Receive B's original export batches with their checksum manifests and saved-version references, then follow [the receipt workflow](LoomGuard_Member_B_MVTec_PatchCore_Gate_Checklist.md#26-november-handoff). Restore the five verified B JSON and bundle pairs into the frozen checkout at their canonical paths. Archive and verify both methods before approval. B's mean image AUROC, pixel AUROC and AUPRO@0.3 are 99.1794%, 97.2354% and 90.8848%. The combined gate also requires RD4AD 98.5%, 96.7% and 92.0% and peak VRAM below 11 GB.
+
+Use B's full pin from `$LOOMGUARD_ARCHIVE/incoming/member-b/pins/full/datasets.json`. Its reported file SHA-256 is `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`. The full pin is needed for promotion and later queues. The local helper verifies it against all three active trees and the recorded 31 canonical manifests.
+
+After both methods and the paired review have been approved, set `GATE_REVIEW_REF` to the actual review record and run:
+
+```bash
+python scripts/distributed_study.py --shared artifacts/distributed/gate-shared \
+  --approve-gate --review "$GATE_REVIEW_REF"
+python "$LOOMGUARD_ARCHIVE/tools/receive_pin.py" full &&
+  python scripts/distributed_study.py --shared artifacts/distributed/full-shared \
+    --approve-gate --review "$GATE_REVIEW_REF" &&
+  cmp artifacts/distributed/gate-shared/gate.json artifacts/distributed/full-shared/gate.json
+```
+
+After promotion, distribute the verified full pin and its `gate.json` privately. Record full-pin readiness per assigned queue before running it. Full ZJU additionally requires the permitted execution route, ZJU-mini results, Part 1 roll review, first RAW-FABRID results and the recorded owner go-ahead. [Distributed checkpoints](DISTRIBUTED_TRAINING.md#checkpoint-2-run-the-independent-queues)

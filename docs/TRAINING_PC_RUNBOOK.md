@@ -33,7 +33,7 @@ Record in the log: PyTorch version, GPU name, `sm_120` present, test counts.
 
 ## Part 1: Datasets and verification (Phase 1)
 
-Download into `data/` (git-ignored). Sizes and licences are in `docs/DATASETS.md`.
+Download into `data/` (git-ignored), or mount the verified handoff at the same paths. Sizes and licenses are in [Datasets](DATASETS.md). D-61 excludes AITEX. The distributed MVTec gate needs only the five MVTec textures and the gate pin. See [the distributed runbook](DISTRIBUTED_TRAINING.md#independent-mvtec-gate).
 
 | Dataset | Source | Folder |
 |---|---|---|
@@ -46,24 +46,25 @@ Then:
 
 ```bash
 mkdir -p artifacts
+set -o pipefail
 python scripts/verify_datasets.py \
-  --raw-fabrid data/RAW_FABRID --zju data/ZJU-Leaper --mvtec data/mvtec_ad --aitex data/AITEX \
+  --raw-fabrid data/RAW_FABRID --zju data/ZJU-Leaper --mvtec data/mvtec_ad \
   --manifest-dir artifacts/manifests | tee artifacts/verify_datasets.txt
 ```
 
 Do all of these (full detail in section 8 of `docs/specs/phase-1-data-layer.md`):
 
 1. Paste `artifacts/verify_datasets.txt` into the progress log.
-2. RAW-FABRID must give 14,196 train-pool tiles, 4,969 test-good, 687 test-defect, and no problems from the patch-metadata comparison. If the CSV columns or the patch names differ from what the code assumes, the script says so: fix `manifest.py` and its tests.
-3. ZJU-Leaper: confirm the layout (`Images/`, `Annotations/masks`, `ImageSets/...`) and record the counts per pattern and split. AITEX: confirm that the fabric can be read from the file name (the adapter assumes a trailing `_<NN>`) and that every defective image has its mask. If not, fix the adapter.
+2. Verify the two RAW-FABRID representations independently. The shipped patch benchmark has 14,196 training, 4,969 normal test and 687 defective test tiles. The high-resolution mask-crop manifest has 11,872 training, 2,324 validation, 4,944 normal test and 712 defective test tiles. Use [Datasets](DATASETS.md#1-raw-fabrid-primary) for the recorded cross-representation differences.
+3. For ZJU-Leaper, confirm the layout (`Images/`, `Annotations/masks`, `ImageSets/...`), rebuild the full Setting 1 manifest and record pattern/split counts. Confirm terms for the proposed execution environment before mounting it in Kaggle.
 4. Correct every "unverified" statement in `docs/DATASETS.md` that the script resolves.
 5. Look at one image from each of the seven RAW-FABRID rolls. Are they visually different fabrics? Write one sentence per roll and a verdict in the log and in `DATASETS.md`. If they are the same fabric, leave-one-roll-out is not an unseen-fabric test, and the report uses ZJU-Leaper held-out patterns for that question (`docs/IMPLEMENTATION_PLAN.md`, risks).
 
-**Commit:** `phase 1: results`. **Stop point:** do not continue to Part 2 until the RAW-FABRID counts match and every manifest builds without problems.
+Record the verifier output and inspection findings for each applicable queue. The independent MVTec gate can proceed after MVTec data, source and readiness checks. Use the full pin and the relevant checkpoints before later queues.
 
 ## Part 2: Implementation check on MVTec AD (Phases 2, 3, 4)
 
-This is the gate. If our PatchCore and RD4AD do not reproduce the published MVTec numbers, nothing after this can be trusted. Run both methods on the five textures. These runs also write the calibration files the later phases need, so run them once.
+The MVTec gate evaluates both methods on all five textures and writes the calibration files. For the team study, use the [distributed gate commands](DISTRIBUTED_TRAINING.md#checkpoint-1-run-both-mvtec-benchmarks) so the results carry checkpoint provenance. The standalone commands below describe single-machine fitting and evaluation.
 
 ```bash
 # real ImageNet weights (about 130 MB) download on first use

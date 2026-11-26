@@ -12,13 +12,13 @@
 | Phases 1 to 6 code (data layer, PatchCore, RD4AD, calibration and grading, study driver, Streamlit app) | Code complete, tested on synthetic data and CPU | `IMPLEMENTATION_PLAN.md` status table |
 | Three-person workflow and runner | Implemented, reviewed and merged (D-61). Gate-only preparation merged (`09d708f`) | `DISTRIBUTED_TRAINING.md` |
 | RD4AD fp16 precision (D-60) and scoped FP32 teacher (D-62) | Approved. Synthetic 300-iteration test passed twice on each GPU (loss 0.04184 on A's RTX 5060 Ti, 0.04159 on B's T4, 0 skipped steps) | `LoomGuard_Member_B_RD4AD_T4_Regression_Results.md` |
-| Datasets | Verified by C, handed off, extracted and staged by B at `data/` and `artifacts/` (git-ignored). RAW-FABRID 4.4 GB, ZJU-Leaper 7.0 GB, MVTec 2.2 GB, AITEX 0.17 GB. AITEX is excluded by D-61 | `artifacts/dataset_handoff_notes.md` (local) |
+| Datasets | Prepared and verified by B, independently checked and staged by A at `data/` and `artifacts/` (git-ignored). RAW-FABRID 4.4 GB, ZJU-Leaper 7.0 GB, MVTec 2.2 GB, AITEX 0.17 GB. AITEX is excluded by D-61 | `artifacts/dataset_handoff_notes.md` (local) |
 | Kaggle feasibility for B | Done: T4, CUDA, tests, persistence of small files verified | `LoomGuard_Member_B_Kaggle_Feasibility_Checklist.md` |
-| Open decisions | Resolved provisionally on 25 November | `LoomGuard_Decision_Resolutions.md` |
-| **Real-data training** | **Not started.** No dataset pin, no gate result, no approval exists | |
+| Open decisions | Source approved subject to original-pin verification. Paired gate approval and cloud permissions are pending | `LoomGuard_Decision_Resolutions.md` |
+| **Real-data training** | B reports five PatchCore MVTec runs; the five JSONs are on main. B reports producing gate and full pins. The RD4AD half, coordinator bundle retrieval and the paired gate approval are pending. | [B1 to B4](PROGRESS_LOG.md), [A checklist](TEAM_TASKS_MEMBER_A.md) |
 | Phases 7 and 8 | Not started (Phase 7 is a decision gate; Phase 8 is the report and release) | |
 
-Every acceptance criterion in `IMPLEMENTATION_PLAN.md` that says "on MVTec", "on RAW-FABRID" or "on the training PC" is still unticked. They are ticked only by the runs below.
+Use the runbook criteria and evidence from each completed batch. A reviews the five PatchCore results and both methods' exported bundles before recording the paired approval.
 
 ## 2. The critical path (nothing here is optional, and the order matters)
 
@@ -44,20 +44,20 @@ S0 freeze SHA 67fb7f6  ->  S1 gate pin (MVTec)  ->  S2 each runner: tests + read
 
 If the gate misses a target (S4), stop, record it, and let the team decide. Do not tune on test results (D-35). A bug fix is allowed; a hyperparameter change is a decision.
 
-## 3. Immediate steps (first 48 hours)
+## 3. Handoff and execution checklist
 
 | # | Who | Step | Done when |
 |---|---|---|---|
-| 1 | A | Read `LoomGuard_Decision_Resolutions.md`. Confirm R1 (SHA `67fb7f6...`) or name another. Reply in `LoomGuard_Team_Decisions_Needed.md` or chat. | A's answer recorded |
-| 2 | C | Read the same file. Confirm R2 (B makes the pin, C cross-checks the MVTec tree hash). Confirm which Kaggle account holds the ZJU copy later. | C's answer recorded |
+| 1 | A | The common SHA `67fb7f6...` is approved subject to original-pin verification. | A verifies the original gate pin |
+| 2 | B | Provide the original gate and full pins. Coordinate dataset verification and document permitted ZJU access with the affected runner. | A verifies the received pins |
 | 3 | B | Create a clean worktree or clone at the frozen SHA. Run `python scripts/distributed_study.py --validate` and the dry runs. Create the gate-only pin (R2). | `gate-shared/datasets.json` exists, its SHA-256 is noted. **Done 2026-11-25**, SHA-256 `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0` |
 | 4 | B | Send `datasets.json` and its SHA-256 to A and C over a private channel. | A and C received it |
-| 5 | C | Reproduce the MVTec tree digest on C's own copy and compare. | digests equal, or a stop-and-investigate note |
-| 6 | A | On the RTX 5060 Ti: checkout the SHA, run the Part 0 environment check (`sm_120`, tests, slow overfit), then `--prepare --queue gate`, then start the five `mvtec_rd4ad` profiles. | A's readiness recorded; first profile running |
-| 7 | B | Upload the private MVTec Kaggle Dataset (R3). Run the CPU-only export test (R4): about 300 MB file, saved version, download, hash. | upload visible, export test PASS |
-| 8 | B | Open the gate notebook on the GPU T4 session. Run setup, tests, `--prepare --queue gate`, then `--job mvtec_patchcore --profile carpet`. | carpet result and bundle exported and hash-checked |
-| 9 | B | Record minutes per profile, coreset seconds, VRAM/RAM, export size, remaining quota. Decide how many profiles per session. | numbers in `PROGRESS_LOG.md` |
-| 10 | C | While waiting: items in section 5 (data and licence documentation, ZLEval glue). | see section 5 |
+| 5 | A | Verify the original gate pin and compare its tree and config manifests to the local verified inputs. | Original file and local data agree |
+| 6 | A | Use the prepared experimental checkout and record original-pin readiness. Launch the five `mvtec_rd4ad` profiles after it passes. | Fresh readiness and first profile running |
+| 7 | B | Record the terms and source of the existing private MVTec input and give A the notebook version and retrieval evidence. | B1 reports the upload and 300 MiB export round-trip |
+| 8 | B | Send A the five completed PatchCore exports, original checksum manifests and attempt logs. | A verifies the pairs and keeps a second private copy |
+| 9 | B | Record minutes per profile, coreset seconds, VRAM/RAM, export size and remaining quota. | B2 and B4 contain reported measurements |
+| 10 | C | While waiting: prepare for the assigned RD4AD jobs and plan ZLEval work. | see section 5 |
 
 ## 4. Training ownership (from the approved ledger, D-61)
 
@@ -89,7 +89,7 @@ A also: coordinates the source freeze and approvals (`--approve-gate`, `--approv
 |---|---|---:|
 | Full ZJU (after go-ahead) | `zju_per_group_rd4ad` (5 groups at 10k), `zju_unified_rd4ad` (1 at 20k), `zju_held_out_rd4ad` (5 at 10k) | 11 |
 
-C has no training queue until the ZJU go-ahead. C has the cheapest training load and the most waiting time, so C takes more of the non-training work in section 5 and, if A approves at the ZJU go-ahead, the 14 per-pattern ZJU RD4AD profiles (resolution R8).
+C has no training queue until the ZJU go-ahead. C can assess the 14 unstarted per-pattern ZJU RD4AD profiles if A requests a workload review at the ZJU go-ahead.
 
 ### Expected run order per member
 
@@ -111,10 +111,10 @@ This is the work that remains after or alongside training, split so the load is 
 | Work item | Plan reference | Owner | Reviewer | Starts when |
 |---|---|---|---|---|
 | Source freeze, gate approval, results integration (`--check-integration`, `summarize.py --check`, `summarize.py`) | Checkpoints 1 to 3 | A | B | after the first results |
-| Phase 1 acceptance: verifier output pasted into `PROGRESS_LOG.md`, "unverified" items in `DATASETS.md` corrected, RAW-FABRID counts and roll verdict (SAME) recorded | Phase 1 criteria | C | A | now |
-| Dataset and licence record: MVTec terms, ZJU-Leaper permission, citations as authors request | Phase 8 | C | B | now |
+| Phase 1 acceptance: verifier output pasted into `PROGRESS_LOG.md`, "unverified" items in `DATASETS.md` corrected, RAW-FABRID counts and roll verdict (SAME) recorded | Phase 1 criteria | B | A | now |
+| Dataset and licence record: MVTec terms, ZJU-Leaper permission, citations as authors request | Phase 8 | B | affected runner | now |
 | ZLEval glue and official ZJU metrics (skip if more than a few hours, say so) | Phase 5 task 7 | C | B | after ZJU-mini |
-| C's verifier/AITEX patch review and merge (post-study, separate commit) | R1 | C | A | after training |
+| B's verifier/AITEX patch review as a separate change | R1 | B | A | when supplied |
 | FINDINGS: Q1, Q2 (RAW-FABRID), Q5 false alarms, Q6 grading | `EVALUATION.md` | A | B | after RAW-FABRID results |
 | FINDINGS: Q3 (group, unified) and Q4 (held-out, leave-one-roll-out) | `EVALUATION.md` | C | A | after full ZJU |
 | FINDINGS: Q7 ablations and ablation plots, PatchCore side of Q2 on ZJU | `EVALUATION.md` | B | C | after ablations |
@@ -143,13 +143,17 @@ This is the work that remains after or alongside training, split so the load is 
 
 ## 7. Rebalancing rule
 
-Check at the first real profiles and again at the ZJU go-ahead.
+Compare actual runtime and live quota after the first real profiles and again at the ZJU go-ahead. Keep the current ledger until a separate amendment is approved.
 
-1. Record minutes per PatchCore profile and RD4AD iterations per second per machine.
-2. Estimate the remaining time of each member's unstarted profiles.
-3. If one queue is clearly the longest, move only whole unstarted profiles to reduce the longest completion time. Candidate: the 14 ZJU per-pattern RD4AD profiles from B to C (see R8).
-4. Rules for a move: A (coordinator) approves, the moved shard gets a new job ID, the plan is revalidated and passed with `--plan`, readiness is rerun, completed and running profiles stay where they are, and an ablation stays with its baseline. Seeds, budgets, configs, splits and metrics do not change.
-5. A unified, per-group or held-out fit is one job and cannot be split.
+| Member | Work remaining | RD4AD fit-only estimate |
+|---|---|---|
+| A | 36 RD4AD profiles, 302,000 iterations, including 25,000 MVTec iterations | 7.9 to 8.3 h on the local RTX |
+| B | 95 PatchCore and 24 RD4AD profiles, 120,000 RD4AD iterations | 6.3 to 6.6 h on a T4, plus PatchCore |
+| C | 11 ZJU RD4AD profiles, 120,000 iterations | 6.3 to 6.6 h on a T4 |
+
+The estimates use measured synthetic rates of 10.1 to 10.6 it/s locally and 5.1 to 5.3 it/s on T4. Add evaluation, preparation, export and session restarts. Published MVTec PatchCore bundles were 62 to 76 MB per texture. Budget about 12 GB for the 71 RD4AD weight files at 168 MB each, plus PatchCore bundles, logs, staging and backups. Measure later bundle sizes before scheduling exports. Check live Kaggle limits on each account.
+
+B's RD4AD work is five ZJU-mini baseline profiles, 14 remaining per-pattern profiles and five resolution ablations, each at 5,000 iterations. If the team approves and C has a permitted T4 route and capacity, transfer the 14 unstarted remaining per-pattern profiles to C after ZJU-mini. This shifts 70,000 iterations and puts C at about 10 to 10.4 h fit-only. Keep the five mini baseline and five resolution ablation profiles together on B's machine. A strict split could move that entire unstarted baseline and ablation pair to C before either runs, putting C at 240,000 iterations and about 12.6 to 13.1 h fit-only. A is another potential destination for the whole pair if its local capacity and access are confirmed. A transfer requires verification of the revised ledger, new readiness, stable canonical paths and the owner's explicit workload approval. Move whole unstarted profiles and preserve the machine for each baseline and its ablation.
 
 ## 8. Rules everyone follows
 
@@ -166,7 +170,7 @@ Check at the first real profiles and again at the ZJU go-ahead.
 | Risk | Effect | Response |
 |---|---|---|
 | Kaggle session cap or export loss on a failed run | Lost profile | One profile per saved run until timings are known. Export test before any GPU use (R4) |
-| Weekly Kaggle quota (30 h) runs out | B or C stalls | Budget per profile, stop idle sessions, request approved reassignment |
+| Account GPU quota runs out | B or C stalls | Budget per profile, stop idle sessions, request approved reassignment |
 | MVTec terms question comes back "no" | B cannot use Kaggle for the gate | Fallback: A runs B's gate profiles (R3) |
 | Gate misses a target | Study blocked | Stop, record, review. D-60 lists RD4AD options. No test-set tuning |
 | Pin mismatch between machines | Run refused | Stop. Find the differing file or extraction. Do not edit the pin |

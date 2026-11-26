@@ -1,8 +1,53 @@
-# LoomGuard: Member B MVTec PatchCore Gate Checklist (prepared, not executed)
+# LoomGuard: Member B MVTec PatchCore gate and export checklist
 
-**Status:** prepared on 2026-11-22, reviewed against the code the same day (see section 10). **Nothing in sections 3 to 7 has been run.** Every real-data command is marked `DO NOT RUN UNTIL HANDOFF`.
+## 26 November handoff
 
-**Historical checklist for the full-pin runner on 22 November.** For the gate-only feature candidate, use the [current pin, preparation, execution and promotion commands](LoomGuard_Team_Decisions_Needed.md#command-sequence-for-preparation). Sections 3–5 below use the original full-pin mode, which requires all B datasets. The operational and licensing decisions are tracked in the updated team plan.
+B leads dataset preparation and verification and completed all five PatchCore texture runs in saved private Kaggle versions 1 to 3. The five result JSONs at `85da445` match the independently verified MVTec tree and canonical manifest. Send A the original gate and full pins, the saved-version references, five export folders and their checksum manifests. Keep a second private copy until A confirms all downloads. The paired approval still needs A's RD4AD results and verification of all ten bundles.
+
+For A's local receipt, stage the original export folders under `artifacts/private-training-archive/incoming/member-b/exports/<saved-version>/` with their original `MANIFEST.sha256`, canonical result and bundle paths, logs and version references. Keep raw inputs and credentials outside the export. B sends the original gate and full files separately in `incoming/member-b/pins/gate/datasets.json` and `incoming/member-b/pins/full/datasets.json` relative to the private archive. A verifies the original gate pin first, then runs the local receipt command from the experimental checkout:
+
+```bash
+python "$LOOMGUARD_ARCHIVE/tools/verify_patchcore_exports.py" --restore
+```
+
+This checks the original transfer manifests, all five result and bundle pairs, and the tracked result bytes before keeping a verified archive copy and restoring the canonical pairs for the later combined gate. Share through the team's authorized private channel. Any new cloud use requires the applicable download and platform permissions.
+
+If a reviewed rerun is required, use [the original MVTec source](https://www.mvtec.com/research-teaching/datasets/mvtec-ad) and the project's documented, authorized access route. The project owner recorded approval for the private noncommercial Kaggle setup. Preserve the original source terms and verify the terms for that cloud use. A compatible local GPU using an authorized copy is the fallback. The assignment remains B's.
+
+Run the following in a private T4 notebook under Bash, with `MVTEC_ROOT` pointing to the five-texture mount and `GATE_PIN_FILE` to the original pin. Set `ENV_REVIEW_REF` to the actual test and environment evidence, and `BUNDLE_ROOT` to the recorded private notebook or storage prefix. Keep the scratch checkout outside `/kaggle/working` and use that directory for the curated export.
+
+```bash
+RUN_PARENT=$(mktemp -d)
+git clone https://github.com/Zain-Shykh/LoomGuard.git "$RUN_PARENT/LoomGuard"
+cd "$RUN_PARENT/LoomGuard"
+git checkout --detach 67fb7f6ca2dec0365b63a7454ffb57b3138b6875
+git status --short
+export CUDA_VISIBLE_DEVICES=0
+python -m pip install -e '.[dev,app]'
+python -c 'import torch, torchvision; assert torch.cuda.is_available(); print(torch.__version__, torchvision.__version__, torch.version.cuda, torch.cuda.get_device_name())'
+mkdir -p data artifacts/distributed/gate-shared
+ln -s "$MVTEC_ROOT" data/mvtec_ad
+cp "$GATE_PIN_FILE" artifacts/distributed/gate-shared/datasets.json
+printf '%s  %s\n' 702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0 artifacts/distributed/gate-shared/datasets.json | sha256sum --check --strict
+python scripts/distributed_study.py --validate
+python scripts/distributed_study.py --owner B --stage gate --dry-run
+python scripts/distributed_study.py --shared artifacts/distributed/gate-shared --owner B --prepare --queue gate --review "$ENV_REVIEW_REF" --bundle-location "$BUNDLE_ROOT"
+```
+
+After approval for a rerun, choose one texture at a time and export that profile to a saved private version using [the export procedure](DISTRIBUTED_TRAINING.md#export-retry-and-rebalance). Set `TEXTURE` to `carpet`, `grid`, `leather`, `tile` or `wood`.
+
+```bash
+python scripts/distributed_study.py --shared artifacts/distributed/gate-shared --owner B --stage gate --job mvtec_patchcore --profile "$TEXTURE"
+```
+
+The standard queue starts only after receipt and verification of the promoted `gate.json`. Stage it beside the original full pin in `artifacts/distributed/full-shared/` and mount the authorized RAW-FABRID tree at `data/RAW_FABRID`. Check the full pin's file SHA-256 against `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`. Record new readiness in each session.
+
+```bash
+python scripts/distributed_study.py --shared artifacts/distributed/full-shared --owner B --prepare --queue standard --review "$ENV_REVIEW_REF" --bundle-location "$BUNDLE_ROOT"
+python scripts/distributed_study.py --shared artifacts/distributed/full-shared --owner B --stage study --queue standard --job raw_fabrid_patchcore --profile unified
+```
+
+The original 22 November full-pin checklist below documents the pre-implementation review.
 
 **Sources read for this checklist:** `docs/DISTRIBUTED_TRAINING.md` (Checkpoints 0 and 1, "Members B and C setup", "Export, retry and rebalance"), `configs/mvtec_patchcore.yaml`, `docs/DATASETS.md` (MVTec section), `scripts/distributed_study.py --help`, and `configs/studies/distributed/assignments.yaml`. Argument names below are the ones the script defines. Where the repo does not say something, this file says so.
 
@@ -17,7 +62,7 @@
 
 | # | Precondition | Owner | Status when written |
 |---|---|---|---|
-| 1 | The five MVTec texture folders are downloaded, extracted and verified (`scripts/verify_datasets.py` output read, not just the exit code) | Member C | pending |
+| 1 | The five MVTec texture folders are downloaded, extracted and verified (`scripts/verify_datasets.py` output read, not just the exit code) | Member B | pending |
 | 2 | The team has agreed one source commit and everyone checks out exactly that commit | team | pending |
 | 3 | `artifacts/distributed/shared/datasets.json` exists, created by `--pin-datasets` on the coordinator checkout | coordinator | pending |
 | 4 | MVTec reaches Kaggle as a **private** input, and the team confirms that is allowed under CC BY-NC-SA 4.0 (non-commercial, no redistribution, no public notebook, dataset or Git copy) | team | pending, not decided |
@@ -33,21 +78,21 @@ Private notebook, Accelerator **GPU T4 x2** (the runner uses one device), Intern
 ```bash
 git clone https://github.com/Zain-Shykh/LoomGuard.git /kaggle/working/LoomGuard
 cd /kaggle/working/LoomGuard
-git checkout <PINNED_SOURCE_COMMIT>        # the commit the team agreed; fill in
+git checkout --detach "$PINNED_SOURCE_COMMIT"
 git rev-parse HEAD && git status --short   # must match the pin and be clean
 mkdir -p data
-ln -s /kaggle/input/<PRIVATE_MVTEC_INPUT>/mvtec_ad data/mvtec_ad   # config root is data/mvtec_ad; fill in the input name
+ln -s "$MVTEC_ROOT" data/mvtec_ad
 python -m pip install -e ".[dev,app]"
 nvidia-smi
 CUDA_VISIBLE_DEVICES=0 python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(), torch.cuda.get_arch_list(), torch.cuda.get_device_capability())"
 mkdir -p artifacts/distributed/shared
-cp /kaggle/input/<PRIVATE_SHARED_INPUT>/datasets.json artifacts/distributed/shared/   # the pin from the coordinator; fill in
+cp "$FULL_PIN_FILE" artifacts/distributed/shared/datasets.json
 ```
 
 - Keep `CUDA_VISIBLE_DEVICES=0` for every command below. Do not enable multi-GPU.
 - The checkout must be at the pinned commit with a clean tree. If it is not, stop.
 - Layout the adapter requires (`loomguard/data/manifest.py`, `build_mvtec`): `data/mvtec_ad/<texture>/train/good/*`, `data/mvtec_ad/<texture>/test/<defect or good>/*`, and for each defective test image `data/mvtec_ad/<texture>/ground_truth/<defect>/<image stem>_mask.png`. A missing mask or an empty `train/good` stops the run.
-- The pin hashes **every file under `data/mvtec_ad`** (links to subdirectories are followed). That folder must hold exactly the five texture folders that Member C verified and nothing else, byte for byte. Extra categories or stray files change the hash and `--prepare` will refuse.
+- The pin hashes **every file under `data/mvtec_ad`** (links to subdirectories are followed). That folder must hold exactly the five texture folders that Member B verified and nothing else, byte for byte. Extra categories or stray files change the hash and `--prepare` will refuse.
 - The checkout must be a real clone with history, not a shallow one: the script runs `git rev-parse --verify <pinned commit>`.
 
 ## 4. Readiness (`DO NOT RUN UNTIL HANDOFF`)

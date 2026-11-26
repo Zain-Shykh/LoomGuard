@@ -1,20 +1,13 @@
-# Tasks for Member C (Hamza): unblock Member B
+# Member C RD4AD handoff
 
-C has no training blocker for B, but B needs two independent checks and C's queue needs the same approvals as B's.
+C owns 11 full-ZJU RD4AD profiles under D-61. The assigned results cover five groups, one unified profile and five held-out patterns, for 120,000 configured iterations. B leads dataset preparation and verification. A coordinates checkpoints and archive receipt.
 
-Reference values
-- Training SHA: `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`
-- Full pin `datasets.json` SHA-256: `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`
-- Tree digests in the full pin:
-  - mvtec: `f1842104...7920` (full value is in the pin file)
-  - raw_fabrid: `ce7cc3bf6a6e8bb2f713a4db2f73c4bc576276e7414df2b43ace4471433cce9e`
-  - zju_leaper: `c2d7b294f2d4c32ccdc0c4d59b5377ac23c3bc69357e5bdf3ea7de73e72995d0`
+C has zero MVTec gate profiles. Obtain the verified full pin and checkpoint files from A after the paired MVTec gate and ZJU-mini approval. Confirm the permitted ZJU execution route, ingest B's verified data and prepare using the original full pin at the approved experimental SHA. The current assignments and same-machine ablation rule apply unless a separate workload amendment is approved.
 
-## 1. Get the pin and set it up
-B sends you `datasets.json` (full pin). Put it at `artifacts/distributed/full-shared/datasets.json` on a checkout at the training SHA. Check its SHA-256 against the value above. Do not overwrite the gate pin in `artifacts/distributed/gate-shared/`.
+```bash
+python scripts/distributed_study.py --shared artifacts/distributed/full-shared \
+  --owner C --prepare --queue zju_full --review "$ENV_REVIEW_REF" --bundle-location "$BUNDLE_ROOT"
+python scripts/distributed_study.py --shared artifacts/distributed/full-shared --owner C --queue zju_full --dry-run
+```
 
-## 2. Cross-check the tree digests on your own copies
-Run the pin command in a scratch directory (not in the shared directory), against your own copies of MVTec, RAW-FABRID and ZJU-Leaper. Compare each digest with the list above. If any digest differs: stop and tell B. This is a second check of what B uploaded to Kaggle.
-
-## 3. Later: your ZJU queue
-Your 11 RD4AD profiles use `--queue zju_full` and need `mini.json` from A (after B's ZJU-mini jobs and A's `--approve-mini`). Run `--prepare --queue zju_full` for your environment before then, so you are ready.
+C exports completed profiles and their original checksums to A. Review the live T4 quota, session time and private artifact capacity before accepting any additional unstarted profiles. [Workload review](LoomGuard_Team_Work_Plan.md#7-rebalancing-rule) and [checkpoint sequence](DISTRIBUTED_TRAINING.md#checkpoint-2-run-the-independent-queues).

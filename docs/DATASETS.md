@@ -8,16 +8,16 @@ Every row below says what was actually checked. Anything marked **unverified** m
 
 | Dataset | Role in LoomGuard | Size | Masks | License | Physical scale | Status |
 |---|---|---|---|---|---|---|
-| MVTec AD (5 textures) | Sanity check: reproduce published numbers | ~4.9 GB full archive (size unverified) | Yes | CC BY-NC-SA 4.0 | none | Verified page and license. Download needs a form. |
+| MVTec AD (5 textures) | Sanity check: reproduce published numbers | About 2.2 GB across five source archives | Yes | CC BY-NC-SA 4.0 | none | Mounted copy verified. Download needs a form. |
 | **RAW-FABRID** | **Primary**: pipeline, localization, grading, demo | 4.13 GB zip | Yes (204 high-res, 687 patch) | CC BY 4.0 | **4 px/mm** | **Fully verified**, including file listing |
-| **ZJU-Leaper** | **Core cross-fabric benchmark** | 5.8 GB 7z | Yes | none stated (cite paper) | none | Link alive, layout known from official loader. Counts unverified. |
-| AITEX | Small-data stress test | 176 MB | Yes | none stated (cite paper) | none | Links alive, sizes verified |
+| **ZJU-Leaper** | **Core cross-fabric benchmark** | 5.8 GB 7z | Yes | none stated on the project site | none | Full Setting 1 manifest reproduced from the handoff. Execution permissions are pending for the chosen route. |
+| AITEX | Optional small-data stress test | 176 MB | Yes | none stated (cite paper) | none | Excluded from the approved study by D-61. |
 | TSFabrics | Optional: time-series stream demo | 9.19 GB zip | Yes (defects and cutlines) | CC BY 4.0 | 5 px/mm (127 PPI) | Verified via Figshare API and paper |
 | Lusitano | **Dropped** (decision D-14) | 5.96 GB + 13.3 GB | **No evidence of masks** | none stated | none | Files exist; host TLS certificate expired |
 
 Core storage needed on the training PC: about 15 GB compressed, roughly 30 GB with extraction. The optional TSFabrics set adds 9 GB compressed.
 
-**Nothing is downloaded on the laptop.** All downloads happen on the training PC.
+The November handoff contains extracted copies. Keep dataset bytes on approved private machines or storage. The audited copy was mounted locally.
 
 ## Changes from the starter file
 
@@ -77,13 +77,13 @@ Per-roll counts:
 | Rollo7A | 167 | 26 | 4,676 | 639 | 89 |
 | **Total** | **507** | **202** | **14,196** | **4,969** | **687** |
 
-Unverified: whether the seven rolls are seven visually different fabrics. The readme says the fabrics come from "several different manufacturers". Check by eye in Phase 1. This decides whether leave-one-roll-out counts as an unseen-fabric test.
+Member C's handoff records the visual verdict **SAME**. Report RAW-FABRID leave-one-roll-out as roll generalization and use held-out ZJU patterns for unseen-fabric claims. C records two unpaired high-resolution masks outside the metadata inventory. The high-resolution manifest reproduced exactly from the mounted handoff. It has 11,872 training tiles, 2,324 validation tiles, 4,944 good test tiles and 712 defective test tiles. The 25 cross-representation label differences and 532 area differences are reported in C's supplemental audit. Keep shipped patch labels and masks together, and high-resolution crops and masks together. The 15 approved RAW-FABRID jobs call the high-resolution adapter. The current distributed study loader has no shipped-patch benchmark mode. Any implementation of that separate mode needs review.
 
 ## 2. ZJU-Leaper (core cross-fabric benchmark)
 
 - **Source:** project page <https://nico-zck.github.io/zju-leaper>. Download link `http://bit.ly/zjuleaper` resolves to Google Drive file `1zzoU3Aj21V62GWS8LBm217TsE5uFeMVB`, `ZJU-Leaper.7z`, **5.8 GB** (alive on 2026-11-12).
 - **Code:** <https://github.com/nico-zck/ZJU-Leaper-Dataset> (loader in `dataset_api/zl_fabric.py`, metrics in `dataset_api/zl_eval.py`).
-- **License:** none stated on the page or in the repository. Use for research and cite the paper (Zhang et al., IEEE Transactions on Artificial Intelligence).
+- **License:** The official project page provides a download and citation with no explicit license. Record the applicable terms or obtain permission for the intended execution route before cloud upload. Cite Zhang et al., IEEE Transactions on Artificial Intelligence. The mounted handoff reproduced 170,724 train, 18,968 validation and 126,596 test tiles.
 - **Content:** 19 fabric patterns in 5 groups. Papers quote 98,777 images in total. Images are 512x512 (the official loader hard-codes 512x512 for empty masks).
 
 | Group | Patterns |
