@@ -16,6 +16,13 @@ Entry template:
 
 ---
 
+## 2026-11-28: ZJU-Leaper Kaggle upload verified; local dataset copies removed
+- **Phase:** data handoff, Member B
+- **Who / where:** Zain (Member B), private Kaggle notebook `notebook4db0e623ba`, CPU (no accelerator)
+- **Done:** Hashed the private dataset `loomguard-zju-leaper` with `digest_tree` at commit `67fb7f6`. Result: 213,400 files, digest `c2d7b294f2d4c32ccdc0c4d59b5377ac23c3bc69357e5bdf3ea7de73e72995d0`, equal to the full pin. Deleted the local MVTec, RAW-FABRID and ZJU-Leaper copies and the upload staging files (MVTec and RAW-FABRID digests had passed Kaggle `--prepare` in B2 and B4). `data/AITEX` is kept.
+- **Evidence:** log line `RESULT MATCH`; version ran successfully in 17,790.8 s. Free disk afterwards: 24 GB.
+- **Problems / next:** Hashing ZJU-Leaper took about 4.9 h on a CPU session. `--prepare` for a queue that includes ZJU hashes the same tree, so its cost on a GPU session is a schedule risk (not measured on GPU). `gate.json` is still missing.
+
 ## 2026-11-26 final integration and local RD4AD preparation
 
 - Fetched and synchronized development main through `d8940dd` before integration. The fetched refs supplied no newer teammate commit or verifier and AITEX patch. The original audit worktree was preserved. The final slider test uses full-precision calibration. The development test run returned 188 passed and 1 slow deselection. The plan still has 33 jobs and 185 canonical paths with gate dry runs of A 5, B 5 and C 0.
