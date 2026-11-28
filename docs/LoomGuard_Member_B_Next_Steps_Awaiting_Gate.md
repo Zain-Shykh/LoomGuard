@@ -1,5 +1,7 @@
 # LoomGuard — Member B Next Steps (While Members A and C Finish Their Tasks)
 
+**Superseded operational instructions.** Follow [Zain’s training handoff](handoffs/ZAIN_TRAINING_HANDOFF.md) for the current assignments, status and commands. This file preserves the earlier checklist and evidence.
+
 **Date:** 22 November 2026  
 **Scope:** Member B, Kaggle Free; **no real datasets or training yet**.  
 **Reference:** [Kaggle feasibility checklist](LoomGuard_Member_B_Kaggle_Feasibility_Checklist.md), section 9.

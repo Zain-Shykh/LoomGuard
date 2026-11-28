@@ -12,6 +12,8 @@ Hamza prepared and verified the original dataset handoff. Huzaima independently 
 
 Member B owns both AITEX methods, one model per fabric for seven fabrics per method. D-61 (2026-11-21) excludes AITEX: do not pass `--aitex-approval`, so these 14 profiles stay inactive. Keep using the original full-study check; its only expected failure is the missing AITEX cells, to be reported as intentional. ZJU: run ZJU-mini first; the full-ZJU queues start only after the owner records the go-ahead (D-61).
 
+Use the [named handoffs](../README.md#team) for frozen-checkout setup, exact queue commands and current progress. The [decision status](LoomGuard_Decision_Resolutions.md#current-decision-status) records both original pins and gate state.
+
 ## Checkpoint 0. Prepare and verify
 
 ### Independent MVTec gate
@@ -30,7 +32,7 @@ A verifies all ten exported result/bundle pairs and uses the gate shared directo
 
 1. Agree on one source commit containing the reviewed plan, code, and unchanged configs. Work at the repository root. Start the three work branches at that commit, for example `git switch -c run/local-rd4ad "$SOURCE_COMMIT"`, `run/kaggle-patchcore`, and `run/kaggle-rd4ad`. Keep training checkouts pinned. Use a separate results checkout or worktree if committing results before the queue finishes.
 2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C's training assignments need only ZJU. Zain keeps the original full pin for all three active datasets. Hamza keeps the original verification evidence and Huzaima retains the independent local verification and receipt. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
-3. Preserve and distribute the existing full pin. For a future study with new verified inputs, create the new pin from the coordinator checkout. AITEX is excluded under D-61. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
+3. Preserve and distribute the existing full pin. The current full pin is installed and verified. The pin creation command below is reserved for a future approved study with revised inputs. AITEX is excluded under D-61. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
 
 ```bash
 python scripts/distributed_study.py --validate
@@ -53,7 +55,7 @@ nvidia-smi
 CUDA_VISIBLE_DEVICES=0 python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(), torch.cuda.get_arch_list(), torch.cuda.get_device_capability())"
 ```
 
-Use the preinstalled matching PyTorch and torchvision if their CUDA smoke check works. If installing a different build, use a matched pair from the PyTorch selector that supports the session driver and the specific GPU. Keep `CUDA_VISIBLE_DEVICES=0` consistent for readiness and execution. A dual-T4 allocation exposes two separate devices, each with 16 GB VRAM. The existing training code uses a single device. T4 and P100 can serve PatchCore when CUDA works. RD4AD trains in fp16 with a GradScaler on every machine (D-60), so B and C only need tensor cores (compute capability 7.0 or newer), which the Kaggle T4 has. The P100 (6.0) does not qualify for RD4AD. If B changes accelerators, repeat readiness in the new session. If the assigned GPU is unavailable, record the blocked profiles and ask the team to approve a compatible machine or reassignment. [Kaggle notebooks](https://www.kaggle.com/docs/notebooks) · [PyTorch installation selector](https://pytorch.org/get-started/locally/)
+Use the preinstalled matching PyTorch and torchvision if their CUDA smoke check works. If installing a different build, use a matched pair from the PyTorch selector that supports the session driver and the specific GPU. Keep `CUDA_VISIBLE_DEVICES=0` consistent for readiness and execution. A dual-T4 allocation exposes two separate devices, each with 16 GB VRAM. The existing training code uses a single device. RD4AD trains in fp16 with a GradScaler on every machine (D-60), so B and C only need tensor cores (compute capability 7.0 or newer), which the Kaggle T4 has. Kaggle retired the P100 in September 2026. Use the T4 for the approved Kaggle protocol. If B changes accelerators, repeat readiness in the new session. If the assigned GPU is unavailable, record the blocked profiles and ask the team to approve a compatible machine or reassignment. [Kaggle P100 retirement](https://www.kaggle.com/product-announcements/735239) · [Kaggle notebooks](https://www.kaggle.com/docs/notebooks) · [PyTorch installation selector](https://pytorch.org/get-started/locally/)
 
 Use the remaining session time and account quota displayed by Kaggle when scheduling. Budget training plus evaluation, model export and transfer verification for each profile. Reserve scratch space for the input tree, the current attempt and its output. Keep durable copies outside the live session. Use the agreed private storage or saved private output versions, and confirm that a fresh session can retrieve the files. [Kaggle GPU usage and quotas](https://www.kaggle.com/docs/efficient-gpu-usage)
 
@@ -75,14 +77,7 @@ For full-pin queue preparation, append `--queue standard`, `--queue mini` or `--
 
 ## Checkpoint 1. Run both MVTec benchmarks
 
-The commands below use the default full pin. When using the gate-only pin, add `--shared artifacts/distributed/gate-shared` to each execution and approval command. B has completed its PatchCore profiles. A runs RD4AD after original-pin readiness. C prepares for its assigned ZJU work.
-
-```bash
-# A
-python scripts/distributed_study.py --owner A --stage gate
-# B
-python scripts/distributed_study.py --owner B --stage gate
-```
+The commands below use the default full pin. When using the gate-only pin, add `--shared artifacts/distributed/gate-shared` to each execution and approval command. All five B PatchCore profiles are accepted. A has verified carpet and grid and needs authorization for leather, tile and wood. C can verify access for its assigned ZJU work. Use [Huzaima’s handoff](handoffs/HUZAIMA_TRAINING_HANDOFF.md) for the local detached gate workflow.
 
 Export all five results and their corresponding bundles from each member. Place them at the canonical paths on the coordinator's checkout. Review the loss traces and measured time and memory before recording the gate approval.
 
@@ -90,7 +85,7 @@ Export all five results and their corresponding bundles from each member. Place 
 python scripts/distributed_study.py --approve-gate --review "<recorded team benchmark approval>"
 ```
 
-The approval verifies ten results and their bundles, averages all five categories per method, and enforces PatchCore 97.9 / 96.6 / 90.7 and RD4AD 98.5 / 96.7 / 92.0 (image AUROC / pixel AUROC / AUPRO in percent), plus the RD4AD peak-VRAM bar under 11 GB. If any target is missed, stop and record the results for team review. Distribute `gate.json` once both methods pass and the team approves. Main and ablation jobs require this file.
+The approval verifies ten results and their bundles, averages all five categories per method, and enforces PatchCore 97.9 / 96.6 / 90.7 and RD4AD 98.5 / 96.7 / 92.0 (image AUROC / pixel AUROC / AUPRO in percent), plus the RD4AD peak-VRAM bar under 11 GB. If any target is missed, stop and record the results for team review. After both methods pass and the team approves, generate the approval against both originals, compare the outputs and distribute `gate.json` for the full-study pin. Main and ablation jobs require this file.
 
 ## Checkpoint 2. Run the independent queues
 
@@ -106,8 +101,6 @@ python scripts/distributed_study.py --owner B --stage study --queue mini --job z
 python scripts/distributed_study.py --owner B --stage study --queue mini --job zju_per_fabric_mini_rd4ad
 python scripts/distributed_study.py --owner B --stage study --queue standard
 python scripts/distributed_study.py --owner B --stage ablation --queue standard
-
-# C
 ```
 
 The coordinator verifies the ten ZJU-mini bundles and results, reviews the adapter and split evidence and records the team's approval.
@@ -140,7 +133,7 @@ A records the three RAW-FABRID unified RD4AD seeds' mean and spread, seed 0 fals
 
 - After each completed profile, copy its `results/<dataset>/<regime>/<method-tag>/<profile>.json` and its directory under `artifacts/<dataset>/<profile>/<method-tag>` to durable storage. Use the bundle location in the result's `distributed` field. Keep all four bundle files and `provenance.json`. Keep `status.json` under `artifacts/distributed/profiles/` and the corresponding `fit.log`, `evaluate.log` and manifest CSV under `artifacts/distributed/attempts/` in the private export, alongside the small shared metadata files. A profile without a status file is planned. Runner status `passed` means the local outputs were verified. Check retrieval before marking the shared progress entry complete.
 - You can monitor the current attempt log with `tail -f` or PowerShell `Get-Content -Wait`. If an attempt fails, check GPU capability, memory, data paths and remaining quota. Wait for any prior child process to exit, then rerun the same profile. Its attempt has a fresh staging directory. An interrupted training or evaluation attempt restarts the profile from the beginning. If both stages completed and only publishing was interrupted, the runner can finish publishing the verified outputs. A restored valid bundle and result skip training. Existing incomplete or conflicting canonical outputs block the profile until the team reviews and reconciles them.
-- Record RD4AD iterations per second, PatchCore minutes per profile, evaluation/export time, VRAM/RAM, and quota time. Estimate the remaining duration on each eligible machine. If balancing would reduce the longest queue, obtain team approval and move only unstarted complete profiles or jobs. Keep every completed or running profile's job ID, owner and result path. Create a new job ID for a moved shard. Share the reviewed revised plan separately from the pinned source checkout (for example under `artifacts/distributed/shared/`) and pass `--plan` on all invocations. Revalidate and repeat readiness using that plan. The original config and its full training populations stay fixed. Confirm the destination has the verified dataset and compatible hardware.
+- Record RD4AD iterations per second, PatchCore minutes per profile, evaluation/export time, VRAM/RAM, and quota time. Estimate the remaining duration on each eligible machine. If balancing would reduce the longest queue, obtain team approval and move only unstarted complete profiles or jobs. Keep every completed or running profile's job ID, owner and result path. Create a new job ID for a moved shard. Share the reviewed revised plan separately from the pinned source checkout (for example under `artifacts/distributed/shared/`) and pass `--plan` on affected preparation and execution commands and in coordinator review/integration. Verify original pinned config/dataset/manifest coverage and check checkpoint contexts before reuse. Revalidate and repeat readiness using that plan. The original config and its full training populations stay fixed. Confirm the destination has the verified dataset and compatible hardware.
 
 For a completed MVTec profile, set `METHOD` to `rd4ad` or `patchcore`, `TEXTURE` to its texture and `EXPORT_ROOT` to a new private directory. On Kaggle choose a directory under `/kaggle/working`, run inside the saved private version, then download that version's output. Check from the download root before handing it to A.
 

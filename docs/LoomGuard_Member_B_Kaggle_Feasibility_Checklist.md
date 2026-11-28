@@ -1,5 +1,7 @@
 # LoomGuard — Member B Kaggle Feasibility Checklist (Before Dataset Handoff)
 
+**Superseded operational instructions.** Follow [Zain’s training handoff](handoffs/ZAIN_TRAINING_HANDOFF.md) for the current assignments, status and commands. This file preserves the earlier checklist and evidence.
+
 **Purpose:** Verify that Member B can run the assigned LoomGuard workloads on a free Kaggle GPU **without waiting for Member C's dataset verification**. This is a hardware, software, and execution-path check, **not** a real MVTec benchmark or permission to begin headline training.
 
 **Repository:** https://github.com/Zain-Shykh/LoomGuard  

@@ -1,5 +1,7 @@
 # LoomGuard
 
+For live training status and assignments, start with the [named handoffs](README.md#team) and [current decisions](docs/LoomGuard_Decision_Resolutions.md#current-decision-status). Run scientific jobs from the pinned experimental checkout.
+
 Fabric inspection with deep learning in PyTorch. Learns normal fabric from defect-free images only, then detects and localizes unseen defects and grades the fabric. Two methods implemented from their papers and compared: PatchCore and Reverse Distillation (RD4AD). Streamlit front end (a course requirement).
 
 ## Read first

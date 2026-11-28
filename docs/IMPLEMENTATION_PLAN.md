@@ -44,7 +44,7 @@ Phases 3 and 4 can run in parallel once Phase 2 is done: one person on the train
 
 ## Phase 0: Design and dataset verification
 
-Zain (Member B) led the design and initial implementation. Hamza (Member C) acquired and verified the original datasets and delivered the manifests and reports. Huzaima (Member A) independently verified and staged the handoff on the training PC. See the [dataset record](DATASETS.md) and [D-61 work plan](LoomGuard_Team_Work_Plan.md) for current responsibilities.
+Zain (Member B) led the design and initial implementation. Hamza (Member C) acquired and verified the original datasets and delivered the manifests and reports. Huzaima Malik (Member A) independently verified and staged the handoff on the training PC. Zain generated the original shared pins. Use the [named handoffs](../README.md#team) for current execution. See the [dataset record](DATASETS.md) and [D-61 work plan](LoomGuard_Team_Work_Plan.md) for current responsibilities.
 
 **Objective.** Turn the starter idea into a checked design: verified datasets, fixed architecture, metrics, splits and a phased plan.
 

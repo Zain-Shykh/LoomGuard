@@ -4,12 +4,12 @@ One ordered checklist for Huzaima (Member A) on the RTX 5060 Ti (16 GB VRAM) tra
 
 Zain (Member B) led the initial implementation and completed the five real MVTec PatchCore profiles on Kaggle. Hamza (Member C) prepared and verified the datasets. Huzaima independently verified and staged the handoff on the training PC.
 
-The [approved distributed training runbook](DISTRIBUTED_TRAINING.md) governs assignments and checkpoints. This document supplies the single-machine procedure and its dataset, benchmark, grading and CPU app acceptance criteria. Use [Huzaima's local RD4AD handoff](TEAM_TASKS_MEMBER_A.md) for the pinned checkout, original pins and MVTec launch.
+The [approved distributed training runbook](DISTRIBUTED_TRAINING.md) governs assignments and checkpoints. This document supplies the single-machine procedure and its dataset, benchmark, grading and CPU app acceptance criteria. Use [Huzaima's local RD4AD handoff](handoffs/HUZAIMA_TRAINING_HANDOFF.md) for the pinned checkout, original pins and MVTec launch. Parts 2–4 below record single-machine scientific procedures. Follow the named handoffs for current profile ownership and authorized distributed execution.
 
 ## Rules for the whole runbook
 
 1. Do not tune anything on test results. Headline settings (iteration budgets, coreset ratios, thresholds) are fixed in advance (decision D-35). If a pass criterion is missed, log the miss, do not change a setting to fix it, and tell the project owner. A fix of a bug is fine; a change of a hyperparameter is a decision.
-2. Never commit datasets, model bundles, `artifacts/` or `data/`. Results JSON files in `results/`, logs, and documents are committed.
+2. Never commit datasets, model bundles, `artifacts/` or `data/`. Commit reviewed canonical result JSONs and sanitized summaries. Preserve operational logs in the private archive.
 3. Record every number a step asks for in `docs/PROGRESS_LOG.md` (template at the top of that file), newest entry first. If a measurement contradicts a number in `docs/`, correct the document in the same commit.
 4. Commit after each part with the message given, and push. Pull before starting each part.
 5. Keep the console output of every fit and evaluate run (`tee artifacts/<name>.txt`). If something fails, the output is the evidence.

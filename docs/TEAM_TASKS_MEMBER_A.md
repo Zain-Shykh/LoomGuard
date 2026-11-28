@@ -1,5 +1,7 @@
 # Huzaima (Member A) local RD4AD handoff
 
+**Superseded operational instructions.** Follow [Huzaima’s training handoff](handoffs/HUZAIMA_TRAINING_HANDOFF.md) for the current assignments, status and commands. This file preserves the earlier checklist and evidence.
+
 Huzaima independently verified and staged Hamza's original dataset handoff and prepared the local RD4AD environment. Huzaima approved the common experimental source `67fb7f6ca2dec0365b63a7454ffb57b3138b6875` subject to verification of the original pins. Zain completed the five PatchCore gate profiles. On 28 November, Huzaima verified the original gate pin, received both original pins and all five PatchCore bundles, and passed fresh local readiness. The paired checkpoint requires all five RD4AD results and team review.
 
 ## Verify the original gate pin and prepare

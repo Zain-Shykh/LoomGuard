@@ -1,10 +1,30 @@
-# LoomGuard: Decision Resolutions (provisional, 25 November 2026)
+# LoomGuard: Decision Resolutions
 
 **Why this file exists.** The five questions in [LoomGuard_Team_Decisions_Needed.md](LoomGuard_Team_Decisions_Needed.md) stayed open because Members A and C were busy. Member A's review there already settled the technical points (Decisions 2 and 5) and left Decisions 1, 3 and 4 waiting for an owner call. On 25 November the repository owner (Zain, Member B) asked for every open question to be resolved with the recommended option so training can start. This file records each answer, the reason, the fallback and who can reverse it.
 
 **26 November audit status.** This file records the owner's operational choices as reported on 25 November. Huzaima (A) approved the common experimental SHA subject to original-pin verification and coordinates the paired benchmark review. Hamza (C) prepared and verified the original dataset handoff and owns the assigned ZJU RD4AD work. Zain (B) generated and distributed the original shared pins. B's five PatchCore results already record that proposed SHA. A prepared an owner-only local archive. At that audit, the original pins and model bundle receipts were pending. Huzaima verified their receipt on 28 November. See [Member A's checklist](TEAM_TASKS_MEMBER_A.md) and [Member C's RD4AD handoff](TEAM_TASKS_MEMBER_C.md).
 
-**What this file does not do.** It does not change a scientific setting, a seed, a budget, a threshold, a split or the assignment ledger (`configs/studies/distributed/assignments.yaml`). It does not approve a checkpoint (`--approve-gate`, `--approve-mini`). It does not create `datasets.json`. It is not a legal opinion on any dataset licence.
+## Current decision status
+
+| Item | Status on 28 November 2026 |
+|---|---|
+| D-60, D-61, D-62 | Approved. CUDA student training uses FP16 and GradScaler, with D-62's scoped FP32 frozen teacher. D-61 sets the binding allocations, keeps AITEX inactive, requires matched baseline/ablation machines and gates ZJU in two stages. |
+| Common experimental source | Frozen at `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`. The original-pin verification condition is satisfied. Development main carries the handoffs and integrated results. |
+| Gate pin | Exact SHA-256 `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`. The standalone file, ZIP's original gate pin, each export's pin and installed copy agree. Gate-scoped A readiness passed. |
+| Full-study pin | Exact SHA-256 `144a80d3f518a46b0183df1c3b5707627e58e128c89413a07907ca247374d40b`. Installed original matches the pinned configs, three mounted trees and 31 reproduced canonical manifests. Preserve the historical review text in the original file. Scientific approval is recorded separately in `gate.json`. |
+| PatchCore and transport | Accepted all five pairs. Verified saved outputs v1 carpet (14 entries), v2 grid/leather (26), v3 tile/wood (26). SHA-256, result/bundle provenance and Git result bytes match. Private saved versions and checksum-verified receipt worked. |
+| Private archive | Original files and export copies are under `artifacts/private-training-archive/incoming/member-b/`. Accepted export copies are under `verified/member-b/` in the same archive. Frozen canonical pairs and two verified RD4AD exports are recorded in the [progress log](PROGRESS_LOG.md). |
+| MVTec use | The owner recorded internal approval for private, noncommercial Kaggle use. The data ships under CC BY-NC-SA 4.0. Keep the restricted inputs and model bundles private under the team's chosen terms. Any new cloud route or public reuse needs its own rights review. |
+| RAW-FABRID | Use the verified high-resolution tree and D-61 assignments after combined-gate approval. The shipped patch benchmark is distinct and has no execution path in the frozen distributed runner. A separate benchmark needs approved protocol and implementation. |
+| ZJU-Leaper | The shipped license text is CC BY-NC-SA 4.0 and the dataset README specifies academic/research use and citation. Internal approval for private Kaggle use and Zain's hash-verified upload are recorded. B/C confirm named access and applicable platform rights for their execution route. Use an authorized local/institutional route if cloud access is unavailable. |
+| Hamza's verifier and AITEX adapter | Existing data, CSVs and reports were available. The referenced source diff and tests are outstanding. Request them from Hamza for separate review on development main. |
+| Combined MVTec gate | Pending. Five PatchCore and two RD4AD pairs verified. Leather, tile and wood plus a scientific review are required before the coordinator records and promotes the approval. |
+| ZJU-mini and full ZJU | Pending. The five-pattern mini headlines for both methods require the promoted MVTec approval and an authorized ZJU route. Record owner approval after verifying all ten mini pairs and reviewing the roll check and first RAW-FABRID results. Then release the full-ZJU and ZJU ablation queues. |
+| Workload redistribution | Keep D-61. Revisit at the full-ZJU decision with live account quotas, measured preparation/throughput, access and approval. See the [workload comparison](LoomGuard_Team_Work_Plan.md#7-rebalancing-rule). |
+
+See the [named handoffs](../README.md#team) for current operations. The dated resolutions below preserve the team's earlier proposals and rationale.
+
+## Historical resolutions
 
 ## Summary
 
@@ -80,7 +100,7 @@ Resolved by the merged runner (`09d708f`). Use the gate-only pin and `--prepare 
 ## R7. RAW-FABRID and ZJU on Kaggle
 
 - **RAW-FABRID** (CC BY 4.0, 4.4 GB): B uploads a private Kaggle Dataset of `RAW_FABRID` when the standard queue is about to start, with credit, DOI and licence in the description. A uses its local copy.
-- **ZJU-Leaper** (7 GB): the owner decided on 25 November that ZJU-Leaper may be used and uploaded privately to Kaggle for this noncommercial semester project, even though the authors state no licence. The data stays private, on team laptops and private Kaggle inputs only, and is never published. The ZJU go-ahead (D-61) for the full queues is still a separate step. C may still ask the authors for written permission, but it no longer blocks anything. If Kaggle upload proves impractical, B and C run ZJU on an authorized local GPU.
+- **ZJU-Leaper** (7 GB): the owner decided on 25 November that ZJU-Leaper may be used and uploaded privately to Kaggle for this noncommercial semester project, as a project decision. The later archive review confirmed the shipped license and README terms in the current status above. The data stays private, on team laptops and private Kaggle inputs only, and is never published. The ZJU go-ahead (D-61) for the full queues is still a separate step. Confirm each runner's access and execution route before starting. If Kaggle upload proves impractical, B and C run ZJU on an authorized local GPU.
 - Sizes are the extracted sizes from the handoff. B checks Kaggle's actual upload and storage limits before each upload.
 
 ## R8. Fair workload split

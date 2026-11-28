@@ -1,5 +1,7 @@
 # LoomGuard — Three-Person Parallel Training Proposal
 
+**Historical proposal.** Use the [approved distributed runbook](DISTRIBUTED_TRAINING.md) and [current decision status](LoomGuard_Decision_Resolutions.md#current-decision-status) for execution.
+
 **Status:** Proposed team workflow; not yet an approved change to the repository's experiment protocol.  
 **Repository:** https://github.com/Zain-Shykh/LoomGuard  
 **Target:** Run independent experiments on one RTX 5060 Ti PC and two separate Kaggle GPU sessions, then combine results without changing the scientific configurations.

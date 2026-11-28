@@ -1,5 +1,7 @@
 # LoomGuard: Member B MVTec PatchCore gate and export checklist
 
+**Superseded operational instructions.** Follow [Zain’s training handoff](handoffs/ZAIN_TRAINING_HANDOFF.md) for the current assignments, status and commands. This file preserves the earlier checklist and evidence.
+
 ## 26 November handoff
 
 Zain (Member B) used Hamza's original verified dataset handoff, generated and distributed the shared pins, and completed all five PatchCore texture runs in saved private Kaggle versions 1 to 3. The five result JSONs at `85da445` match the independently verified MVTec tree and canonical manifest. Send A the original gate and full pins, the saved-version references, five export folders and their checksum manifests. Keep a second private copy until A confirms all downloads. On 28 November, Huzaima verified the original pins at receipt, all three export manifests and five PatchCore pairs, then restored the pairs for review. The paired approval still needs Huzaima's five RD4AD results, their verified bundles and team review.

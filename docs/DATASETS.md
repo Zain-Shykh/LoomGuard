@@ -10,7 +10,7 @@ Every row below says what was actually checked. Anything marked **unverified** m
 |---|---|---|---|---|---|---|
 | MVTec AD (5 textures) | Sanity check: reproduce published numbers | About 2.2 GB across five source archives | Yes | CC BY-NC-SA 4.0 | none | Mounted copy verified. Download needs a form. |
 | **RAW-FABRID** | **Primary**: pipeline, localization, grading, demo | 4.13 GB zip | Yes (204 high-res, 687 patch) | CC BY 4.0 | **4 px/mm** | **Fully verified**, including file listing |
-| **ZJU-Leaper** | **Core cross-fabric benchmark** | 5.8 GB 7z | Yes | none stated on the project site | none | Full Setting 1 manifest reproduced from the handoff. Execution permissions are pending for the chosen route. |
+| **ZJU-Leaper** | **Core cross-fabric benchmark** | 5.8 GB 7z | Yes | CC BY-NC-SA 4.0 text supplied in the archive; authors’ README limits use to academic/research | none | Full Setting 1 manifest reproduced. Private Kaggle upload hash verified by Zain. Confirm account access and permitted execution route. |
 | AITEX | Optional small-data stress test | 176 MB | Yes | none stated (cite paper) | none | Excluded from the approved study by D-61. |
 | TSFabrics | Optional: time-series stream demo | 9.19 GB zip | Yes (defects and cutlines) | CC BY 4.0 | 5 px/mm (127 PPI) | Verified via Figshare API and paper |
 | Lusitano | **Dropped** (decision D-14) | 5.96 GB + 13.3 GB | **No evidence of masks** | none stated | none | Files exist; host TLS certificate expired |
@@ -83,7 +83,7 @@ Hamza's handoff records the visual verdict **SAME**. Report RAW-FABRID leave-one
 
 - **Source:** project page <https://nico-zck.github.io/zju-leaper>. Download link `http://bit.ly/zjuleaper` resolves to Google Drive file `1zzoU3Aj21V62GWS8LBm217TsE5uFeMVB`, `ZJU-Leaper.7z`, **5.8 GB** (alive on 2026-11-12).
 - **Code:** <https://github.com/nico-zck/ZJU-Leaper-Dataset> (loader in `dataset_api/zl_fabric.py`, metrics in `dataset_api/zl_eval.py`).
-- **License:** The official project page provides a download and citation with no explicit license. Record the applicable terms or obtain permission for the intended execution route before cloud upload. Cite Zhang et al., IEEE Transactions on Artificial Intelligence. The mounted handoff reproduced 170,724 train, 18,968 validation and 126,596 test tiles.
+- **License:** The mounted handoff’s `ZJU-Leaper/license.txt` contains CC BY-NC-SA 4.0. Its `README.md` limits use to academic purposes or research and asks for citation. The project page provides the release and source citation. Record these terms, authorized accounts and the chosen execution route. Zain’s private Kaggle upload verified the tree digest. Cite Zhang et al., IEEE Transactions on Artificial Intelligence. The mounted handoff reproduced 170,724 train, 18,968 validation and 126,596 test tiles.
 - **Content:** 19 fabric patterns in 5 groups. Papers quote 98,777 images in total. Images are 512x512 (the official loader hard-codes 512x512 for empty masks).
 
 | Group | Patterns |
@@ -112,7 +112,7 @@ Unverified, check on download: exact image counts per pattern and split, image f
 
 Risk: Google Drive rate-limits popular large files. Use `gdown` and retry later if the quota error appears. The alternative host listed by the authors is `http://www.qaas.zju.edu.cn/zju-leaper`.
 
-Adapter (`build_zju`, Phase 5, not yet run on real files): reads `ImageSets/Patterns/pattern<n>.json` for the 19 patterns, finds files through an index of `Images/` and `Annotations/masks/` (ids with or without extension, any image extension), uses `normal/train` (90 percent train, 10 percent val, per pattern), `normal/test` and `defect/test`; `defect/train` is unused. Group membership comes from the table above (pattern numbers 1-3, 4-7, 8-12, 13-15, 16-19), which assumes the JSON numbering follows that order. A listed id without image or mask, a mask of the wrong size, or an image listed twice stops the run with a message that counts the problems. The group and total JSON files are not read.
+Adapter (`build_zju`, Phase 5, verified against the real handoff's Setting 1 manifest): reads `ImageSets/Patterns/pattern<n>.json` for the 19 patterns, finds files through an index of `Images/` and `Annotations/masks/` (ids with or without extension, any image extension), uses `normal/train` (90 percent train, 10 percent val, per pattern), `normal/test` and `defect/test`; `defect/train` is unused. Group membership comes from the table above (pattern numbers 1-3, 4-7, 8-12, 13-15, 16-19), which assumes the JSON numbering follows that order. A listed id without image or mask, a mask of the wrong size, or an image listed twice stops the run with a message that counts the problems. The group and total JSON files are not read.
 
 ## 3. MVTec AD textures (sanity check)
 

@@ -181,7 +181,9 @@ The zeros are placeholders for the format. Phase 5 adds `tag`, `image_auroc` and
 
 Distributed evaluation preserves these keys and adds a `distributed` provenance object. It records the assigned job/profile and owner, full commit, resolved config/data/split hashes, fit seed and split seed, hardware, and the matching bundle location and file hashes. `summarize.py --check` keeps the complete headline coverage requirement for RAW-FABRID, ZJU-Leaper and AITEX. The integration checker also verifies every assigned profile, including ablations, and rejects duplicate result exports.
 
-## 6. Compute budget (estimates, to be replaced by measurements)
+## 6. Compute budget (design estimates)
+
+See the [current workload and measured gate timings](LoomGuard_Team_Work_Plan.md#7-rebalancing-rule) for D-61 scheduling.
 
 | Job | Count | Estimate each | Total |
 |---|---|---|---|

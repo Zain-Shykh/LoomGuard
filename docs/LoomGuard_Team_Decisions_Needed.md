@@ -1,5 +1,7 @@
 # LoomGuard: Team Decisions and Execution Plan
 
+**24–28 November review record.** The dated proposals and status below preserve the team’s review history. For execution, use the [current decision status](LoomGuard_Decision_Resolutions.md#current-decision-status) and [named handoffs](../README.md#team). Both originals have now been verified and the combined gate review is pending.
+
 **24 November 2026** · Member B's five questions for Members A and C, reviewed against `main` at `7a4650460a9ee0d129d62ab0fa73d16f6cb095d0`. This commit is the feature branch base. The team approved Decision 5 and integrated the implementation into main at `09d708f794d20bfebdca30f84118debe8b9e6370`. The table records the decisions that govern the current handoff. As of 26 November, B reports finishing all five PatchCore profiles at `67fb7f6`. On 28 November, Huzaima verified the original gate pin and all five PatchCore pairs. The paired gate still requires Huzaima's RD4AD results, verification of their bundles and the recorded review. See the [current checklist](TEAM_TASKS_MEMBER_A.md) and [progress evidence](PROGRESS_LOG.md).
 
 | Decision | Status | Answer and owner |
