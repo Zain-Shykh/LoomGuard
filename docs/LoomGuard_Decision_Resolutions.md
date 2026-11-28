@@ -2,7 +2,7 @@
 
 **Why this file exists.** The five questions in [LoomGuard_Team_Decisions_Needed.md](LoomGuard_Team_Decisions_Needed.md) stayed open because Members A and C were busy. Member A's review there already settled the technical points (Decisions 2 and 5) and left Decisions 1, 3 and 4 waiting for an owner call. On 25 November the repository owner (Zain, Member B) asked for every open question to be resolved with the recommended option so training can start. This file records each answer, the reason, the fallback and who can reverse it.
 
-**26 November audit status.** This file records the owner's operational choices as reported on 25 November. A approved the common experimental SHA subject to original-pin verification and coordinates the paired benchmark approval. B owns dataset preparation and verification. C owns the remaining assigned RD4AD work. B's five PatchCore results already record that proposed SHA. A prepared an owner-only local archive. The original pins, model bundles and coordinator receipt remain pending. See [Member A's checklist](TEAM_TASKS_MEMBER_A.md) and [Member C's RD4AD handoff](TEAM_TASKS_MEMBER_C.md).
+**26 November audit status.** This file records the owner's operational choices as reported on 25 November. Huzaima (A) approved the common experimental SHA subject to original-pin verification and coordinates the paired benchmark review. Hamza (C) prepared and verified the original dataset handoff and owns the assigned ZJU RD4AD work. Zain (B) generated and distributed the original shared pins. B's five PatchCore results already record that proposed SHA. A prepared an owner-only local archive. At that audit, the original pins and model bundle receipts were pending. Huzaima verified their receipt on 28 November. See [Member A's checklist](TEAM_TASKS_MEMBER_A.md) and [Member C's RD4AD handoff](TEAM_TASKS_MEMBER_C.md).
 
 **What this file does not do.** It does not change a scientific setting, a seed, a budget, a threshold, a split or the assignment ledger (`configs/studies/distributed/assignments.yaml`). It does not approve a checkpoint (`--approve-gate`, `--approve-mini`). It does not create `datasets.json`. It is not a legal opinion on any dataset licence.
 
@@ -10,7 +10,7 @@
 
 | # | Question | Resolution | Reversible by |
 |---|---|---|---|
-| R1 | Which source commit does everyone run? | Proposed training commit `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`. B's verifier/AITEX changes are not part of it. | A |
+| R1 | Which source commit does everyone run? | Proposed training commit `67fb7f6ca2dec0365b63a7454ffb57b3138b6875`. The handoff's reported verifier and AITEX changes require a separate review. | A |
 | R2 | Who creates the dataset pin? | Gate-only pin now, created by B from the handoff bytes it already holds. A checks the original against local MVTec. B also produced the full pin. | A, B |
 | R3 | How does MVTec reach Kaggle? | B uploads one private Kaggle Dataset with the five textures, shared with nobody else. Fallback: A's RTX 5060 Ti runs B's gate profiles. | Owner |
 | R4 | Where do bundles and results go? | P1: one profile per saved private Kaggle run, B downloads and hash-checks, then hands the files to A privately. P3 (tokens) is not used. | Owner |
@@ -25,7 +25,7 @@
 
 **How to use it.** Training checkouts check out the SHA directly (`git checkout 67fb7f6ca2dec0365b63a7454ffb57b3138b6875`, detached) in a separate clone or worktree. The runner requires the exact pinned SHA and rejects changes in `configs`, `loomguard`, `scripts` or `pyproject.toml`, including untracked files. Documentation commits on `main` after this SHA (including this file) do not affect training checkouts, but never run a training session from `main`.
 
-**B's verifier and AITEX changes.** The reviewed refs and mounted handoff contain no reviewable source patch; AITEX is excluded by D-61; A found that the active manifests are reproduced by the runner's own `inspected_manifest` and match the supplied CSVs for the representative configs. The verifier is in `scripts/`, so merging it later changes the source SHA. Request the exact diff and tests for review as a separate reporting change outside the training checkout. Result files keep the SHA they were produced with. If B finds a difference that changes an active split, target or setting, stop: that needs scientific approval and a new pin.
+**Verifier and AITEX changes described in Hamza's handoff.** The reviewed refs and mounted handoff contain no reviewable source patch; AITEX is excluded by D-61; A found that the active manifests are reproduced by the runner's own `inspected_manifest` and match the supplied CSVs for the representative configs. The verifier is in `scripts/`, so merging it later changes the source SHA. Request the exact diff, authorship and tests for review from Hamza as a separate reporting change outside the training checkout. Result files keep the SHA they were produced with. If review finds a difference that changes an active split, target or setting, stop: that needs scientific approval and a new pin.
 
 **Fallback.** If A wants a different SHA, A names it. Everything that follows (pin, readiness) is then redone on that SHA before any run.
 
@@ -33,9 +33,9 @@
 
 **Resolution.**
 1. **Gate-only pin first.** B reports creating the original on the common experimental revision. A needs that file and the verified MVTec tree for the local gate.
-2. **Who:** B leads dataset verification and sends the original gate and full pin bytes privately. A verifies them and keeps the originals in the local coordinator archive.
+2. Hamza performed the original dataset verification. Zain generated the original gate and full pins and sends their exact bytes privately. Huzaima independently verifies the handoff and pins and archives the originals.
 3. **Cross-check:** A verifies the original file SHA-256 and compares its source, tree, manifest and config digests against the local verified inputs. Use the original bytes for training. A mismatch stops everything. Possible causes are a different extraction, a stray file or a corrupt copy.
-4. **Review reference:** the handoff's `artifacts/verify_datasets.txt` and `dataset_handoff_notes.md`, plus B's archive/tree hash note. It must name real evidence, not a placeholder.
+4. **Review reference:** the handoff's `artifacts/verify_datasets.txt` and `dataset_handoff_notes.md`, plus Zain's pin-generation tree hash record. It must name real evidence, not a placeholder.
 5. **Full pin later:** B reports creating the full pin from MVTec, RAW-FABRID and ZJU. Once the gate halves are in, A checks the original full pin and restores the ten gate results and compares the two approvals, as specified in the [advance-to-full-study steps](LoomGuard_Team_Decisions_Needed.md#advance-to-the-full-study).
 6. **AITEX stays out** (D-61). No `--aitex-approval`.
 7. `datasets.json` is small (hashes and the commit) and goes to A over a private channel. It is not committed.
@@ -101,4 +101,4 @@ Until the ZJU go-ahead, C has no training queue. The plan file gives C other wor
 | ZJU-Leaper use and cloud permissions | B and the affected runner | Preserve the terms or obtain permission for the proposed execution route (R7). |
 | Telling A and C the SHA and the fallback | B | The owner decided approval from A and C is not required. They need the SHA to check out, and A's machine for the fallback. |
 | Real Kaggle numbers: session cap, transfer size, quota | B | Measured by the first runs. |
-| B's verifier/AITEX diff | B | Obtain the existing patch and review it separately. |
+| Dataset handoff verifier/AITEX diff | C shares the diff and authorship evidence, A reviews | Review separately when supplied. |

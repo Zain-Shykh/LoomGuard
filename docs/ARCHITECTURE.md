@@ -40,7 +40,7 @@ Two models solve steps 1 and 2 independently and are compared on the same data:
 
 ## 2. System overview
 
-Training and evaluation run on the training PC. The laptop is for code, documentation, tests on tiny data, and the CPU demo.
+Huzaima (Member A) trains and evaluates local RD4AD on the training PC. Zain (Member B) and Hamza (Member C) run their assigned queues on authorized GPUs under [D-61](DISTRIBUTED_TRAINING.md). The CPU laptop is for code, documentation, tests on tiny data and the demo.
 
 ```mermaid
 flowchart LR

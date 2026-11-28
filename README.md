@@ -4,7 +4,17 @@ Fabric inspection with deep learning. LoomGuard learns what normal fabric looks 
 
 Two methods are implemented from their papers in PyTorch and compared on the same data: **PatchCore** (stores normal patches) and **Reverse Distillation** (trains a decoder to rebuild normal features). A Streamlit app presents the result as a product: upload an image, get the heatmap, defect list and grade.
 
-**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics); Phase 5 code complete (ZJU-Leaper and AITEX adapters, per-group and held-out regimes, ablation configs, `scripts/study.py`, `scripts/summarize.py`, `scripts/failure_cases.py`); Phase 6 code complete (Streamlit app: inspect image, roll stream, results; upload validation, bundle download, unknown-fabric warning, Space deployment files). Waiting for the training-PC runbooks of Phases 1 to 6 (`docs/specs/`). See the [progress log](docs/PROGRESS_LOG.md).
+**Current state:** design phase complete; Phase 1 code complete (tiler, manifests, dataset class, dataset verification script); Phase 2 code complete (metrics, frozen backbone, PatchCore, `scripts/fit.py` and `scripts/evaluate.py`); Phase 3 code complete (RD4AD student, training loop, random-crop dataset, method dispatch in the scripts); Phase 4 code complete (calibration, mask cleanup, four-point grading, `Inspector`, operating-point and grading metrics); Phase 5 code complete (ZJU-Leaper and AITEX adapters, per-group and held-out regimes, ablation configs, `scripts/study.py`, `scripts/summarize.py`, `scripts/failure_cases.py`); Phase 6 code complete (Streamlit app: inspect image, roll stream, results; upload validation, bundle download, unknown-fabric warning, Space deployment files). The D-61 distributed study is underway. Zain completed the five MVTec PatchCore profiles, and Huzaima coordinates the paired MVTec gate. See the [progress log](docs/PROGRESS_LOG.md).
+
+## Team
+
+| Member | Contributions and current responsibilities |
+|---|---|
+| A — Huzaima | Local GPU setup and validation, RD4AD convergence and FP16 investigation, the scoped FP32 teacher correction, distributed runner review and gate-only preparation, independent dataset handoff verification and staging, local RD4AD runs, and coordination of result and bundle reviews. |
+| B — Zain | Repository owner, initial architecture and implementation, Kaggle setup and PatchCore experiments, original shared pin generation and distribution, artifact exports, and the assigned ZJU RD4AD work. Completed the five MVTec PatchCore profiles. |
+| C — Hamza | Original dataset acquisition, preparation and verification, the four dataset manifests, handoff archive and verification reports, RAW-FABRID representation analysis, ZJU-Leaper verification, AITEX mask exclusion investigation, and the assigned ZJU RD4AD work. |
+
+The [team work plan](docs/LoomGuard_Team_Work_Plan.md) records the D-61 assignments and supporting evidence.
 
 ## Documents
 

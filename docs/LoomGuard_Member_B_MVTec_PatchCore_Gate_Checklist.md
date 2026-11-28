@@ -2,7 +2,7 @@
 
 ## 26 November handoff
 
-B leads dataset preparation and verification and completed all five PatchCore texture runs in saved private Kaggle versions 1 to 3. The five result JSONs at `85da445` match the independently verified MVTec tree and canonical manifest. Send A the original gate and full pins, the saved-version references, five export folders and their checksum manifests. Keep a second private copy until A confirms all downloads. The paired approval still needs A's RD4AD results and verification of all ten bundles.
+Zain (Member B) used Hamza's original verified dataset handoff, generated and distributed the shared pins, and completed all five PatchCore texture runs in saved private Kaggle versions 1 to 3. The five result JSONs at `85da445` match the independently verified MVTec tree and canonical manifest. Send A the original gate and full pins, the saved-version references, five export folders and their checksum manifests. Keep a second private copy until A confirms all downloads. On 28 November, Huzaima verified the original pins at receipt, all three export manifests and five PatchCore pairs, then restored the pairs for review. The paired approval still needs Huzaima's five RD4AD results, their verified bundles and team review.
 
 For A's local receipt, stage the original export folders under `artifacts/private-training-archive/incoming/member-b/exports/<saved-version>/` with their original `MANIFEST.sha256`, canonical result and bundle paths, logs and version references. Keep raw inputs and credentials outside the export. B sends the original gate and full files separately in `incoming/member-b/pins/gate/datasets.json` and `incoming/member-b/pins/full/datasets.json` relative to the private archive. A verifies the original gate pin first, then runs the local receipt command from the experimental checkout:
 
@@ -62,7 +62,7 @@ The original 22 November full-pin checklist below documents the pre-implementati
 
 | # | Precondition | Owner | Status when written |
 |---|---|---|---|
-| 1 | The five MVTec texture folders are downloaded, extracted and verified (`scripts/verify_datasets.py` output read, not just the exit code) | Member B | pending |
+| 1 | The five MVTec texture folders are downloaded, extracted and verified (`scripts/verify_datasets.py` output read, not just the exit code) | Member C prepares and verifies, Members A and B check their mounts | pending |
 | 2 | The team has agreed one source commit and everyone checks out exactly that commit | team | pending |
 | 3 | `artifacts/distributed/shared/datasets.json` exists, created by `--pin-datasets` on the coordinator checkout | coordinator | pending |
 | 4 | MVTec reaches Kaggle as a **private** input, and the team confirms that is allowed under CC BY-NC-SA 4.0 (non-commercial, no redistribution, no public notebook, dataset or Git copy) | team | pending, not decided |
@@ -92,7 +92,7 @@ cp "$FULL_PIN_FILE" artifacts/distributed/shared/datasets.json
 - Keep `CUDA_VISIBLE_DEVICES=0` for every command below. Do not enable multi-GPU.
 - The checkout must be at the pinned commit with a clean tree. If it is not, stop.
 - Layout the adapter requires (`loomguard/data/manifest.py`, `build_mvtec`): `data/mvtec_ad/<texture>/train/good/*`, `data/mvtec_ad/<texture>/test/<defect or good>/*`, and for each defective test image `data/mvtec_ad/<texture>/ground_truth/<defect>/<image stem>_mask.png`. A missing mask or an empty `train/good` stops the run.
-- The pin hashes **every file under `data/mvtec_ad`** (links to subdirectories are followed). That folder must hold exactly the five texture folders that Member B verified and nothing else, byte for byte. Extra categories or stray files change the hash and `--prepare` will refuse.
+- The pin hashes **every file under `data/mvtec_ad`** (links to subdirectories are followed). That folder must hold exactly the five texture folders from Hamza's verified handoff that Zain hashed for the gate pin and nothing else, byte for byte. Extra categories or stray files change the hash and `--prepare` will refuse.
 - The checkout must be a real clone with history, not a shallow one: the script runs `git rev-parse --verify <pinned commit>`.
 
 ## 4. Readiness (`DO NOT RUN UNTIL HANDOFF`)

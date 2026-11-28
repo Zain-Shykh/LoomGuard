@@ -4,9 +4,11 @@ The [proposal](THREE_PERSON_PARALLEL_TRAINING_PROPOSAL.md) and [assignment ledge
 
 | Member | Environment | Config-level assignment | Profile results |
 |---|---|---|---:|
-| A | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | MVTec RD4AD. RAW-FABRID RD4AD per-roll, unified seeds 0–2, and leave-one-roll-out. RD4AD false-alarm and grading evidence. RAW-FABRID RD4AD 1k-iteration and 32 px overlap ablations (moved from C by D-61, so each ablation sits on its baseline's machine). | 36 |
-| B | Kaggle GPU 1 | Dataset preparation and verification. MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. ZJU RD4AD resolution ablation (moved from C by D-61). | 124 active (+14 inactive AITEX) |
-| C | Kaggle GPU 2 | ZJU RD4AD groups, unified and held-out. | 11 |
+| A — Huzaima | RTX 5060 Ti, 16 GB VRAM, Ryzen 7 7700, 32 GB DDR5, Windows/WSL Ubuntu | MVTec RD4AD. RAW-FABRID RD4AD per-roll, unified seeds 0–2, and leave-one-roll-out. RD4AD false-alarm and grading evidence. RAW-FABRID RD4AD 1k-iteration and 32 px overlap ablations (moved from C by D-61, so each ablation sits on its baseline's machine). | 36 |
+| B — Zain | Kaggle GPU 1 | MVTec PatchCore. RAW-FABRID PatchCore per-roll, unified and held-out. ZJU PatchCore mini, remaining patterns, groups, unified and held-out. All eight PatchCore ablation configs. ZJU RD4AD mini and remaining patterns. ZJU RD4AD resolution ablation (moved from C by D-61). | 124 active (+14 inactive AITEX) |
+| C — Hamza | Kaggle GPU 2 | ZJU RD4AD groups, unified and held-out. | 11 |
+
+Hamza prepared and verified the original dataset handoff. Huzaima independently checked and staged it on the training PC. Zain generated and distributed the original shared pins from the verified data.
 
 Member B owns both AITEX methods, one model per fabric for seven fabrics per method. D-61 (2026-11-21) excludes AITEX: do not pass `--aitex-approval`, so these 14 profiles stay inactive. Keep using the original full-study check; its only expected failure is the missing AITEX cells, to be reported as intentional. ZJU: run ZJU-mini first; the full-ZJU queues start only after the owner records the go-ahead (D-61).
 
@@ -14,7 +16,7 @@ Member B owns both AITEX methods, one model per fabric for seven fabrics per met
 
 ### Independent MVTec gate
 
-B reports creating the original gate pin. B supplies it and A checks it against the five verified textures using the [local handoff](TEAM_TASKS_MEMBER_A.md). A and B each mount the verified tree at `data/mvtec_ad` and use the original `datasets.json` at `artifacts/distributed/gate-shared/`. Verify the release SHA, authorized data access and export destination first. Each review variable refers to the actual evidence for that operation.
+Zain supplies the original gate pin he generated from Hamza's verified handoff. Huzaima checks it against the five mounted textures using the [local handoff](TEAM_TASKS_MEMBER_A.md). A and B each mount the verified tree at `data/mvtec_ad` and use the original `datasets.json` at `artifacts/distributed/gate-shared/`. Verify the release SHA, authorized data access and export destination first. Each review variable refers to the actual evidence for that operation.
 
 ```bash
 # Each trainer sets OWNER to A (RD4AD) or B (PatchCore)
@@ -27,7 +29,7 @@ A verifies all ten exported result/bundle pairs and uses the gate shared directo
 ### Full-study pin
 
 1. Agree on one source commit containing the reviewed plan, code, and unchanged configs. Work at the repository root. Start the three work branches at that commit, for example `git switch -c run/local-rd4ad "$SOURCE_COMMIT"`, `run/kaggle-patchcore`, and `run/kaggle-rd4ad`. Keep training checkouts pinned. Use a separate results checkout or worktree if committing results before the queue finishes.
-2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C's training assignments need only ZJU. B keeps the original full pin and verification evidence for all three active datasets. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
+2. Follow [Part 1 of the training-PC runbook](TRAINING_PC_RUNBOOK.md#part-1-datasets-and-verification-phase-1). Record source archive SHA-256 values, verifier output, the RAW-FABRID patch-count and metadata checks, and the ZJU adapter findings. Read the verifier output even when it exits successfully. Stage identical extracted trees at the configured `data/` paths (copies or directory links; links to subdirectories are followed when hashing). A needs MVTec and RAW-FABRID. B needs MVTec, RAW-FABRID and ZJU, plus AITEX if included. C's training assignments need only ZJU. Zain keeps the original full pin for all three active datasets. Hamza keeps the original verification evidence and Huzaima retains the independent local verification and receipt. Keep data immutable over the runs and leave unrelated files outside those roots. Use private licensed inputs where permitted and keep restricted data, including MVTec images, out of public notebooks, datasets and Git.
 3. Preserve and distribute the existing full pin. For a future study with new verified inputs, create the new pin from the coordinator checkout. AITEX is excluded under D-61. The pin hashes the extracted file contents and each config's ordered split manifest. Changes to data or source need a new pin, review of prior outputs and new checkpoint approvals.
 
 ```bash

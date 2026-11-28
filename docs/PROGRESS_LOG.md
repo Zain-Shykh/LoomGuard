@@ -16,6 +16,13 @@ Entry template:
 
 ---
 
+## 2026-11-28: Team attribution clarification
+
+- **Huzaima (Member A)** set up and validated the local GPU environment, investigated RD4AD convergence and FP16 stability, authored the scoped FP32 teacher change and gate-only preparation, ran local regressions, and independently verified and staged the supplied dataset handoff. See `0740600`, `f7330a7`, `09d708f`, `67fb7f6` and the 26 November local audit. Huzaima runs local RD4AD and coordinates result, bundle and checkpoint review.
+- **Zain (Member B)** owns the repository and led the initial implementation. He prepared the Kaggle environment, generated and distributed the original shared pins from the verified dataset handoff, completed the five MVTec PatchCore profiles and exported their artifacts. The B1–B3 entries record that work. D-61 also assigns Zain part of ZJU RD4AD.
+- **Hamza (Member C)** acquired and prepared the original datasets and produced the four manifests, archive, verifier output and supplemental findings, including the RAW-FABRID representations, ZJU Setting 1 and AITEX mask exclusions. The original private handoff records this work. The reported verifier and AITEX adapter changes require the source diff and authorship evidence for separate review. Hamza also owns the assigned full-ZJU RD4AD runs.
+- **Correction to the 26 November integration entry:** The sentence crediting B with original dataset preparation and verification should credit Hamza. Huzaima performed the independent training-PC verification, while Zain hashed the data for the shared pins. D-61 still governs assignments.
+
 ## 2026-11-28: ZJU-Leaper Kaggle upload verified; local dataset copies removed
 - **Phase:** data handoff, Member B
 - **Who / where:** Zain (Member B), private Kaggle notebook `notebook4db0e623ba`, CPU (no accelerator)

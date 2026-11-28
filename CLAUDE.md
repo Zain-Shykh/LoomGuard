@@ -19,14 +19,16 @@ The design is fixed in `docs/`. Read the relevant document before writing code, 
 
 `LoomGuard Project Starter.md` is the original idea. Where it disagrees with `docs/`, `docs/` wins.
 
-## Two machines, different jobs
+## Team and execution environments
 
 - **Laptop (no GPU, almost no free disk):** code, docs, CPU unit tests on synthetic data. **Never download a dataset or train a model here.** Verify remote data with HEAD/range requests instead.
-- **Training PC (RTX 5060 Ti, 16 GB VRAM):** datasets, fitting, evaluation. Needs PyTorch 2.7 or newer with CUDA 12.8 wheels (`torch.cuda.get_arch_list()` must contain `sm_120`).
+- **Member A (Huzaima)** runs local RD4AD on the RTX 5060 Ti (16 GB VRAM) training PC, independently verifies and stages the dataset handoff, and coordinates the checkpoints. The PC needs PyTorch 2.7 or newer with CUDA 12.8 wheels (`torch.cuda.get_arch_list()` must contain `sm_120`).
+- **Member B (Zain)** owns the repository, led the initial implementation, runs PatchCore and assigned ZJU RD4AD work, and generates and distributes the original shared pins from the verified handoff.
+- **Member C (Hamza)** prepared and verified the original datasets and produced the handoff, manifests and reports. His D-61 training queue is full-ZJU RD4AD.
 
 If a task needs a GPU or a dataset and you are on the laptop, write the code and the test, then record the run as a training-PC task in `docs/PROGRESS_LOG.md`.
 
-The [proposed distributed training runbook](docs/DISTRIBUTED_TRAINING.md) adds independent execution queues for the existing study. Follow its shared approvals and result ownership when the team adopts it. The original training-PC instructions remain available.
+Follow the [approved distributed training runbook](docs/DISTRIBUTED_TRAINING.md) for queue ownership, readiness and shared approvals. Use the training-PC runbook for the applicable acceptance criteria.
 
 ## Setup
 

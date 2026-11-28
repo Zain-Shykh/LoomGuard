@@ -6,6 +6,8 @@
 **Source of truth:** Current `main`, `CLAUDE.md`, `docs/DECISIONS.md` (D-60 and D-61), `docs/DISTRIBUTED_TRAINING.md`, and `configs/studies/distributed/assignments.yaml`.  
 **Scope:** Member B only. Member A separately tests the RTX 5060 Ti. Member C continues downloading and verifying real datasets.
 
+Zain is Member B, Huzaima is Member A, and Hamza is Member C. The dated feasibility results below refer to Zain's Kaggle execution and artifact handoff. Hamza produced the original dataset handoff.
+
 ## 1. What Member B needs to verify now
 
 - [ ] Kaggle notebook can run a working CUDA-enabled PyTorch + torchvision installation.
@@ -186,7 +188,7 @@ Share one compact report containing:
 
 ### Decision after these checks
 
-- **Ready for Member B's dataset handoff:** CUDA works, targeted tests and both synthetic model smoke tests pass, distributed dry-run is correct, and evidence is retrievable.
+- **Zain is ready to receive the dataset handoff:** CUDA works, targeted tests and both synthetic model smoke tests pass, distributed dry-run is correct, and evidence is retrievable.
 - **Not yet cleared for real MVTec:** That needs Member C's verified MVTec files, the same approved source commit on both machines, the shared `artifacts/distributed/shared/datasets.json` pin, and each member's real `--prepare` checkpoint.
 - **Not yet cleared for main studies:** Both MVTec methods must finish and pass the shared gate. Full ZJU still requires its separate decision/checkpoint.
 - **Member C's Kaggle RD4AD environment needs its own checks** before declaring all three execution machines ready.
@@ -258,7 +260,7 @@ The 120,000 figure is Member B's RD4AD budget in the plan. It would only fit in 
 
 ### 9.7 Decision for the team
 
-- **Ready for Member B's dataset handoff:** CUDA works, targeted tests and both synthetic smoke tests pass, the dry-runs are correct, and FP16 RD4AD runs on a T4 with finite loss and no skipped steps.
+- **Zain is ready to receive the dataset handoff:** CUDA works, targeted tests and both synthetic smoke tests pass, the dry-runs are correct, and FP16 RD4AD runs on a T4 with finite loss and no skipped steps.
 - **Before real runs:** close gap 1 (about 10 min of GPU quota: re-run, copy logs into the export folder, Save Version, download the output).
 - **Still blocked on others, unchanged:** Member C's verified datasets and the shared `datasets.json` pin, the same source commit on all machines, and the MVTec gate approval (Member A's RD4AD result plus Member B's PatchCore result).
 - **Not yet checked:** Member C's Kaggle environment needs its own check.

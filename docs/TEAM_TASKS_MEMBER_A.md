@@ -1,6 +1,6 @@
-# Member A local RD4AD handoff
+# Huzaima (Member A) local RD4AD handoff
 
-A approved the common experimental source `67fb7f6ca2dec0365b63a7454ffb57b3138b6875` subject to verification of the original pins. B has completed the five PatchCore gate profiles. The five RD4AD profiles and paired checkpoint are pending.
+Huzaima independently verified and staged Hamza's original dataset handoff and prepared the local RD4AD environment. Huzaima approved the common experimental source `67fb7f6ca2dec0365b63a7454ffb57b3138b6875` subject to verification of the original pins. Zain completed the five PatchCore gate profiles. On 28 November, Huzaima verified the original gate pin, received both original pins and all five PatchCore bundles, and passed fresh local readiness. The paired checkpoint requires all five RD4AD results and team review.
 
 ## Verify the original gate pin and prepare
 
@@ -13,7 +13,7 @@ git status --short
 python scripts/distributed_study.py --owner A --stage gate --dry-run
 ```
 
-B sends the original gate file privately. Place the received bytes at `$LOOMGUARD_ARCHIVE/incoming/member-b/pins/gate/datasets.json`. The reported file SHA-256 is `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`. The helper checks the file checksum, source, config digests, local tree, both canonical gate manifests and the five tracked PatchCore results. It installs the original bytes at `artifacts/distributed/gate-shared/datasets.json` under the training checkout and checks existing bytes before reuse. Stop on any mismatch.
+Zain generated the original shared gate pin from Hamza's verified dataset handoff and supplies it privately. Place the received bytes at `$LOOMGUARD_ARCHIVE/incoming/member-b/pins/gate/datasets.json`. The reported file SHA-256 is `702a0913c595aecfbdae73ab89be2f72ba2ccdead54f53b20f526b42c43981a0`. The helper checks the file checksum, source, config digests, local tree, both canonical gate manifests and the five tracked PatchCore results. It installs the original bytes at `artifacts/distributed/gate-shared/datasets.json` under the training checkout and checks existing bytes before reuse. Stop on any mismatch.
 
 ```bash
 python "$LOOMGUARD_ARCHIVE/tools/receive_pin.py" gate &&

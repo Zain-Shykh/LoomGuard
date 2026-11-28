@@ -4,7 +4,7 @@ How the project is built, phase by phase. This file is the process; [IMPLEMENTAT
 
 ## Parallel training handoff
 
-The [proposed distributed runbook](DISTRIBUTED_TRAINING.md) specifies the three member branches, data and source pin, shared approvals, canonical result exports and integration. Keep the training source pinned through a queue. Review small result JSONs and progress notes on the members' result branches, and transfer bundles through durable model storage. Record team approval before starting or reassigning work.
+The [approved distributed runbook](DISTRIBUTED_TRAINING.md) specifies the three member branches, data and source pin, shared approvals, canonical result exports and integration. Keep the training source pinned through a queue. Review small result JSONs and progress notes on the members' result branches, and transfer bundles through durable model storage. Record team approval before starting or reassigning work.
 
 ## 1. The idea
 
@@ -18,7 +18,7 @@ The [proposed distributed runbook](DISTRIBUTED_TRAINING.md) specifies the three 
 
 | Role | Who | Model | Does | Does not |
 |---|---|---|---|---|
-| Project owner | Zain | | Makes decisions, reads the phase report and spec, confirms phase closure | |
+| Project owner | Zain (Member B) | | Makes decisions, reads the phase report and spec, confirms phase closure | |
 | Orchestrator | Main interactive Claude session | Fable 5.2 | Prepares the environment, launches the developer session with the prompt, verifies its report, pushes, keeps DECISIONS.md current | Write specs or phase code |
 | Developer session | Headless Claude session, new for every phase | Sonnet 5.5, medium effort | Writes the spec, plans, implements, writes tests, runs the review loop, updates docs, commits locally | Push, change the architecture, decide open questions, download data, train models |
 | Reviewer agent | `phase-reviewer` subagent spawned by the developer session | Sonnet 5.5, medium effort | Reviews and tests the phase against the plan, its spec and the docs; returns a verdict | Edit files |

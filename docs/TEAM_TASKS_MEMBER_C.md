@@ -1,8 +1,8 @@
-# Member C RD4AD handoff
+# Hamza (Member C) dataset and RD4AD handoff
 
-C owns 11 full-ZJU RD4AD profiles under D-61. The assigned results cover five groups, one unified profile and five held-out patterns, for 120,000 configured iterations. B leads dataset preparation and verification. A coordinates checkpoints and archive receipt.
+Hamza acquired, prepared and originally verified the four core datasets. He produced the four manifests, original handoff archive and verification reports, investigated the two RAW-FABRID representations, reproduced ZJU Setting 1 and investigated the AITEX mask exclusions. The handoff describes verifier and AITEX adapter changes whose source diff and authorship still need review. Under D-61, Hamza owns 11 full-ZJU RD4AD profiles across five groups, one unified profile and five held-out patterns for 120,000 iterations. Huzaima independently verified and staged the handoff and coordinates checkpoints and archive receipt. Zain generated and distributed the original shared pins.
 
-C has zero MVTec gate profiles. Obtain the verified full pin and checkpoint files from A after the paired MVTec gate and ZJU-mini approval. Confirm the permitted ZJU execution route, ingest B's verified data and prepare using the original full pin at the approved experimental SHA. The current assignments and same-machine ablation rule apply unless a separate workload amendment is approved.
+C has zero MVTec gate profiles. Obtain the verified full pin and checkpoint files from A after the paired MVTec gate and ZJU-mini approval. Confirm the permitted ZJU execution route, mount the authorized ZJU copy from the verified release and prepare using the original full pin at the approved experimental SHA. The current assignments and same-machine ablation rule apply unless a separate workload amendment is approved.
 
 ```bash
 python scripts/distributed_study.py --shared artifacts/distributed/full-shared \

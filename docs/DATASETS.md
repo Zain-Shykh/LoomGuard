@@ -17,7 +17,7 @@ Every row below says what was actually checked. Anything marked **unverified** m
 
 Core storage needed on the training PC: about 15 GB compressed, roughly 30 GB with extraction. The optional TSFabrics set adds 9 GB compressed.
 
-The November handoff contains extracted copies. Keep dataset bytes on approved private machines or storage. The audited copy was mounted locally.
+Hamza (Member C) acquired, prepared and verified the four core datasets. His November handoff contains the extracted roots, four manifests, verification reports and supplemental findings. Huzaima (Member A) independently verified and staged the supplied handoff on the training PC. Zain (Member B) hashed the verified inputs and generated and distributed the original shared gate and full-study pins. Keep dataset bytes on approved private machines or storage.
 
 ## Changes from the starter file
 
@@ -77,7 +77,7 @@ Per-roll counts:
 | Rollo7A | 167 | 26 | 4,676 | 639 | 89 |
 | **Total** | **507** | **202** | **14,196** | **4,969** | **687** |
 
-Member C's handoff records the visual verdict **SAME**. Report RAW-FABRID leave-one-roll-out as roll generalization and use held-out ZJU patterns for unseen-fabric claims. C records two unpaired high-resolution masks outside the metadata inventory. The high-resolution manifest reproduced exactly from the mounted handoff. It has 11,872 training tiles, 2,324 validation tiles, 4,944 good test tiles and 712 defective test tiles. The 25 cross-representation label differences and 532 area differences are reported in C's supplemental audit. Keep shipped patch labels and masks together, and high-resolution crops and masks together. The 15 approved RAW-FABRID jobs call the high-resolution adapter. The current distributed study loader has no shipped-patch benchmark mode. Any implementation of that separate mode needs review.
+Hamza's handoff records the visual verdict **SAME**. Report RAW-FABRID leave-one-roll-out as roll generalization and use held-out ZJU patterns for unseen-fabric claims. C records two unpaired high-resolution masks outside the metadata inventory. The high-resolution manifest reproduced exactly from the mounted handoff. It has 11,872 training tiles, 2,324 validation tiles, 4,944 good test tiles and 712 defective test tiles. The 25 cross-representation label differences and 532 area differences are reported in C's supplemental audit. Keep shipped patch labels and masks together, and high-resolution crops and masks together. The 15 approved RAW-FABRID jobs call the high-resolution adapter. The current distributed study loader has no shipped-patch benchmark mode. Any implementation of that separate mode needs review.
 
 ## 2. ZJU-Leaper (core cross-fabric benchmark)
 

@@ -1,10 +1,10 @@
 # LoomGuard: Training-PC Runbook
 
-One ordered checklist for the person with the RTX 5060 Ti (16 GB VRAM). It collects the training-PC steps of the six phase specs (`docs/specs/phase-N-*.md`, section 8) in the order they should be run, with stop points. If this file and a spec disagree, the spec's section 8 is the detail and this file is the order. Report disagreements to the project owner.
+One ordered checklist for Huzaima (Member A) on the RTX 5060 Ti (16 GB VRAM) training PC. It collects the training-PC steps of the six phase specs (`docs/specs/phase-N-*.md`, section 8) in the order they should be run, with stop points. If this file and a spec disagree, the spec's section 8 is the detail and this file is the order. Report disagreements to the project owner.
 
-All code was written and tested on a laptop with no GPU and no data. **None of it has seen real data yet.** Expect small fixes on the first runs, mostly in the dataset adapters (`loomguard/data/manifest.py`) because the column names and folder layouts were taken from documentation, not from the files. Fix them, keep the tests passing, and record every fix in `docs/PROGRESS_LOG.md`.
+Zain (Member B) led the initial implementation and completed the five real MVTec PatchCore profiles on Kaggle. Hamza (Member C) prepared and verified the datasets. Huzaima independently verified and staged the handoff on the training PC.
 
-For the proposed three-person execution schedule, see the [distributed training runbook](DISTRIBUTED_TRAINING.md). This runbook supplies its dataset, benchmark, grading and CPU app acceptance criteria and remains the single-machine procedure.
+The [approved distributed training runbook](DISTRIBUTED_TRAINING.md) governs assignments and checkpoints. This document supplies the single-machine procedure and its dataset, benchmark, grading and CPU app acceptance criteria. Use [Huzaima's local RD4AD handoff](TEAM_TASKS_MEMBER_A.md) for the pinned checkout, original pins and MVTec launch.
 
 ## Rules for the whole runbook
 

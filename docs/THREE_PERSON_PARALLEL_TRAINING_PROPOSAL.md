@@ -8,9 +8,9 @@
 
 | Member | Execution environment | Primary responsibility | Assigned experiments |
 |---|---|---|---|
-| **Member A (local GPU PC)** | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | **RAW-FABRID RD4AD** and its benchmark | MVTec RD4AD; RAW-FABRID RD4AD per-roll, unified seeds 0/1/2, and leave-one-roll-out |
-| **Member B (Kaggle 1)** | Own Kaggle GPU session | **All PatchCore**, plus shorter RD4AD jobs | MVTec PatchCore; PatchCore headline runs and ablations; ZJU-Leaper RD4AD per-pattern (mini and remaining patterns); optional AITEX RD4AD |
-| **Member C (Kaggle 2)** | Separate Kaggle GPU session | **Remaining RD4AD cross-fabric work** | ZJU-Leaper RD4AD per-group, unified, held-out; RD4AD ablations except RAW-FABRID unified seeds 1/2 |
+| **Huzaima (Member A, local GPU PC)** | RTX 5060 Ti, 16 GB VRAM, 32 GB RAM | **RAW-FABRID RD4AD** and its benchmark | MVTec RD4AD; RAW-FABRID RD4AD per-roll, unified seeds 0/1/2, and leave-one-roll-out |
+| **Zain (Member B, Kaggle 1)** | Own Kaggle GPU session | **All PatchCore**, plus shorter RD4AD jobs | MVTec PatchCore; PatchCore headline runs and ablations; ZJU-Leaper RD4AD per-pattern (mini and remaining patterns); optional AITEX RD4AD |
+| **Hamza (Member C, Kaggle 2)** | Separate Kaggle GPU session | **Remaining RD4AD cross-fabric work** | ZJU-Leaper RD4AD per-group, unified, held-out; RD4AD ablations except RAW-FABRID unified seeds 1/2 |
 
 The three environments run independently. The team shares **one pinned source commit, one set of dataset/split definitions, and one result schema**.
 
